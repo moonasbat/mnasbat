@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Category } from "@/lib/types";
 
-// شريط التصنيفات الكامل بالأيقونات — يظهر في الصفحة الرئيسية وصفحات التصفح العامة
+// شريط التصنيفات الرئيسية — كل أيقونة رابط عادي ينقل لصفحة ذلك التصنيف
+// (تحققنا من حراج فعلياً: لا يوجد قائمة منسدلة عند الضغط، الانتقال مباشر لصفحة التصنيف
+// والتصنيفات الفرعية تظهر هناك مباشرة بنفس الصفحة بدون نقرة إضافية)
 export default function CategoryBar({ categories }: { categories: Category[] }) {
   return (
     <section className="bg-white border-b border-gray-100">
