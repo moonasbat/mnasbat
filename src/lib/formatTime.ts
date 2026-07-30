@@ -19,7 +19,14 @@ export function formatGregorianDateTime(date: string | Date) {
   });
 }
 
-// "منذ 23 دقيقة" / "منذ 6 ساعات" / "منذ 3 أيام" ثم يتحول لتاريخ كامل بعد شهر
+function pluralize(n: number, singular: string, dual: string, plural: string, manyOrMore: string) {
+  if (n === 1) return singular;
+  if (n === 2) return dual;
+  if (n <= 10) return `${n} ${plural}`;
+  return `${n} ${manyOrMore}`;
+}
+
+// "منذ 23 دقيقة" / "منذ ساعتين" / "منذ 3 أيام" ثم يتحول لتاريخ كامل بعد شهر
 export function formatRelativeTime(date: string | Date) {
   const d = new Date(date);
   const now = Date.now();
@@ -27,11 +34,11 @@ export function formatRelativeTime(date: string | Date) {
 
   if (diffSec < 60) return "الآن";
   const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `منذ ${diffMin} ${diffMin === 1 ? "دقيقة" : diffMin === 2 ? "دقيقتين" : diffMin <= 10 ? "دقائق" : "دقيقة"}`;
+  if (diffMin < 60) return `منذ ${pluralize(diffMin, "دقيقة", "دقيقتين", "دقائق", "دقيقة")}`;
   const diffHour = Math.floor(diffMin / 60);
-  if (diffHour < 24) return `منذ ${diffHour} ${diffHour === 1 ? "ساعة" : diffHour === 2 ? "ساعتين" : diffHour <= 10 ? "ساعات" : "ساعة"}`;
+  if (diffHour < 24) return `منذ ${pluralize(diffHour, "ساعة", "ساعتين", "ساعات", "ساعة")}`;
   const diffDay = Math.floor(diffHour / 24);
-  if (diffDay < 30) return `منذ ${diffDay} ${diffDay === 1 ? "يوم" : diffDay === 2 ? "يومين" : diffDay <= 10 ? "أيام" : "يوماً"}`;
+  if (diffDay < 30) return `منذ ${pluralize(diffDay, "يوم", "يومين", "أيام", "يوماً")}`;
 
   return formatGregorianDate(d);
 }
