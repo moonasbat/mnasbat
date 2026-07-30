@@ -51,7 +51,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
 
   await supabase.rpc("increment_ad_views", { ad_id_param: id });
 
-  const [{ data: profile }, { data: comments }, { data: favorite }, { data: relatedAds }, { data: parentCategory }] = await Promise.all([
+  const [{ data: profile }, { data: comments }, { data: favorite }, { data: sellerAds }, { data: parentCategory }, { data: similarAds }] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : Promise.resolve({ data: null }),
     supabase.from("comments").select("*, profiles(*)").eq("ad_id", id).eq("status", "visible").order("created_at", { ascending: false }),
     user ? supabase.from("favorites").select("id").eq("ad_id", id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
@@ -59,6 +59,16 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
     ad.categories?.parent_id
       ? supabase.from("categories").select("*").eq("id", ad.categories.parent_id).single()
       : Promise.resolve({ data: null }),
+    // إعلانات مشابهة — نفس التصنيف من معلنين آخرين (مثل "عروض مشابهة" في مواقع الإعلانات المبوبة)
+    supabase
+      .from("ads")
+      .select("*, profiles(*), categories(*), ad_images(*)")
+      .eq("category_id", ad.category_id)
+      .eq("status", "published")
+      .neq("id", id)
+      .neq("user_id", ad.user_id)
+      .order("published_at", { ascending: false })
+      .limit(8),
   ]);
 
   const images: AdImage[] = (ad.ad_images ?? []).sort((a: AdImage, b: AdImage) => a.sort_order - b.sort_order);
@@ -177,11 +187,22 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
           </div>
         </div>
 
-        {relatedAds && relatedAds.length > 0 && (
+        {similarAds && similarAds.length > 0 && (
+          <section className="mt-12">
+            <h2 className="font-bold text-gray-900 mb-4">إعلانات مشابهة</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {(similarAds as Ad[]).map((a) => (
+                <AdCard key={a.id} ad={a} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {sellerAds && sellerAds.length > 0 && (
           <section className="mt-12">
             <h2 className="font-bold text-gray-900 mb-4">إعلانات أخرى لنفس المعلن</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {(relatedAds as Ad[]).map((a) => (
+              {(sellerAds as Ad[]).map((a) => (
                 <AdCard key={a.id} ad={a} />
               ))}
             </div>
