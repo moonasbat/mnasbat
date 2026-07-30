@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Category } from "@/lib/types";
 import { NEW_AD_CONTENT, COMMISSION_DECLARATION_TEXT, COMMISSION_DECLARATION_CONTENT } from "@/lib/content";
 import { createClient } from "@/lib/supabase/client";
-import { X, Upload } from "lucide-react";
+import { X, Upload, ShieldCheck, CheckCircle2, Circle } from "lucide-react";
 
 const CITIES = [
   "الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر",
@@ -28,7 +28,6 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
   const [error, setError] = useState("");
   const [adId, setAdId] = useState<string | null>(null);
   const [declarationAccepted, setDeclarationAccepted] = useState(false);
-  const [declarationAccepted2, setDeclarationAccepted2] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleFiles(files: FileList | null) {
@@ -124,7 +123,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
   }
 
   async function submitPublish() {
-    if (!declarationAccepted || !declarationAccepted2) {
+    if (!declarationAccepted) {
       setError(COMMISSION_DECLARATION_CONTENT.requiredError);
       return;
     }
@@ -258,25 +257,46 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
 
       {step === 4 && (
         <div className="space-y-4">
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-5 space-y-3 text-sm text-gray-700 leading-relaxed">
+          <div className="flex items-center gap-2 text-[#6D28D9]">
+            <ShieldCheck size={20} />
+            <h2 className="font-bold text-gray-900">إقرار الالتزام بالعمولة</h2>
+          </div>
+
+          <div className="border border-gray-100 rounded-2xl overflow-hidden">
             {COMMISSION_DECLARATION_TEXT.map((t, i) => (
-              <p key={i}>{t}</p>
+              <div key={i} className={`flex gap-3 p-4 text-sm text-gray-700 leading-relaxed ${i > 0 ? "border-t border-gray-100" : ""}`}>
+                <span className="shrink-0 w-6 h-6 rounded-full bg-purple-50 text-[#6D28D9] text-xs font-bold flex items-center justify-center mt-0.5">
+                  {i + 1}
+                </span>
+                <p>{t}</p>
+              </div>
             ))}
           </div>
-          <label className="flex items-start gap-2 text-sm text-gray-700">
-            <input type="checkbox" checked={declarationAccepted} onChange={(e) => setDeclarationAccepted(e.target.checked)} className="mt-1" />
-            {COMMISSION_DECLARATION_CONTENT.checkboxLabel}
-          </label>
-          <label className="flex items-start gap-2 text-sm text-gray-700">
-            <input type="checkbox" checked={declarationAccepted2} onChange={(e) => setDeclarationAccepted2(e.target.checked)} className="mt-1" />
-            {COMMISSION_DECLARATION_CONTENT.checkboxLabel2}
-          </label>
+
+          <button
+            type="button"
+            onClick={() => setDeclarationAccepted((v) => !v)}
+            className={`w-full flex items-start gap-3 rounded-2xl p-4 text-right transition-colors border-2 ${
+              declarationAccepted
+                ? "bg-purple-50 border-[#6D28D9]"
+                : "bg-white border-gray-200 hover:border-gray-300"
+            }`}
+          >
+            {declarationAccepted ? (
+              <CheckCircle2 size={22} className="text-[#6D28D9] shrink-0" />
+            ) : (
+              <Circle size={22} className="text-gray-300 shrink-0" />
+            )}
+            <span className="text-sm font-medium text-gray-900 leading-relaxed">
+              {COMMISSION_DECLARATION_CONTENT.checkboxLabel} {COMMISSION_DECLARATION_CONTENT.checkboxLabel2}
+            </span>
+          </button>
 
           <div className="flex gap-2">
             <button onClick={() => setStep(3)} className="flex-1 border border-gray-200 rounded-xl py-3 text-sm font-medium">رجوع</button>
             <button
               onClick={submitPublish}
-              disabled={!declarationAccepted || !declarationAccepted2 || submitting}
+              disabled={!declarationAccepted || submitting}
               className="flex-1 bg-[#6D28D9] text-white rounded-xl py-3 text-sm font-medium hover:bg-[#5B21B6] transition-colors disabled:opacity-50"
             >
               {COMMISSION_DECLARATION_CONTENT.submitButton}
