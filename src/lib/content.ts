@@ -118,9 +118,8 @@ export const AD_PAGE_CONTENT = {
   noLongerAvailable: "الإعلان لم يعد متاحاً.",
 };
 
-export function whatsappMessage(adTitle?: string) {
-  const base = "السلام عليكم، تواصلت معك بخصوص إعلانك عبر منصة مناسبات، وأرغب بالاستفسار عن تفاصيل الإعلان.";
-  return adTitle ? `${base}\nالإعلان: ${adTitle}` : base;
+export function contactMessageTemplate(adUrl: string) {
+  return `السلام عليكم، اتواصل معك بخصوص إعلانك عبر منصة مناسبات، وأرغب بالاستفسار عن تفاصيل الإعلان: ${adUrl}`;
 }
 
 export const MESSAGES_CONTENT = {

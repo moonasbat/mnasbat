@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { AD_PAGE_CONTENT, GENERIC_CONTENT, whatsappMessage } from "@/lib/content";
+import { AD_PAGE_CONTENT, GENERIC_CONTENT, contactMessageTemplate } from "@/lib/content";
 import { Heart, MessageSquare, Share2 } from "lucide-react";
 import { loginUrl } from "@/lib/loginRedirect";
 
@@ -56,7 +56,7 @@ export default function ContactPanel({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ad_id: adId }),
     });
-    const text = encodeURIComponent(whatsappMessage(adTitle));
+    const text = encodeURIComponent(contactMessageTemplate(window.location.href));
     window.open(`https://wa.me/${whatsapp?.replace(/[^0-9]/g, "")}?text=${text}`, "_blank");
   }
 
@@ -95,7 +95,11 @@ export default function ContactPanel({
         <>
           {!showForm ? (
             <button
-              onClick={() => (requireLogin() ? null : setShowForm(true))}
+              onClick={() => {
+                if (requireLogin()) return;
+                if (!message.trim()) setMessage(contactMessageTemplate(window.location.href));
+                setShowForm(true);
+              }}
               className="w-full flex items-center justify-center gap-2 bg-[#6D28D9] text-white rounded-xl py-3 text-sm font-medium hover:bg-[#5B21B6] transition-colors"
             >
               <MessageSquare size={18} />
