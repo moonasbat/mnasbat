@@ -15,6 +15,8 @@ export default function Header({ profile }: { profile?: Profile | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  // الصفحة الرئيسية وصفحة النتائج عندهما بحث خاص بهما، لا داعٍ لتكراره في الهيدر
+  const hideHeaderSearch = pathname === "/" || pathname === "/search";
 
   async function handleLogout() {
     const supabase = createClient();
@@ -29,7 +31,7 @@ export default function Header({ profile }: { profile?: Profile | null }) {
           مناسبات
         </Link>
 
-        {pathname !== "/" && (
+        {!hideHeaderSearch && (
           <div className="hidden md:flex flex-1 max-w-xl">
             <input
               type="text"
@@ -128,7 +130,7 @@ export default function Header({ profile }: { profile?: Profile | null }) {
         </div>
       </div>
 
-      {pathname !== "/" && (
+      {!hideHeaderSearch && (
         <div className="md:hidden px-4 pb-3">
           <input
             type="text"

@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AdCard from "@/components/ads/AdCard";
-import BackButton from "@/components/BackButton";
+import CategoryBar from "@/components/CategoryBar";
 import LocationFilters from "@/components/LocationFilters";
 import { Ad, Category, Profile } from "@/lib/types";
 import { SEARCH_CONTENT } from "@/lib/content";
@@ -24,6 +24,7 @@ export default async function SearchPage({
   ]);
 
   const categories = allCategories as Category[];
+  const mainCategories = categories.filter((c) => !c.parent_id);
   const mainCategory = categorySlug ? categories.find((c) => c.slug === categorySlug && !c.parent_id) : undefined;
   const subcategories = mainCategory ? categories.filter((c) => c.parent_id === mainCategory.id) : [];
   const subCategory = subSlug ? subcategories.find((c) => c.slug === subSlug) : undefined;
@@ -55,33 +56,17 @@ export default async function SearchPage({
     <div className="min-h-screen flex flex-col">
       <Header profile={profile as Profile} />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
-        {/* Breadcrumb مضغوط بدل شريط التصنيفات الكامل */}
-        <div className="flex items-center gap-3 mb-3">
-          <BackButton />
-          <nav className="flex items-center gap-1.5 text-sm text-gray-500 overflow-x-auto scrollbar-none">
-            <Link href="/" className="hover:text-[#6D28D9] shrink-0">الرئيسية</Link>
-            <span className="shrink-0">/</span>
-            {mainCategory ? (
-              <Link href={`/search?category=${mainCategory.slug}`} className={`shrink-0 hover:text-[#6D28D9] ${!subCategory ? "text-gray-900 font-medium" : ""}`}>
-                {mainCategory.name}
-              </Link>
-            ) : (
-              <span className="text-gray-900 font-medium shrink-0">كل المناسبات</span>
-            )}
-            {subCategory && (
-              <>
-                <span className="shrink-0">/</span>
-                <span className="text-gray-900 font-medium shrink-0">{subCategory.name}</span>
-              </>
-            )}
-          </nav>
-        </div>
+      {/* شريط التصنيفات الكامل — ثابت في كل صفحات التصفح، يختفي فقط داخل صفحة الإعلان المفردة */}
+      <CategoryBar categories={mainCategories} />
 
-        {/* تصنيفات فرعية نصية + فلاتر الموقع */}
-        {mainCategory && !subCategory && (
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
+        {mainCategory && (
           <div className="mb-5 space-y-3">
-            {subcategories.length > 0 && (
+            <h1 className="text-lg font-bold text-gray-900">
+              {mainCategory.name}
+              {subCategory && <span className="text-gray-400 font-normal"> / {subCategory.name}</span>}
+            </h1>
+            {!subCategory && subcategories.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {subcategories.map((sc) => (
                   <Link

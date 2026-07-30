@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 export default async function AdPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -50,21 +51,49 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
 
   await supabase.rpc("increment_ad_views", { ad_id_param: id });
 
-  const [{ data: profile }, { data: comments }, { data: favorite }, { data: relatedAds }] = await Promise.all([
+  const [{ data: profile }, { data: comments }, { data: favorite }, { data: relatedAds }, { data: parentCategory }] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : Promise.resolve({ data: null }),
     supabase.from("comments").select("*, profiles(*)").eq("ad_id", id).eq("status", "visible").order("created_at", { ascending: false }),
     user ? supabase.from("favorites").select("id").eq("ad_id", id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
     supabase.from("ads").select("*, profiles(*), categories(*), ad_images(*)").eq("user_id", ad.user_id).eq("status", "published").neq("id", id).limit(4),
+    ad.categories?.parent_id
+      ? supabase.from("categories").select("*").eq("id", ad.categories.parent_id).single()
+      : Promise.resolve({ data: null }),
   ]);
 
   const images: AdImage[] = (ad.ad_images ?? []).sort((a: AdImage, b: AdImage) => a.sort_order - b.sort_order);
   const seller = ad.profiles as Profile;
+  const mainCategory = parentCategory ?? ad.categories;
+  const subCategory = parentCategory ? ad.categories : null;
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header profile={profile as Profile} />
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
+        <div className="flex items-center gap-3 mb-5">
+          <BackButton />
+          <nav className="flex items-center gap-1.5 text-sm text-gray-500 overflow-x-auto scrollbar-none">
+            <Link href="/" className="hover:text-[#6D28D9] shrink-0">الرئيسية</Link>
+            {mainCategory && (
+              <>
+                <span className="shrink-0">/</span>
+                <Link href={`/search?category=${mainCategory.slug}`} className="hover:text-[#6D28D9] shrink-0">
+                  {mainCategory.name}
+                </Link>
+              </>
+            )}
+            {subCategory && (
+              <>
+                <span className="shrink-0">/</span>
+                <Link href={`/search?category=${mainCategory.slug}&sub=${subCategory.slug}`} className="hover:text-[#6D28D9] shrink-0">
+                  {subCategory.name}
+                </Link>
+              </>
+            )}
+          </nav>
+        </div>
+
         <div className="grid md:grid-cols-3 gap-8">
           {/* الصور والعنوان والوصف — يظهرون أولاً دائماً */}
           <div className="md:col-span-2 md:order-1 space-y-6">

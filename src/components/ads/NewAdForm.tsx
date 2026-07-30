@@ -27,6 +27,7 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
   const [error, setError] = useState("");
   const [adId, setAdId] = useState<string | null>(null);
   const [creatingDraft, setCreatingDraft] = useState(false);
+  const [savingStep3, setSavingStep3] = useState(false);
   const [declarationAccepted, setDeclarationAccepted] = useState(false);
   const [declarationExpanded, setDeclarationExpanded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -142,6 +143,27 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
     setError("");
     if (adId && images.length > 0) await attachImages(adId);
     setStep(3);
+  }
+
+  async function goToStep4() {
+    if (!adId) return;
+    setSavingStep3(true);
+    setError("");
+    const res = await fetch(`/api/ads/${adId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "update", title, description, category_id: categoryId, city, price,
+        whatsapp, messages_enabled: messagesEnabled, comments_enabled: commentsEnabled,
+      }),
+    });
+    setSavingStep3(false);
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error ?? "تعذر حفظ البيانات.");
+      return;
+    }
+    setStep(4);
   }
 
   async function submitPublish() {
@@ -294,8 +316,13 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
 
           <div className="flex gap-2">
             <button onClick={() => setStep(2)} className="flex-1 border border-gray-200 rounded-xl py-3 text-sm font-medium">رجوع</button>
-            <button onClick={() => setStep(4)} className="flex-1 bg-[#6D28D9] text-white rounded-xl py-3 text-sm font-medium hover:bg-[#5B21B6] transition-colors">
-              {NEW_AD_CONTENT.preview}
+            <button
+              onClick={goToStep4}
+              disabled={savingStep3}
+              className="flex-1 flex items-center justify-center gap-2 bg-[#6D28D9] text-white rounded-xl py-3 text-sm font-medium hover:bg-[#5B21B6] transition-colors disabled:opacity-60"
+            >
+              {savingStep3 && <Loader2 size={16} className="animate-spin" />}
+              {savingStep3 ? "جارٍ الحفظ…" : NEW_AD_CONTENT.preview}
             </button>
           </div>
         </div>
