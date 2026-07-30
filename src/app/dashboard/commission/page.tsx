@@ -12,7 +12,12 @@ const STATUS_LABELS: Record<string, string> = {
   rejected: "مرفوضة",
 };
 
-export default async function CommissionPage() {
+export default async function CommissionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ad?: string }>;
+}) {
+  const { ad: preselectedAdId } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -38,6 +43,28 @@ export default async function CommissionPage() {
         <p className="text-sm text-gray-500">{COMMISSION_CONTENT.intro}</p>
       </div>
 
+      <div className="bg-purple-50 border border-purple-100 rounded-2xl p-4">
+        <p className="text-xs font-medium text-[#6D28D9] mb-3">كيف تعمل العمولة؟</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-600">
+          <div className="bg-white rounded-xl p-3">
+            <span className="block text-[#6D28D9] font-bold mb-1">1</span>
+            سجّل الصفقة من إعلاناتك بعد إتمامها
+          </div>
+          <div className="bg-white rounded-xl p-3">
+            <span className="block text-[#6D28D9] font-bold mb-1">2</span>
+            حوّل المبلغ لحساب مناسبات البنكي
+          </div>
+          <div className="bg-white rounded-xl p-3">
+            <span className="block text-[#6D28D9] font-bold mb-1">3</span>
+            ارفع إيصال التحويل هنا
+          </div>
+          <div className="bg-white rounded-xl p-3">
+            <span className="block text-[#6D28D9] font-bold mb-1">4</span>
+            الإدارة تعتمد الدفع وتمنحك المزايا
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-white border border-gray-100 rounded-2xl p-4 text-center">
           <p className="text-xs text-gray-400">{COMMISSION_CONTENT.due}</p>
@@ -53,7 +80,7 @@ export default async function CommissionPage() {
         </div>
       </div>
 
-      {myAds && myAds.length > 0 && <ReportDealForm ads={myAds as Ad[]} />}
+      {myAds && myAds.length > 0 && <ReportDealForm ads={myAds as Ad[]} preselectedAdId={preselectedAdId} />}
 
       <div className="space-y-3">
         {(obligations ?? []).length === 0 ? (
@@ -70,6 +97,12 @@ export default async function CommissionPage() {
                 <span>{COMMISSION_CONTENT.rate}: {o.rate}%</span>
                 <span>{COMMISSION_CONTENT.amount}: {Number(o.amount).toLocaleString("ar-SA")} ر.س</span>
               </div>
+
+              {o.status === "due" && !bankReady && (
+                <p className="mt-3 text-xs text-amber-600 bg-amber-50 rounded-xl p-3">
+                  الدفع غير متاح مؤقتاً — لم تُفعّل الإدارة بيانات الحساب البنكي بعد. سنشعرك فور توفر الدفع.
+                </p>
+              )}
 
               {o.status === "due" && bankReady && (
                 <div className="mt-3 bg-purple-50 rounded-xl p-3 text-xs text-gray-700 space-y-1">

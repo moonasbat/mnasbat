@@ -4,6 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Profile } from "@/lib/types";
 import { AUTH_CONTENT } from "@/lib/content";
+import SaudiPhoneInput from "@/components/SaudiPhoneInput";
+
+const CITIES = [
+  "الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر",
+  "الطائف", "تبوك", "بريدة", "حائل", "أبها", "خميس مشيط", "جازان", "نجران",
+];
 
 export default function ProfileEditForm({ profile }: { profile: Profile }) {
   const router = useRouter();
@@ -32,21 +38,35 @@ export default function ProfileEditForm({ profile }: { profile: Profile }) {
 
   return (
     <div className="space-y-4 max-w-md">
+      {profile.username && (
+        <div>
+          <label className="text-sm font-medium text-gray-700 block mb-1">اسم المستخدم</label>
+          <p className="text-sm text-gray-500 border border-gray-100 bg-gray-50 rounded-xl px-4 py-2.5" dir="ltr">
+            @{profile.username}
+          </p>
+        </div>
+      )}
       <div>
         <label className="text-sm font-medium text-gray-700 block mb-1">الاسم</label>
         <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm" />
       </div>
       <div>
         <label className="text-sm font-medium text-gray-700 block mb-1">المدينة</label>
-        <input value={city} onChange={(e) => setCity(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm" />
+        <select value={city} onChange={(e) => setCity(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+          <option value="">اختر المدينة</option>
+          {CITIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
       </div>
       <div>
         <label className="text-sm font-medium text-gray-700 block mb-1">الجوال</label>
-        <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm" />
+        <SaudiPhoneInput value={phone} onChange={setPhone} />
       </div>
       <div>
         <label className="text-sm font-medium text-gray-700 block mb-1">واتساب الافتراضي</label>
-        <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm" />
+        <SaudiPhoneInput value={whatsapp} onChange={setWhatsapp} />
+        <p className="text-xs text-gray-400 mt-1">يُستخدم تلقائياً في إعلاناتك الجديدة إن لم تحدد رقماً مختلفاً.</p>
       </div>
       <div>
         <label className="text-sm font-medium text-gray-700 block mb-1">نبذة</label>

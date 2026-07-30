@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { Users, Megaphone, DollarSign, Flag } from "lucide-react";
+import { Users, Megaphone, DollarSign, Flag, AlertTriangle } from "lucide-react";
+import Link from "next/link";
 
 export default async function AdminDashboard() {
   const admin = createAdminClient();
@@ -12,6 +13,7 @@ export default async function AdminDashboard() {
     { count: reportsOpen },
     { data: obligationsDue },
     { count: receiptsPending },
+    { data: bankRow },
   ] = await Promise.all([
     admin.from("profiles").select("id", { count: "exact", head: true }),
     admin.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", new Date(Date.now() - 86400000).toISOString()),
@@ -20,7 +22,10 @@ export default async function AdminDashboard() {
     admin.from("reports").select("id", { count: "exact", head: true }).eq("status", "new"),
     admin.from("commission_obligations").select("amount").eq("status", "due"),
     admin.from("commission_payments").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    admin.from("admin_settings").select("value").eq("key", "bank_active").maybeSingle(),
   ]);
+
+  const bankActive = bankRow?.value === "true";
 
   const totalDue = (obligationsDue ?? []).reduce((s, o) => s + Number(o.amount), 0);
 
@@ -34,6 +39,17 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">لوحة التحكم</h1>
+
+      {!bankActive && (
+        <Link
+          href="/admin/settings"
+          className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800 hover:bg-amber-100 transition-colors"
+        >
+          <AlertTriangle size={18} className="shrink-0" />
+          الحساب البنكي غير مفعّل بعد — المستخدمون لن يستطيعوا دفع العمولة حتى تدخل بيانات البنك وتفعّله من الإعدادات.
+        </Link>
+      )}
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s) => {
           const Icon = s.icon;

@@ -4,7 +4,7 @@ import { AD_STATUS_LABELS } from "@/lib/content";
 import AdActions from "@/components/dashboard/AdActions";
 import Link from "next/link";
 import Image from "next/image";
-import { Plus } from "lucide-react";
+import { Plus, HandCoins } from "lucide-react";
 
 export default async function MyAdsPage() {
   const supabase = await createClient();
@@ -45,8 +45,17 @@ export default async function MyAdsPage() {
                 <p className="text-xs text-gray-400 mt-1">
                   {ad.views_count} مشاهدة · {ad.messages_count} رسالة · {ad.favorites_count} مفضلة
                 </p>
-                <div className="mt-2">
+                <div className="mt-2 flex flex-wrap items-center gap-3">
                   <AdActions adId={ad.id} status={ad.status} />
+                  {ad.status === "published" && (
+                    <Link
+                      href={`/dashboard/commission?ad=${ad.id}`}
+                      className="flex items-center gap-1 text-xs text-[#6D28D9] font-medium hover:underline"
+                    >
+                      <HandCoins size={13} />
+                      تمت صفقة بسبب هذا الإعلان؟
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

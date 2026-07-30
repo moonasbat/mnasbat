@@ -1,0 +1,177 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Ad, AdImage, Category } from "@/lib/types";
+import { NEW_AD_CONTENT } from "@/lib/content";
+import { createClient } from "@/lib/supabase/client";
+import SaudiPhoneInput from "@/components/SaudiPhoneInput";
+import { X, Upload } from "lucide-react";
+
+const CITIES = [
+  "الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر",
+  "الطائف", "تبوك", "بريدة", "حائل", "أبها", "خميس مشيط", "جازان", "نجران",
+];
+
+export default function EditAdForm({ ad, categories }: { ad: Ad; categories: Category[] }) {
+  const router = useRouter();
+  const [title, setTitle] = useState(ad.title);
+  const [description, setDescription] = useState(ad.description);
+  const [categoryId, setCategoryId] = useState(ad.category_id);
+  const [city, setCity] = useState(ad.city ?? "");
+  const [price, setPrice] = useState(ad.price ? String(ad.price) : "");
+  const [whatsapp, setWhatsapp] = useState(ad.whatsapp ?? "");
+  const [messagesEnabled, setMessagesEnabled] = useState(ad.messages_enabled);
+  const [commentsEnabled, setCommentsEnabled] = useState(ad.comments_enabled);
+  const [images, setImages] = useState<AdImage[]>(ad.ad_images ?? []);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  async function handleFiles(files: FileList | null) {
+    if (!files) return;
+    setError("");
+    const remaining = 10 - images.length;
+    const selected = Array.from(files).slice(0, remaining);
+    const supabase = createClient();
+
+    for (const file of selected) {
+      if (file.type.startsWith("video/")) {
+        setError(NEW_AD_CONTENT.errors.videoNotAllowed);
+        continue;
+      }
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        setError(NEW_AD_CONTENT.errors.imageNotSupported);
+        continue;
+      }
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error ?? NEW_AD_CONTENT.errors.uploadFailed);
+        setUploading(false);
+        continue;
+      }
+      const data = await res.json();
+      const { data: inserted } = await supabase
+        .from("ad_images")
+        .insert({ ad_id: ad.id, url: data.url, cloudinary_public_id: data.public_id, sort_order: images.length })
+        .select("*")
+        .single();
+      setUploading(false);
+      if (inserted) setImages((prev) => [...prev, inserted as AdImage]);
+    }
+  }
+
+  async function removeImage(imageId: string) {
+    const supabase = createClient();
+    await supabase.from("ad_images").delete().eq("id", imageId);
+    setImages((prev) => prev.filter((i) => i.id !== imageId));
+  }
+
+  async function save() {
+    if (!title.trim()) return setError(NEW_AD_CONTENT.errors.titleRequired);
+    if (!description.trim()) return setError(NEW_AD_CONTENT.errors.descriptionRequired);
+    if (!categoryId) return setError(NEW_AD_CONTENT.errors.categoryRequired);
+    if (images.length < 1) return setError("أضف صورة واحدة على الأقل.");
+
+    setSaving(true);
+    setError("");
+    setSaved(false);
+    const res = await fetch(`/api/ads/${ad.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "update", title, description, category_id: categoryId, city, price,
+        whatsapp, messages_enabled: messagesEnabled, comments_enabled: commentsEnabled,
+      }),
+    });
+    setSaving(false);
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error ?? "تعذر حفظ التعديلات.");
+      return;
+    }
+    setSaved(true);
+    router.refresh();
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-4">
+      {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-2">{error}</p>}
+      {saved && <p className="text-sm text-green-600 bg-green-50 rounded-xl px-4 py-2">تم حفظ التعديلات بنجاح.</p>}
+
+      <div>
+        <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.titleLabel}</label>
+        <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm" />
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.descriptionLabel}</label>
+        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={5} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm" />
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.categoryLabel}</label>
+        <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.cityLabel}</label>
+        <select value={city} onChange={(e) => setCity(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+          <option value="">{NEW_AD_CONTENT.cityPlaceholder}</option>
+          {CITIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.priceLabel}</label>
+        <input value={price} onChange={(e) => setPrice(e.target.value)} type="number" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm" />
+      </div>
+      <div>
+        <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.whatsappLabel}</label>
+        <SaudiPhoneInput value={whatsapp} onChange={setWhatsapp} />
+      </div>
+      <label className="flex items-center gap-2 text-sm text-gray-700">
+        <input type="checkbox" checked={messagesEnabled} onChange={(e) => setMessagesEnabled(e.target.checked)} />
+        {NEW_AD_CONTENT.allowMessages}
+      </label>
+      <label className="flex items-center gap-2 text-sm text-gray-700">
+        <input type="checkbox" checked={commentsEnabled} onChange={(e) => setCommentsEnabled(e.target.checked)} />
+        {NEW_AD_CONTENT.allowComments}
+      </label>
+
+      <div>
+        <label className="text-sm font-medium text-gray-700 block mb-2">{NEW_AD_CONTENT.imagesLabel}</label>
+        <div className="grid grid-cols-3 gap-2">
+          {images.map((img) => (
+            <div key={img.id} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={img.url} alt="" className="w-full h-full object-cover" />
+              <button onClick={() => removeImage(img.id)} className="absolute top-1 left-1 bg-white/90 rounded-full p-1">
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+          {images.length < 10 && (
+            <label className="aspect-square rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#6D28D9] transition-colors">
+              <Upload size={20} className="text-gray-400" />
+              <span className="text-xs text-gray-400">{uploading ? "جارٍ الرفع…" : NEW_AD_CONTENT.addImages}</span>
+              <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
+            </label>
+          )}
+        </div>
+        <p className="text-xs text-gray-400 mt-2">{NEW_AD_CONTENT.maxImages} — {images.length}/10</p>
+      </div>
+
+      <button onClick={save} disabled={saving} className="w-full bg-[#6D28D9] text-white rounded-xl py-3 text-sm font-medium hover:bg-[#5B21B6] transition-colors disabled:opacity-50">
+        حفظ التعديلات
+      </button>
+    </div>
+  );
+}

@@ -1,6 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const PROTECTED_PATHS = ["/dashboard", "/admin", "/ads/new"];
+const ONBOARDING_EXEMPT = ["/onboarding", "/login", "/auth", "/api", "/help", "/pages"];
+
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -26,16 +29,25 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const protectedPaths = ["/dashboard", "/admin", "/ads/new"];
-  const isProtected = protectedPaths.some((p) => path === p || path.startsWith(`${p}/`));
+  const isProtected = PROTECTED_PATHS.some((p) => path === p || path.startsWith(`${p}/`));
 
   if (!user && isProtected) {
     return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  if (user) {
+    const isExempt = ONBOARDING_EXEMPT.some((p) => path === p || path.startsWith(`${p}/`));
+    if (!isExempt) {
+      const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).maybeSingle();
+      if (profile && !profile.username) {
+        return NextResponse.redirect(new URL("/onboarding", request.url));
+      }
+    }
   }
 
   return response;
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/ads/new", "/complete-profile"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|webp|ico)$).*)"],
 };

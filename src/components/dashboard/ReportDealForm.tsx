@@ -4,16 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Ad } from "@/lib/types";
 
-export default function ReportDealForm({ ads }: { ads: Ad[] }) {
+export default function ReportDealForm({ ads, preselectedAdId }: { ads: Ad[]; preselectedAdId?: string }) {
   const router = useRouter();
-  const [adId, setAdId] = useState("");
+  const [adId, setAdId] = useState(preselectedAdId ?? "");
   const [dealValue, setDealValue] = useState("");
   const [dealType, setDealType] = useState("sale");
   const [inPlatform, setInPlatform] = useState(true);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(!!preselectedAdId);
 
   async function submit() {
     if (!adId || !dealValue) {

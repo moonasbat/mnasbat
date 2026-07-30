@@ -44,6 +44,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               <h1 className="font-bold text-gray-900 text-lg">{s.display_name}</h1>
               {s.verification_status === "verified" && <ShieldCheck size={18} className="text-[#6D28D9]" />}
             </div>
+            {s.username && <p className="text-sm text-gray-400" dir="ltr">@{s.username}</p>}
             {s.city && <p className="text-sm text-gray-400">{s.city}</p>}
             <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
               <Star size={14} className="text-amber-400" fill="currentColor" />

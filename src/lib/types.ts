@@ -13,6 +13,7 @@ export type AdStatus =
 export interface Profile {
   id: string;
   display_name: string;
+  username?: string;
   avatar_url?: string;
   bio?: string;
   city?: string;

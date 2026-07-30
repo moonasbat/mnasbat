@@ -7,13 +7,32 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { action } = await request.json();
+  const body = await request.json();
+  const { action } = body;
   const { data: ad } = await supabase.from("ads").select("id, user_id, status").eq("id", id).single();
   if (!ad || ad.user_id !== user.id) {
     return NextResponse.json({ error: "لا تملك صلاحية لتنفيذ هذا الإجراء." }, { status: 403 });
   }
 
-  if (action === "pause") {
+  if (action === "update") {
+    const { title, description, category_id, city, price, whatsapp, messages_enabled, comments_enabled } = body;
+    if (!title?.trim()) return NextResponse.json({ error: "يرجى كتابة عنوان الإعلان." }, { status: 400 });
+    if (!description?.trim()) return NextResponse.json({ error: "يرجى كتابة وصف الإعلان." }, { status: 400 });
+    if (!category_id) return NextResponse.json({ error: "يرجى اختيار التصنيف." }, { status: 400 });
+    if (price !== undefined && price !== null && price !== "" && (isNaN(Number(price)) || Number(price) < 0)) {
+      return NextResponse.json({ error: "السعر غير صالح." }, { status: 400 });
+    }
+    const { error } = await supabase
+      .from("ads")
+      .update({
+        title, description, category_id, city: city || null,
+        price: price ? Number(price) : null, whatsapp: whatsapp || null,
+        messages_enabled: messages_enabled ?? true, comments_enabled: comments_enabled ?? true,
+      })
+      .eq("id", id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ ok: true });
+  } else if (action === "pause") {
     await supabase.from("ads").update({ status: "paused" }).eq("id", id);
   } else if (action === "resume") {
     await supabase.from("ads").update({ status: "published" }).eq("id", id);

@@ -6,6 +6,7 @@ import { Category } from "@/lib/types";
 import { NEW_AD_CONTENT, COMMISSION_DECLARATION_TEXT, COMMISSION_DECLARATION_CONTENT } from "@/lib/content";
 import { createClient } from "@/lib/supabase/client";
 import { X, Upload, ShieldCheck, CheckCircle2, Circle } from "lucide-react";
+import SaudiPhoneInput from "@/components/SaudiPhoneInput";
 
 const CITIES = [
   "الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر",
@@ -229,7 +230,7 @@ export default function NewAdForm({ categories }: { categories: Category[] }) {
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.whatsappLabel}</label>
-            <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder={NEW_AD_CONTENT.whatsappPlaceholder} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm" />
+            <SaudiPhoneInput value={whatsapp} onChange={setWhatsapp} />
           </div>
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" checked={messagesEnabled} onChange={(e) => setMessagesEnabled(e.target.checked)} />
