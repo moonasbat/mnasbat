@@ -21,7 +21,7 @@ export default async function NewAdPage() {
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
         <h1 className="text-xl font-bold text-gray-900 mb-1">{NEW_AD_CONTENT.pageTitle}</h1>
         <p className="text-sm text-gray-500 mb-6">{NEW_AD_CONTENT.pageSubtitle}</p>
-        <NewAdForm categories={(categories as Category[]) ?? []} />
+        <NewAdForm categories={(categories as Category[]) ?? []} initialWhatsapp={(profile as Profile)?.whatsapp} />
       </main>
 
       <Footer />

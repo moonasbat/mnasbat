@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { loginUrl } from "@/lib/loginRedirect";
 
 export default function AddReviewForm({ revieweeId, isLoggedIn }: { revieweeId: string; isLoggedIn: boolean }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [isPositive, setIsPositive] = useState(true);
   const [comment, setComment] = useState("");
@@ -12,7 +14,7 @@ export default function AddReviewForm({ revieweeId, isLoggedIn }: { revieweeId: 
   const [sent, setSent] = useState(false);
 
   function toggle() {
-    if (!isLoggedIn) return router.push("/login");
+    if (!isLoggedIn) return router.push(loginUrl(pathname));
     setOpen((o) => !o);
   }
 

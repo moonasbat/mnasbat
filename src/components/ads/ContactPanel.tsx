@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { AD_PAGE_CONTENT, GENERIC_CONTENT, whatsappMessage } from "@/lib/content";
 import { Heart, MessageSquare, Share2 } from "lucide-react";
+import { loginUrl } from "@/lib/loginRedirect";
 
 export default function ContactPanel({
   adId,
@@ -21,6 +22,7 @@ export default function ContactPanel({
   initialFavorited: boolean;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [favorited, setFavorited] = useState(initialFavorited);
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState("");
@@ -30,7 +32,7 @@ export default function ContactPanel({
 
   function requireLogin() {
     if (!isLoggedIn) {
-      router.push("/login");
+      router.push(loginUrl(pathname));
       return true;
     }
     return false;

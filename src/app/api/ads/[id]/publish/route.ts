@@ -26,10 +26,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     .select("id", { count: "exact", head: true })
     .eq("ad_id", id);
 
-  if (!imagesCount || imagesCount < 1) {
-    return NextResponse.json({ error: "أضف صورة واحدة على الأقل قبل النشر." }, { status: 400 });
-  }
-  if (imagesCount > 10) {
+  if (imagesCount && imagesCount > 10) {
     return NextResponse.json({ error: "يمكنك إضافة 10 صور كحد أقصى." }, { status: 400 });
   }
 

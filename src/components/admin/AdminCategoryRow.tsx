@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Category } from "@/lib/types";
 
-export default function AdminCategoryRow({ category }: { category: Category }) {
+export default function AdminCategoryRow({ category, indented }: { category: Category; indented?: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +21,9 @@ export default function AdminCategoryRow({ category }: { category: Category }) {
 
   return (
     <tr>
-      <td className="px-4 py-3">{category.icon} {category.name}</td>
+      <td className={`px-4 py-3 ${indented ? "pr-10 text-gray-500" : ""}`}>
+        {indented ? "└ " : category.icon}{indented ? "" : " "}{category.name}
+      </td>
       <td className="px-4 py-3 text-gray-500">{category.sort_order}</td>
       <td className="px-4 py-3">
         <button disabled={loading} onClick={toggle} className={`text-xs px-2 py-1 rounded-lg ${category.is_active ? "bg-green-50 text-green-600" : "bg-gray-100 text-gray-500"}`}>

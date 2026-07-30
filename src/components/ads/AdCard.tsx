@@ -5,10 +5,13 @@ import Image from "next/image";
 import { Ad } from "@/lib/types";
 import { Heart } from "lucide-react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { loginUrl } from "@/lib/loginRedirect";
+import { formatRelativeTime } from "@/lib/formatTime";
 
 export default function AdCard({ ad }: { ad: Ad }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [favorited, setFavorited] = useState(false);
   const image = ad.ad_images?.[0]?.url;
 
@@ -22,15 +25,12 @@ export default function AdCard({ ad }: { ad: Ad }) {
     });
     if (res.status === 401) {
       setFavorited(false);
-      router.push("/login");
+      router.push(loginUrl(pathname));
     } else if (!res.ok) {
       setFavorited((f) => !f);
     }
   }
-  const timeLabel = new Date(ad.published_at ?? ad.created_at).toLocaleDateString("ar-SA", {
-    day: "numeric",
-    month: "short",
-  });
+  const timeLabel = formatRelativeTime(ad.published_at ?? ad.created_at);
 
   return (
     <Link

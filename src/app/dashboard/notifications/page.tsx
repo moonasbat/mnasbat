@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Notification } from "@/lib/types";
 import MarkAllRead from "@/components/dashboard/MarkAllRead";
 import { AUTH_CONTENT } from "@/lib/content";
+import { formatRelativeTime } from "@/lib/formatTime";
 
 export default async function NotificationsPage() {
   const supabase = await createClient();
@@ -27,7 +28,7 @@ export default async function NotificationsPage() {
             <div key={n.id} className={`rounded-2xl p-4 border ${n.is_read ? "bg-white border-gray-100" : "bg-purple-50 border-purple-100"}`}>
               <p className="text-sm font-medium text-gray-900">{n.title}</p>
               <p className="text-sm text-gray-600 mt-0.5">{n.body}</p>
-              <p className="text-xs text-gray-400 mt-1">{new Date(n.created_at).toLocaleString("ar-SA")}</p>
+              <p className="text-xs text-gray-400 mt-1">{formatRelativeTime(n.created_at)}</p>
             </div>
           ))}
         </div>

@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Profile } from "@/lib/types";
 import { HOME_CONTENT, AUTH_CONTENT } from "@/lib/content";
 import { isStaff } from "@/lib/permissions";
+import { loginUrl } from "@/lib/loginRedirect";
 import { Bell, MessageSquare, Heart, Plus, LogOut, User, Settings, LayoutDashboard } from "lucide-react";
 
 export default function Header({ profile }: { profile?: Profile | null }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
   async function handleLogout() {
@@ -27,19 +29,21 @@ export default function Header({ profile }: { profile?: Profile | null }) {
           مناسبات
         </Link>
 
-        <div className="hidden md:flex flex-1 max-w-xl">
-          <input
-            type="text"
-            placeholder={HOME_CONTENT.searchPlaceholder}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#6D28D9] transition-colors"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                const value = (e.target as HTMLInputElement).value.trim();
-                if (value) router.push(`/search?q=${encodeURIComponent(value)}`);
-              }
-            }}
-          />
-        </div>
+        {pathname !== "/" && (
+          <div className="hidden md:flex flex-1 max-w-xl">
+            <input
+              type="text"
+              placeholder={HOME_CONTENT.searchPlaceholder}
+              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#6D28D9] transition-colors"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const value = (e.target as HTMLInputElement).value.trim();
+                  if (value) router.push(`/search?q=${encodeURIComponent(value)}`);
+                }
+              }}
+            />
+          </div>
+        )}
 
         <div className="flex items-center gap-2">
           <Link
@@ -87,7 +91,7 @@ export default function Header({ profile }: { profile?: Profile | null }) {
                         <LayoutDashboard size={16} className="text-[#6D28D9]" />
                         {AUTH_CONTENT.navMyAds}
                       </Link>
-                      <Link href="/dashboard/commission" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-50" onClick={() => setMenuOpen(false)}>
+                      <Link href="/commission" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-50" onClick={() => setMenuOpen(false)}>
                         <User size={16} className="text-[#6D28D9]" />
                         {AUTH_CONTENT.navCommission}
                       </Link>
@@ -115,7 +119,7 @@ export default function Header({ profile }: { profile?: Profile | null }) {
             </>
           ) : (
             <Link
-              href="/login"
+              href={loginUrl(pathname)}
               className="border border-[#6D28D9] text-[#6D28D9] rounded-xl px-4 py-2 text-sm font-medium hover:bg-purple-50 transition-colors"
             >
               دخول
@@ -124,19 +128,21 @@ export default function Header({ profile }: { profile?: Profile | null }) {
         </div>
       </div>
 
-      <div className="md:hidden px-4 pb-3">
-        <input
-          type="text"
-          placeholder={HOME_CONTENT.searchPlaceholder}
-          className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#6D28D9]"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              const value = (e.target as HTMLInputElement).value.trim();
-              if (value) router.push(`/search?q=${encodeURIComponent(value)}`);
-            }
-          }}
-        />
-      </div>
+      {pathname !== "/" && (
+        <div className="md:hidden px-4 pb-3">
+          <input
+            type="text"
+            placeholder={HOME_CONTENT.searchPlaceholder}
+            className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#6D28D9]"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const value = (e.target as HTMLInputElement).value.trim();
+                if (value) router.push(`/search?q=${encodeURIComponent(value)}`);
+              }
+            }}
+          />
+        </div>
+      )}
     </header>
   );
 }

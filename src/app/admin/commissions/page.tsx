@@ -6,7 +6,7 @@ export default async function AdminCommissionsPage() {
   const admin = createAdminClient();
   const { data: payments } = await admin
     .from("commission_payments")
-    .select("*, commission_obligations(amount, deal_value, ad_id, user_id, ads(title), profiles(display_name))")
+    .select("*, commission_obligations(amount, deal_value, ad_id, ad_reference_text, user_id, ads(title), profiles(display_name))")
     .in("status", ["pending", "needs_info"])
     .order("created_at", { ascending: false });
 
@@ -27,10 +27,14 @@ export default async function AdminCommissionsPage() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {(payments as unknown as (CommissionPayment & {
-              commission_obligations: { amount: number; ads: { title: string }; profiles: { display_name: string } };
+              commission_obligations: { amount: number; ad_reference_text?: string; ads?: { title: string }; profiles: { display_name: string } };
             })[])?.map((p) => (
               <tr key={p.id}>
-                <td className="px-4 py-3">{p.commission_obligations?.ads?.title}</td>
+                <td className="px-4 py-3">
+                  {p.commission_obligations?.ads?.title ?? (
+                    <span className="text-amber-600">{p.commission_obligations?.ad_reference_text ?? "إعلان قديم"}</span>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-gray-500">{p.commission_obligations?.profiles?.display_name}</td>
                 <td className="px-4 py-3">{Number(p.commission_obligations?.amount).toLocaleString("ar-SA")} ر.س</td>
                 <td className="px-4 py-3">

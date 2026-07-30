@@ -38,6 +38,7 @@ export interface Category {
   icon?: string;
   is_active: boolean;
   sort_order: number;
+  parent_id?: string;
 }
 
 export interface Ad {
@@ -161,7 +162,8 @@ export interface CommissionDeclaration {
 
 export interface CommissionObligation {
   id: string;
-  ad_id: string;
+  ad_id?: string;
+  ad_reference_text?: string;
   user_id: string;
   deal_value?: number;
   deal_type?: "sale" | "rent" | "service" | "request";

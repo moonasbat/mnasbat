@@ -21,7 +21,7 @@ export default function Footer() {
           ))}
         </div>
         <p className="text-center text-xs text-gray-400">
-          مناسبات منصة إعلانات وتواصل، وليست طرفاً في الصفقات. جميع الحقوق محفوظة.
+          مناسبات — كل ما يخص مناسبتك في مكان واحد. © {new Date().getFullYear()} جميع الحقوق محفوظة.
         </p>
       </div>
     </footer>

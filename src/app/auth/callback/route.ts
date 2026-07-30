@@ -4,11 +4,13 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const redirect = searchParams.get("redirect") || "/";
 
   if (code) {
     const supabase = await createClient();
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  return NextResponse.redirect(`${origin}/`);
+  const safeRedirect = redirect.startsWith("/") ? redirect : "/";
+  return NextResponse.redirect(`${origin}${safeRedirect}`);
 }

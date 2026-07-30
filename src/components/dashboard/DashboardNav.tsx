@@ -9,7 +9,7 @@ const items = [
   { href: "/favorites", label: AUTH_CONTENT.navFavorites },
   { href: "/dashboard/messages", label: AUTH_CONTENT.navMessages },
   { href: "/dashboard/notifications", label: AUTH_CONTENT.navNotifications },
-  { href: "/dashboard/commission", label: AUTH_CONTENT.navCommission },
+  { href: "/commission", label: AUTH_CONTENT.navCommission },
   { href: "/dashboard/settings", label: AUTH_CONTENT.navSettings },
 ];
 

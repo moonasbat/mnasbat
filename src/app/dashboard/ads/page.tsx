@@ -49,7 +49,7 @@ export default async function MyAdsPage() {
                   <AdActions adId={ad.id} status={ad.status} />
                   {ad.status === "published" && (
                     <Link
-                      href={`/dashboard/commission?ad=${ad.id}`}
+                      href={`/commission?ad=${ad.id}`}
                       className="flex items-center gap-1 text-xs text-[#6D28D9] font-medium hover:underline"
                     >
                       <HandCoins size={13} />

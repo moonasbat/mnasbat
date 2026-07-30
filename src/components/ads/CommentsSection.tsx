@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Comment } from "@/lib/types";
 import { COMMENTS_CONTENT } from "@/lib/content";
 import ReportDialog from "@/components/ReportDialog";
+import { loginUrl } from "@/lib/loginRedirect";
 
 export default function CommentsSection({
   adId,
@@ -20,12 +21,13 @@ export default function CommentsSection({
   currentUserId?: string;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [comments, setComments] = useState(initialComments);
   const [body, setBody] = useState("");
   const [posting, setPosting] = useState(false);
 
   async function submit() {
-    if (!isLoggedIn) return router.push("/login");
+    if (!isLoggedIn) return router.push(loginUrl(pathname));
     if (!body.trim()) return;
     setPosting(true);
     const res = await fetch("/api/comments", {

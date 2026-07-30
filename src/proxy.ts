@@ -31,8 +31,12 @@ export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isProtected = PROTECTED_PATHS.some((p) => path === p || path.startsWith(`${p}/`));
 
+  const target = path + request.nextUrl.search;
+
   if (!user && isProtected) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", target);
+    return NextResponse.redirect(loginUrl);
   }
 
   if (user) {
@@ -40,7 +44,9 @@ export async function proxy(request: NextRequest) {
     if (!isExempt) {
       const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).maybeSingle();
       if (profile && !profile.username) {
-        return NextResponse.redirect(new URL("/onboarding", request.url));
+        const onboardingUrl = new URL("/onboarding", request.url);
+        onboardingUrl.searchParams.set("redirect", target);
+        return NextResponse.redirect(onboardingUrl);
       }
     }
   }

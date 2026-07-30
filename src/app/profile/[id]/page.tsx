@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 import AddReviewForm from "@/components/AddReviewForm";
 import BlockUserButton from "@/components/BlockUserButton";
 import ReportDialog from "@/components/ReportDialog";
+import { formatGregorianDate } from "@/lib/formatTime";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -50,6 +51,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               <Star size={14} className="text-amber-400" fill="currentColor" />
               {s.positive_reviews} تقييم إيجابي · {s.total_reviews} إجمالي
             </div>
+            <p className="text-xs text-gray-400 mt-1">عضو منذ {formatGregorianDate(s.created_at)}</p>
           </div>
           {currentProfile && (currentProfile as Profile).id !== s.id && (
             <div className="mr-auto flex flex-col items-end gap-2">

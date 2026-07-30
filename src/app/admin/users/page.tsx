@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { Profile } from "@/lib/types";
 import { ROLE_LABELS } from "@/lib/permissions";
 import AdminUserActions from "@/components/admin/AdminUserActions";
+import { formatGregorianDate } from "@/lib/formatTime";
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q } = await searchParams;
@@ -43,7 +44,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
                 <td className="px-4 py-3">
                   {u.is_banned ? <span className="text-red-600 text-xs">محظور</span> : <span className="text-green-600 text-xs">نشط</span>}
                 </td>
-                <td className="px-4 py-3 text-gray-500 text-xs">{new Date(u.created_at).toLocaleDateString("ar-SA")}</td>
+                <td className="px-4 py-3 text-gray-500 text-xs">{formatGregorianDate(u.created_at)}</td>
                 <td className="px-4 py-3">
                   <AdminUserActions userId={u.id} isBanned={u.is_banned} role={u.role} canChangeRole={me?.role === "super_admin"} />
                 </td>

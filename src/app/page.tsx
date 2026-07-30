@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Ad, Category, Profile } from "@/lib/types";
 import { HOME_CONTENT } from "@/lib/content";
 import { Plus, ChevronLeft, Search } from "lucide-react";
+import CategoryBar from "@/components/CategoryBar";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -18,7 +19,7 @@ export default async function HomePage() {
     { data: latestAds },
   ] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : { data: null },
-    supabase.from("categories").select("*").eq("is_active", true).order("sort_order"),
+    supabase.from("categories").select("*").eq("is_active", true).is("parent_id", null).order("sort_order"),
     supabase
       .from("ads")
       .select("*, profiles(*), categories(*), ad_images(*)")
@@ -68,29 +69,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section className="bg-white border-b border-gray-100">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none">
-              <Link
-                href="/search"
-                className="shrink-0 flex flex-col items-center gap-1 px-4 py-2 rounded-xl hover:bg-purple-50 transition-colors"
-              >
-                <span className="text-2xl">🗂️</span>
-                <span className="text-xs text-gray-500 whitespace-nowrap">{HOME_CONTENT.browseAds}</span>
-              </Link>
-              {(categories as Category[])?.map((cat) => (
-                <Link
-                  key={cat.id}
-                  href={`/search?category=${cat.slug}`}
-                  className="shrink-0 flex flex-col items-center gap-1 px-4 py-2 rounded-xl hover:bg-purple-50 transition-colors"
-                >
-                  <span className="text-2xl">{cat.icon}</span>
-                  <span className="text-xs text-gray-500 whitespace-nowrap">{cat.name}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+        <CategoryBar categories={(categories as Category[]) ?? []} />
 
         <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
           {featuredAds && featuredAds.length > 0 && (

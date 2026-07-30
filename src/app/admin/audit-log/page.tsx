@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AuditLog } from "@/lib/types";
+import { formatGregorianDateTime } from "@/lib/formatTime";
 
 export default async function AuditLogPage() {
   const admin = createAdminClient();
@@ -28,7 +29,7 @@ export default async function AuditLogPage() {
                 <td className="px-4 py-3 text-gray-900">{l.action}</td>
                 <td className="px-4 py-3 text-gray-500">{l.profiles?.display_name ?? "—"}</td>
                 <td className="px-4 py-3 text-gray-500 text-xs">{l.target_type} / {l.target_id?.slice(0, 8)}</td>
-                <td className="px-4 py-3 text-gray-400 text-xs">{new Date(l.created_at).toLocaleString("ar-SA")}</td>
+                <td className="px-4 py-3 text-gray-400 text-xs">{formatGregorianDateTime(l.created_at)}</td>
               </tr>
             ))}
           </tbody>

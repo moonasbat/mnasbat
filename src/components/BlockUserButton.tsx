@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { REPORTS_CONTENT } from "@/lib/content";
+import { loginUrl } from "@/lib/loginRedirect";
 
 export default function BlockUserButton({ userId, isLoggedIn }: { userId: string; isLoggedIn: boolean }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [confirming, setConfirming] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function block() {
-    if (!isLoggedIn) return router.push("/login");
+    if (!isLoggedIn) return router.push(loginUrl(pathname));
     setLoading(true);
     await fetch("/api/blocks", {
       method: "POST",

@@ -7,6 +7,7 @@ import ReportDialog from "@/components/ReportDialog";
 import AdCard from "@/components/ads/AdCard";
 import { Ad, AdImage, Profile, Comment } from "@/lib/types";
 import { AD_PAGE_CONTENT } from "@/lib/content";
+import { formatRelativeTime } from "@/lib/formatTime";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -65,7 +66,8 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">
         <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 space-y-6">
+          {/* الصور والعنوان والوصف — يظهرون أولاً دائماً */}
+          <div className="md:col-span-2 md:order-1 space-y-6">
             <div className="rounded-2xl overflow-hidden bg-gray-100 relative aspect-[4/3]">
               {images.length > 0 ? (
                 <Image src={images[0].url} alt={ad.title} fill className="object-cover" />
@@ -88,7 +90,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
               <h1 className="text-2xl font-bold text-gray-900 mt-3">{ad.title}</h1>
               <div className="flex items-center gap-3 text-sm text-gray-400 mt-1">
                 {ad.city && <span>{ad.city}</span>}
-                <span>{new Date(ad.published_at ?? ad.created_at).toLocaleDateString("ar-SA")}</span>
+                <span>{formatRelativeTime(ad.published_at ?? ad.created_at)}</span>
               </div>
               {ad.price ? (
                 <p className="text-xl font-bold text-[#6D28D9] mt-3">{ad.price.toLocaleString("ar-SA")} ر.س</p>
@@ -97,17 +99,10 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
               )}
               <p className="text-gray-700 mt-4 whitespace-pre-line leading-relaxed">{ad.description}</p>
             </div>
-
-            <CommentsSection
-              adId={ad.id}
-              initialComments={(comments ?? []) as Comment[]}
-              enabled={ad.comments_enabled}
-              isLoggedIn={!!user}
-              currentUserId={user?.id}
-            />
           </div>
 
-          <div className="space-y-4">
+          {/* المعلن وأزرار التواصل — تظهر مباشرة بعد وصف الإعلان وقبل التعليقات على الجوال */}
+          <div className="md:order-2 space-y-4">
             <div className="bg-white border border-gray-100 rounded-2xl p-4">
               <Link href={`/profile/${seller.id}`} className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-full bg-[#6D28D9] text-white flex items-center justify-center font-bold shrink-0">
@@ -139,6 +134,17 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
             <div className="text-center">
               <ReportDialog targetType="ad" targetId={ad.id} label={AD_PAGE_CONTENT.reportAd} />
             </div>
+          </div>
+
+          {/* التعليقات — تظهر أخيراً */}
+          <div className="md:col-span-2 md:order-3">
+            <CommentsSection
+              adId={ad.id}
+              initialComments={(comments ?? []) as Comment[]}
+              enabled={ad.comments_enabled}
+              isLoggedIn={!!user}
+              currentUserId={user?.id}
+            />
           </div>
         </div>
 
