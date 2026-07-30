@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import { Comment } from "@/lib/types";
 import { COMMENTS_CONTENT } from "@/lib/content";
 import ReportDialog from "@/components/ReportDialog";
@@ -67,11 +69,17 @@ export default function CommentsSection({
         <div className="space-y-4">
           {comments.map((c) => (
             <div key={c.id} className="flex gap-3">
-              <div className="w-8 h-8 rounded-full bg-[#6D28D9] text-white flex items-center justify-center text-xs font-bold shrink-0">
-                {c.profiles?.display_name?.charAt(0) ?? "?"}
-              </div>
+              <Link href={`/profile/${c.user_id}`} className="w-8 h-8 rounded-full bg-[#6D28D9] text-white flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
+                {c.profiles?.avatar_url ? (
+                  <Image src={c.profiles.avatar_url} alt={c.profiles.display_name} width={32} height={32} className="object-cover w-full h-full" />
+                ) : (
+                  c.profiles?.display_name?.charAt(0) ?? "?"
+                )}
+              </Link>
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">{c.profiles?.display_name}</p>
+                <Link href={`/profile/${c.user_id}`} className="text-sm font-medium text-gray-900 hover:text-[#6D28D9] hover:underline">
+                  {c.profiles?.display_name}
+                </Link>
                 <p className="text-sm text-gray-700 mt-0.5">{c.body}</p>
                 <div className="flex gap-3 mt-1">
                   {c.user_id === currentUserId && (

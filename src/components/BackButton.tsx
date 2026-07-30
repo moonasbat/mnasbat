@@ -16,9 +16,12 @@ export default function BackButton({ fallbackHref = "/" }: { fallbackHref?: stri
   }
 
   return (
-    <button onClick={handleBack} className="flex items-center gap-1 text-sm text-gray-500 hover:text-[#6D28D9] transition-colors shrink-0">
-      <ChevronRight size={16} />
-      رجوع
+    <button
+      onClick={handleBack}
+      aria-label="رجوع"
+      className="flex items-center justify-center w-9 h-9 rounded-full text-gray-500 hover:text-[#6D28D9] hover:bg-purple-50 transition-colors shrink-0"
+    >
+      <ChevronRight size={20} />
     </button>
   );
 }
