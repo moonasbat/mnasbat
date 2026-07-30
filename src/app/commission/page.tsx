@@ -3,7 +3,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CommissionRequestForm from "@/components/CommissionRequestForm";
 import { Ad, AdminSettings, CommissionObligation, Profile } from "@/lib/types";
-import { formatGregorianDate } from "@/lib/formatTime";
+import { formatGregorianDate, formatNumber } from "@/lib/formatTime";
 
 const STATUS_LABELS: Record<string, string> = {
   due: "مستحقة",
@@ -81,7 +81,7 @@ export default async function CommissionPage({
                   <div>
                     <p className="text-sm font-medium text-gray-900">{o.ads?.title ?? o.ad_reference_text ?? "إعلان قديم"}</p>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {Number(o.amount).toLocaleString("ar-SA")} ر.س · {formatGregorianDate(o.created_at)}
+                      {formatNumber(Number(o.amount))} ر.س · {formatGregorianDate(o.created_at)}
                     </p>
                   </div>
                   <span className="text-xs bg-gray-100 rounded-lg px-2 py-1 shrink-0">{STATUS_LABELS[o.status]}</span>

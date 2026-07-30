@@ -1,5 +1,10 @@
-// كل التواريخ ميلادية دائماً — locale "ar-SA" الافتراضي يعرض التقويم الهجري، لذا نفرض gregory صراحة
-const GREGORIAN_LOCALE = "ar-SA-u-ca-gregory";
+// كل التواريخ ميلادية دائماً وبأرقام إنجليزية — "ar-SA" الافتراضي يعرض التقويم الهجري والأرقام الهندية، نفرض gregory + أرقام لاتينية صراحة
+const GREGORIAN_LOCALE = "ar-SA-u-ca-gregory-nu-latn";
+
+// أرقام إنجليزية دائماً (أسعار، عدادات) مع فواصل الآلاف
+export function formatNumber(n: number) {
+  return n.toLocaleString("en-US");
+}
 
 export function formatGregorianDate(date: string | Date) {
   return new Date(date).toLocaleDateString(GREGORIAN_LOCALE, {

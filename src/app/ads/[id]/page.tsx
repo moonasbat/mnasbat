@@ -7,12 +7,13 @@ import ReportDialog from "@/components/ReportDialog";
 import AdCard from "@/components/ads/AdCard";
 import { Ad, AdImage, Profile, Comment } from "@/lib/types";
 import { AD_PAGE_CONTENT } from "@/lib/content";
-import { formatRelativeTime } from "@/lib/formatTime";
+import { formatRelativeTime, formatNumber } from "@/lib/formatTime";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import AdGallery from "@/components/ads/AdGallery";
 
 export default async function AdPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -107,22 +108,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
         <div className="grid md:grid-cols-3 gap-8">
           {/* الصور والعنوان والوصف — يظهرون أولاً دائماً */}
           <div className="md:col-span-2 md:order-1 space-y-6">
-            <div className="rounded-2xl overflow-hidden bg-gray-100 relative aspect-[4/3]">
-              {images.length > 0 ? (
-                <Image src={images[0].url} alt={ad.title} fill className="object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-5xl">📷</div>
-              )}
-            </div>
-            {images.length > 1 && (
-              <div className="grid grid-cols-5 gap-2">
-                {images.slice(1).map((img) => (
-                  <div key={img.id} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
-                    <Image src={img.url} alt="" fill className="object-cover" />
-                  </div>
-                ))}
-              </div>
-            )}
+            <AdGallery images={images} title={ad.title} />
 
             <div>
               <span className="text-xs text-[#6D28D9] bg-purple-50 rounded-lg px-2 py-1">{ad.categories?.name}</span>
@@ -132,7 +118,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
                 <span>{formatRelativeTime(ad.published_at ?? ad.created_at)}</span>
               </div>
               {ad.price ? (
-                <p className="text-xl font-bold text-[#6D28D9] mt-3">{ad.price.toLocaleString("ar-SA")} ر.س</p>
+                <p className="text-xl font-bold text-[#6D28D9] mt-3">{formatNumber(ad.price)} ر.س</p>
               ) : (
                 <p className="text-sm text-gray-400 mt-3">السعر حسب الاتفاق</p>
               )}

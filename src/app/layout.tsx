@@ -3,6 +3,7 @@ import { Tajawal, Inter } from "next/font/google";
 import "./globals.css";
 import { Suspense } from "react";
 import AuthListener from "@/components/AuthListener";
+import NavigationProgress from "@/components/NavigationProgress";
 
 const tajawal = Tajawal({
   variable: "--font-tajawal",
@@ -33,6 +34,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Suspense>
+          <NavigationProgress />
           <AuthListener />
         </Suspense>
         {children}

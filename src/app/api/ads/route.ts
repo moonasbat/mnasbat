@@ -1,10 +1,21 @@
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/rateLimit";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const limit = await checkRateLimit({
+    supabase,
+    settingKey: "rate_limit_ads_per_day",
+    table: "ads",
+    userIdColumn: "user_id",
+    userId: user.id,
+    windowMs: 24 * 60 * 60 * 1000,
+  });
+  if (!limit.ok) return NextResponse.json({ error: limit.error }, { status: 429 });
 
   const body = await request.json();
   const { title, description, category_id, city, price, whatsapp, messages_enabled, comments_enabled } = body;

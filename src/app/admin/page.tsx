@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Users, Megaphone, DollarSign, Flag, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { formatNumber } from "@/lib/formatTime";
 
 export default async function AdminDashboard() {
   const admin = createAdminClient();
@@ -32,7 +33,7 @@ export default async function AdminDashboard() {
   const stats = [
     { label: "إجمالي المستخدمين", value: usersTotal ?? 0, sub: `${usersToday ?? 0} اليوم`, icon: Users, color: "bg-purple-50", iconColor: "text-[#6D28D9]" },
     { label: "إعلانات منشورة", value: adsPublished ?? 0, sub: `${adsPending ?? 0} قيد المراجعة`, icon: Megaphone, color: "bg-blue-50", iconColor: "text-blue-600" },
-    { label: "عمولات مستحقة", value: `${totalDue.toLocaleString("ar-SA")} ر.س`, sub: `${receiptsPending ?? 0} إيصال قيد المراجعة`, icon: DollarSign, color: "bg-green-50", iconColor: "text-green-600" },
+    { label: "عمولات مستحقة", value: `${formatNumber(totalDue)} ر.س`, sub: `${receiptsPending ?? 0} إيصال قيد المراجعة`, icon: DollarSign, color: "bg-green-50", iconColor: "text-green-600" },
     { label: "بلاغات مفتوحة", value: reportsOpen ?? 0, sub: "تحتاج مراجعة", icon: Flag, color: "bg-amber-50", iconColor: "text-amber-600" },
   ];
 

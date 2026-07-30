@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Star, ShieldCheck } from "lucide-react";
 import { notFound } from "next/navigation";
 import AddReviewForm from "@/components/AddReviewForm";
+import ReviewReplyForm from "@/components/ReviewReplyForm";
 import BlockUserButton from "@/components/BlockUserButton";
 import ReportDialog from "@/components/ReportDialog";
 import { formatGregorianDate } from "@/lib/formatTime";
@@ -93,6 +94,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                     <span className="text-xs text-gray-400">— {r.profiles?.display_name}</span>
                   </div>
                   <p className="text-sm text-gray-700 mt-1">{r.comment}</p>
+                  {r.reply ? (
+                    <div className="mt-2 bg-purple-50 rounded-xl p-3">
+                      <p className="text-xs font-medium text-[#6D28D9] mb-0.5">رد {s.display_name}</p>
+                      <p className="text-sm text-gray-700">{r.reply}</p>
+                    </div>
+                  ) : (
+                    currentProfile && (currentProfile as Profile).id === s.id && <ReviewReplyForm reviewId={r.id} />
+                  )}
                 </div>
               ))}
             </div>

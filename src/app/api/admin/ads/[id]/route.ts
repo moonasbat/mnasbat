@@ -28,8 +28,20 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ error: "إجراء غير معروف." }, { status: 400 });
   }
 
-  const { error } = await admin.from("ads").update(updates).eq("id", id);
+  const { data: updatedAd, error } = await admin.from("ads").update(updates).eq("id", id).select("user_id, title").single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  if (updatedAd && (action === "approve" || action === "reject")) {
+    await admin.from("notifications").insert({
+      user_id: updatedAd.user_id,
+      type: action === "approve" ? "AD_APPROVED" : "AD_REJECTED",
+      title: action === "approve" ? "تم قبول إعلانك" : "تم رفض إعلانك",
+      body:
+        action === "approve"
+          ? `تم قبول إعلانك "${updatedAd.title}" ونشره على الموقع.`
+          : `تم رفض إعلانك "${updatedAd.title}". السبب: ${reason}`,
+    });
+  }
 
   await logAudit(user.id, `ad_${action}`, "ad", id, { reason });
   return NextResponse.json({ ok: true });

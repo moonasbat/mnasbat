@@ -148,6 +148,8 @@ export interface Review {
   is_positive: boolean;
   comment: string;
   status: "pending" | "approved" | "rejected";
+  reply?: string | null;
+  replied_at?: string | null;
   created_at: string;
   profiles?: Profile;
 }

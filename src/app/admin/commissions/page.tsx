@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import AdminCommissionActions from "@/components/admin/AdminCommissionActions";
 import { CommissionPayment } from "@/lib/types";
+import { formatNumber } from "@/lib/formatTime";
 
 export default async function AdminCommissionsPage() {
   const admin = createAdminClient();
@@ -36,7 +37,7 @@ export default async function AdminCommissionsPage() {
                   )}
                 </td>
                 <td className="px-4 py-3 text-gray-500">{p.commission_obligations?.profiles?.display_name}</td>
-                <td className="px-4 py-3">{Number(p.commission_obligations?.amount).toLocaleString("ar-SA")} ر.س</td>
+                <td className="px-4 py-3">{formatNumber(Number(p.commission_obligations?.amount))} ر.س</td>
                 <td className="px-4 py-3">
                   {p.receipt_url && <a href={p.receipt_url} target="_blank" className="text-[#6D28D9] hover:underline">عرض الإيصال</a>}
                 </td>

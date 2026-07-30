@@ -147,6 +147,10 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
 
   async function goToStep4() {
     if (!adId) return;
+    if (!whatsapp && !messagesEnabled) {
+      setError("يجب تفعيل التواصل عبر واتساب أو السماح بالرسائل الخاصة — وسيلة تواصل واحدة على الأقل مطلوبة.");
+      return;
+    }
     setSavingStep3(true);
     setError("");
     const res = await fetch(`/api/ads/${adId}`, {
@@ -307,6 +311,7 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
             <input type="checkbox" checked={commentsEnabled} onChange={(e) => setCommentsEnabled(e.target.checked)} />
             {NEW_AD_CONTENT.allowComments}
           </label>
+          <p className="text-xs text-gray-400">لازم رقم واتساب أو تفعيل الرسائل الخاصة — وسيلة تواصل واحدة على الأقل حتى يقدر المهتمون يتواصلون معك.</p>
 
           <div className="border border-gray-100 rounded-2xl p-4 bg-gray-50">
             <p className="font-bold text-gray-900">{title}</p>

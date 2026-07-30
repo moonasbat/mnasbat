@@ -6,6 +6,7 @@ import { Ad } from "@/lib/types";
 import { AD_STATUS_LABELS } from "@/lib/content";
 import { loginUrl } from "@/lib/loginRedirect";
 import { Loader2, Upload } from "lucide-react";
+import { formatNumber } from "@/lib/formatTime";
 
 export default function CommissionRequestForm({
   ads,
@@ -137,7 +138,7 @@ export default function CommissionRequestForm({
         <input value={dealValue} onChange={(e) => setDealValue(e.target.value)} type="number" placeholder="0" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm" />
         {Number(dealValue) > 0 && (
           <p className="text-sm text-[#6D28D9] font-medium mt-2 bg-purple-50 rounded-xl px-3 py-2">
-            العمولة المستحقة ({rate}%): {commissionAmount.toLocaleString("ar-SA")} ر.س
+            العمولة المستحقة ({rate}%): {formatNumber(commissionAmount)} ر.س
           </p>
         )}
       </div>

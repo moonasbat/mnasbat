@@ -7,7 +7,7 @@ import { Heart } from "lucide-react";
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { loginUrl } from "@/lib/loginRedirect";
-import { formatRelativeTime } from "@/lib/formatTime";
+import { formatRelativeTime, formatNumber } from "@/lib/formatTime";
 
 export default function AdCard({ ad }: { ad: Ad }) {
   const router = useRouter();
@@ -60,7 +60,7 @@ export default function AdCard({ ad }: { ad: Ad }) {
         <h3 className="font-medium text-gray-900 text-sm line-clamp-2 min-h-[2.5rem]">{ad.title}</h3>
         <div className="flex items-center justify-between mt-2">
           {ad.price ? (
-            <span className="font-bold text-[#6D28D9] text-sm">{ad.price.toLocaleString("ar-SA")} ر.س</span>
+            <span className="font-bold text-[#6D28D9] text-sm">{formatNumber(ad.price)} ر.س</span>
           ) : (
             <span className="text-xs text-gray-400">السعر حسب الاتفاق</span>
           )}

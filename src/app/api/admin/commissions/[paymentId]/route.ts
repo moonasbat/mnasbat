@@ -11,7 +11,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   const { data: payment } = await admin
     .from("commission_payments")
-    .select("id, obligation_id, commission_obligations(user_id)")
+    .select("id, obligation_id, commission_obligations(user_id, ad_id)")
     .eq("id", paymentId)
     .single();
 
@@ -21,13 +21,21 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     await admin.from("commission_payments").update({ status: "approved", reviewed_by: user.id }).eq("id", paymentId);
     await admin.from("commission_obligations").update({ status: "approved" }).eq("id", payment.obligation_id);
 
-    const ownerId = (payment as unknown as { commission_obligations: { user_id: string } }).commission_obligations.user_id;
+    const obligation = (payment as unknown as { commission_obligations: { user_id: string; ad_id: string | null } }).commission_obligations;
+    const ownerId = obligation.user_id;
 
     // منح المزايا بعد الاعتماد فقط — القسم 53
     await admin.from("feature_entitlements").insert([
       { user_id: ownerId, feature_key: "commission_badge", source: "commission_payment", reason: "اعتماد إيصال عمولة" },
       { user_id: ownerId, feature_key: "boosted_visibility", source: "commission_payment", reason: "اعتماد إيصال عمولة" },
     ]);
+
+    if (obligation.ad_id) {
+      await admin
+        .from("ads")
+        .update({ is_featured: true, featured_until: new Date(Date.now() + 14 * 86400000).toISOString() })
+        .eq("id", obligation.ad_id);
+    }
 
     await admin.from("notifications").insert({
       user_id: ownerId,

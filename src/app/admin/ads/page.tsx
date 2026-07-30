@@ -5,6 +5,7 @@ import AdminAdActions from "@/components/admin/AdminAdActions";
 import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import { formatNumber } from "@/lib/formatTime";
 
 export default async function AdminAdsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const { status } = await searchParams;
@@ -73,7 +74,7 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Pro
                     </div>
                     <p className="text-xs text-gray-400 mt-0.5">
                       {ad.profiles?.display_name} · {ad.categories?.name} {ad.city ? `· ${ad.city}` : ""}
-                      {ad.price ? ` · ${ad.price.toLocaleString("ar-SA")} ر.س` : ""}
+                      {ad.price ? ` · ${formatNumber(ad.price)} ر.س` : ""}
                     </p>
                   </div>
                   <Link href={`/ads/${ad.id}`} target="_blank" className="flex items-center gap-1 text-xs text-[#6D28D9] shrink-0 hover:underline">

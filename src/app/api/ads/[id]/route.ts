@@ -22,6 +22,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (price !== undefined && price !== null && price !== "" && (isNaN(Number(price)) || Number(price) < 0)) {
       return NextResponse.json({ error: "السعر غير صالح." }, { status: 400 });
     }
+    const hasWhatsapp = !!whatsapp;
+    const willAllowMessages = messages_enabled ?? true;
+    if (!hasWhatsapp && !willAllowMessages) {
+      return NextResponse.json(
+        { error: "يجب تفعيل التواصل عبر واتساب أو السماح بالرسائل الخاصة — وسيلة تواصل واحدة على الأقل مطلوبة." },
+        { status: 400 }
+      );
+    }
     const { error } = await supabase
       .from("ads")
       .update({

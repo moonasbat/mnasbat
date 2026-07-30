@@ -13,9 +13,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!isStaff(profile?.role)) redirect("/");
 
   return (
-    <div className="min-h-screen flex" dir="rtl">
+    <div className="min-h-screen flex flex-col md:flex-row" dir="rtl">
       <AdminNav role={(profile as Profile).role} />
-      <main className="flex-1 p-6 md:p-8 bg-gray-50 min-h-screen overflow-x-auto">{children}</main>
+      <main className="flex-1 p-4 md:p-8 bg-gray-50 min-h-screen overflow-x-auto">{children}</main>
     </div>
   );
 }

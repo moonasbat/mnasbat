@@ -76,7 +76,9 @@ export default function EditAdForm({ ad, categories }: { ad: Ad; categories: Cat
     if (!title.trim()) return setError(NEW_AD_CONTENT.errors.titleRequired);
     if (!description.trim()) return setError(NEW_AD_CONTENT.errors.descriptionRequired);
     if (!categoryId) return setError(NEW_AD_CONTENT.errors.categoryRequired);
-    if (images.length < 1) return setError("أضف صورة واحدة على الأقل.");
+    if (!whatsapp && !messagesEnabled) {
+      return setError("يجب تفعيل التواصل عبر واتساب أو السماح بالرسائل الخاصة — وسيلة تواصل واحدة على الأقل مطلوبة.");
+    }
 
     setSaving(true);
     setError("");

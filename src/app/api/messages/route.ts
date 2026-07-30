@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/rateLimit";
 import { NextRequest, NextResponse } from "next/server";
 
 // إنشاء/جلب محادثة مرتبطة بإعلان وإرسال رسالة أولى — يسجل contact_event من نوع message
@@ -6,6 +7,16 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const limit = await checkRateLimit({
+    supabase,
+    settingKey: "rate_limit_messages_per_hour",
+    table: "messages",
+    userIdColumn: "sender_id",
+    userId: user.id,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!limit.ok) return NextResponse.json({ error: limit.error }, { status: 429 });
 
   const { ad_id, body } = await request.json();
   if (!body || !body.trim()) {
@@ -45,6 +56,12 @@ export async function POST(request: NextRequest) {
 
   await supabase.from("messages").insert({ conversation_id: conversation!.id, sender_id: user.id, body });
   await supabase.from("contact_events").insert({ ad_id, user_id: user.id, type: "message" });
+  await supabase.from("notifications").insert({
+    user_id: ad.user_id,
+    type: "NEW_MESSAGE",
+    title: "رسالة جديدة",
+    body: "لديك رسالة جديدة بخصوص أحد إعلاناتك.",
+  });
 
   return NextResponse.json({ ok: true, conversation_id: conversation!.id });
 }

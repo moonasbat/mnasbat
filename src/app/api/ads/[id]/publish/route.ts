@@ -16,9 +16,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     );
   }
 
-  const { data: ad } = await supabase.from("ads").select("id, user_id").eq("id", id).single();
+  const { data: ad } = await supabase.from("ads").select("id, user_id, whatsapp, messages_enabled").eq("id", id).single();
   if (!ad || ad.user_id !== user.id) {
     return NextResponse.json({ error: "لا تملك صلاحية لتنفيذ هذا الإجراء." }, { status: 403 });
+  }
+
+  if (!ad.whatsapp && !ad.messages_enabled) {
+    return NextResponse.json(
+      { error: "يجب تفعيل التواصل عبر واتساب أو السماح بالرسائل الخاصة — وسيلة تواصل واحدة على الأقل مطلوبة." },
+      { status: 400 }
+    );
   }
 
   const { count: imagesCount } = await supabase

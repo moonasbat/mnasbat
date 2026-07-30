@@ -13,6 +13,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   await admin.from("reviews").update({ status }).eq("id", id);
 
+  if (status === "approved" || status === "rejected") {
+    await admin.from("notifications").insert({
+      user_id: review.reviewee_id,
+      type: status === "approved" ? "REVIEW_APPROVED" : "REVIEW_REJECTED",
+      title: status === "approved" ? "تقييم جديد على ملفك" : "تم رفض تقييم",
+      body:
+        status === "approved"
+          ? "تمت الموافقة على تقييم جديد وتم نشره على ملفك الشخصي."
+          : "تم رفض أحد التقييمات المقدمة على ملفك الشخصي.",
+    });
+  }
+
   if (status === "approved") {
     const field = review.is_positive ? "positive_reviews" : "negative_reviews";
     const { data: profile } = await admin.from("profiles").select(`${field}, total_reviews`).eq("id", review.reviewee_id).single();
