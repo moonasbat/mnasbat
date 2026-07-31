@@ -124,9 +124,9 @@ export default function MessagesInbox({
   const otherUser = selected ? (selected.buyer_id === currentUserId ? selected.seller : selected.buyer) : null;
 
   return (
-    <div className="grid md:grid-cols-[300px_1fr] gap-4 bg-white border border-gray-100 rounded-2xl overflow-hidden">
+    <div className="grid md:grid-cols-[300px_1fr] gap-4 bg-white border border-gray-100 rounded-2xl overflow-hidden min-w-0">
       {/* قائمة المحادثات — تختفي على الجوال عند فتح محادثة */}
-      <div className={`border-l border-gray-100 divide-y divide-gray-100 max-h-[70vh] overflow-y-auto ${selected ? "hidden md:block" : ""}`}>
+      <div className={`min-w-0 border-l border-gray-100 divide-y divide-gray-100 max-h-[70vh] overflow-y-auto ${selected ? "hidden md:block" : ""}`}>
         {convos.map((c) => {
           const other = c.buyer_id === currentUserId ? c.seller : c.buyer;
           const unread = hasUnread(c, currentUserId);
@@ -136,12 +136,12 @@ export default function MessagesInbox({
             <button
               key={c.id}
               onClick={() => select(c)}
-              className={`w-full flex items-center gap-3 text-right px-4 py-3 hover:bg-gray-50 transition-colors ${selectedId === c.id ? "bg-purple-50" : ""}`}
+              className={`w-full min-w-0 flex items-center gap-3 text-right px-4 py-3 hover:bg-gray-50 transition-colors ${selectedId === c.id ? "bg-purple-50" : ""}`}
             >
               <Avatar name={other?.display_name} url={other?.avatar_url} />
               <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <p className={`text-sm truncate ${unread ? "font-bold text-gray-900" : "font-medium text-gray-900"}`}>{other?.display_name}</p>
+                <div className="flex items-center justify-between gap-2 min-w-0">
+                  <p className={`min-w-0 truncate text-sm ${unread ? "font-bold text-gray-900" : "font-medium text-gray-900"}`}>{other?.display_name}</p>
                   <span className="text-[11px] text-gray-400 shrink-0">{formatRelativeTime(lastMessageTime(c))}</span>
                 </div>
                 <p className="text-xs text-gray-400 truncate">{lastBody || c.ads?.title}</p>
@@ -153,45 +153,43 @@ export default function MessagesInbox({
       </div>
 
       {/* المحادثة المفتوحة — تظهر لوحدها على الجوال بزر رجوع للقائمة */}
-      <div className={`p-4 flex flex-col h-[70vh] ${selected ? "" : "hidden md:flex"}`}>
+      <div className={`min-w-0 p-4 flex flex-col h-[70vh] ${selected ? "" : "hidden md:flex"}`}>
         {selected ? (
           <>
-            <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
-              <div className="flex items-center gap-2 min-w-0">
-                <button onClick={backToList} className="md:hidden text-gray-400 p-1 -mr-1 shrink-0" aria-label="رجوع">
-                  <ChevronRight size={20} />
-                </button>
-                {otherUserId && (
-                  <Link href={`/profile/${otherUserId}`} className="flex items-center gap-2 min-w-0 hover:opacity-80">
-                    <Avatar name={otherUser?.display_name} url={otherUser?.avatar_url} size={32} />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{otherUser?.display_name}</p>
-                      <p className="text-[11px] text-gray-400 truncate">{MESSAGES_CONTENT.linkedAd(selected.ads?.title ?? "")}</p>
-                    </div>
-                  </Link>
-                )}
-              </div>
-              {otherUserId && <BlockUserButton userId={otherUserId} isLoggedIn={true} />}
+            <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100 min-w-0">
+              <button onClick={backToList} className="md:hidden text-gray-400 p-1 -mr-1 shrink-0" aria-label="رجوع">
+                <ChevronRight size={20} />
+              </button>
+              {otherUserId && (
+                <Link href={`/profile/${otherUserId}`} className="flex items-center gap-2 min-w-0 flex-1 hover:opacity-80">
+                  <Avatar name={otherUser?.display_name} url={otherUser?.avatar_url} size={32} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-900 truncate">{otherUser?.display_name}</p>
+                    <p className="text-[11px] text-gray-400 truncate">{MESSAGES_CONTENT.linkedAd(selected.ads?.title ?? "")}</p>
+                  </div>
+                </Link>
+              )}
+              {otherUserId && <div className="shrink-0"><BlockUserButton userId={otherUserId} isLoggedIn={true} /></div>}
             </div>
-            <div className="flex-1 overflow-y-auto space-y-3">
+            <div className="flex-1 overflow-y-auto space-y-3 min-w-0">
               {messages.map((m) => (
-                <div key={m.id} className={`max-w-[75%] flex flex-col ${m.sender_id === currentUserId ? "items-end mr-0 ml-auto" : "items-start"}`}>
-                  <div className={`rounded-2xl px-3 py-2 text-sm ${m.sender_id === currentUserId ? "bg-[#6D28D9] text-white" : "bg-gray-100 text-gray-900"}`}>
+                <div key={m.id} className={`max-w-[75%] min-w-0 flex flex-col ${m.sender_id === currentUserId ? "items-end mr-0 ml-auto" : "items-start"}`}>
+                  <div className={`min-w-0 max-w-full rounded-2xl px-3 py-2 text-sm break-words whitespace-pre-line ${m.sender_id === currentUserId ? "bg-[#6D28D9] text-white" : "bg-gray-100 text-gray-900"}`}>
                     {m.body}
                   </div>
                   <span className="text-[10px] text-gray-400 mt-1 px-1">{formatRelativeTime(m.created_at)}</span>
                 </div>
               ))}
             </div>
-            <div className="flex items-center justify-end mt-2 mb-2">
+            <div className="flex items-center justify-end mt-2 mb-2 min-w-0">
               {otherUserId && <ReportDialog targetType="user" targetId={otherUserId} label={MESSAGES_CONTENT.reportMessage} />}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 min-w-0">
               <input
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder={MESSAGES_CONTENT.placeholder}
-                className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                className="flex-1 min-w-0 border border-gray-200 rounded-xl px-3 py-2 text-sm"
                 onKeyDown={(e) => e.key === "Enter" && send()}
               />
               <button onClick={send} disabled={sending} className="bg-[#6D28D9] text-white rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-60">
