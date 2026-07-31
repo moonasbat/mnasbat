@@ -2,9 +2,26 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { Users, Megaphone, DollarSign, Flag, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { formatNumber } from "@/lib/formatTime";
+import { DailySeriesChart, CategoryDistributionChart, CommissionChart } from "@/components/admin/AdminDashboardCharts";
+
+function dayKey(d: Date) {
+  return d.toISOString().slice(0, 10);
+}
+
+function lastNDays(n: number) {
+  const days: string[] = [];
+  const now = new Date();
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    days.push(dayKey(d));
+  }
+  return days;
+}
 
 export default async function AdminDashboard() {
   const admin = createAdminClient();
+  const cutoff = new Date(Date.now() - 30 * 86400000).toISOString();
 
   const [
     { count: usersTotal },
@@ -15,6 +32,10 @@ export default async function AdminDashboard() {
     { data: obligationsDue },
     { count: receiptsPending },
     { data: bankRow },
+    { data: adsLast30 },
+    { data: usersLast30 },
+    { data: adsByCategory },
+    { data: commissionsLast30 },
   ] = await Promise.all([
     admin.from("profiles").select("id", { count: "exact", head: true }),
     admin.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", new Date(Date.now() - 86400000).toISOString()),
@@ -24,11 +45,54 @@ export default async function AdminDashboard() {
     admin.from("commission_obligations").select("amount").eq("status", "due"),
     admin.from("commission_payments").select("id", { count: "exact", head: true }).eq("status", "pending"),
     admin.from("admin_settings").select("value").eq("key", "bank_active").maybeSingle(),
+    admin.from("ads").select("created_at").gte("created_at", cutoff),
+    admin.from("profiles").select("created_at").gte("created_at", cutoff),
+    admin.from("ads").select("category:categories(name)").eq("status", "published"),
+    admin.from("commission_payments").select("created_at, obligation:commission_obligations(amount)").eq("status", "approved").gte("created_at", cutoff),
   ]);
 
   const bankActive = bankRow?.value === "true";
 
   const totalDue = (obligationsDue ?? []).reduce((s, o) => s + Number(o.amount), 0);
+
+  const days = lastNDays(30);
+  const adsByDay: Record<string, number> = {};
+  const usersByDay: Record<string, number> = {};
+  (adsLast30 ?? []).forEach((r) => {
+    const k = dayKey(new Date(r.created_at as string));
+    adsByDay[k] = (adsByDay[k] ?? 0) + 1;
+  });
+  (usersLast30 ?? []).forEach((r) => {
+    const k = dayKey(new Date(r.created_at as string));
+    usersByDay[k] = (usersByDay[k] ?? 0) + 1;
+  });
+  const dailySeries = days.map((d) => ({
+    date: d.slice(5),
+    ads: adsByDay[d] ?? 0,
+    users: usersByDay[d] ?? 0,
+  }));
+
+  const categoryCounts: Record<string, number> = {};
+  (adsByCategory ?? []).forEach((r) => {
+    const cat = r.category as unknown as { name: string } | { name: string }[] | null;
+    const name = Array.isArray(cat) ? cat[0]?.name : cat?.name;
+    if (!name) return;
+    categoryCounts[name] = (categoryCounts[name] ?? 0) + 1;
+  });
+  const categoryData = Object.entries(categoryCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
+
+  const commissionByDay: Record<string, number> = {};
+  (commissionsLast30 ?? []).forEach((r) => {
+    const obligation = r.obligation as unknown as { amount: number } | { amount: number }[] | null;
+    const amount = Array.isArray(obligation) ? obligation[0]?.amount : obligation?.amount;
+    if (!amount) return;
+    const k = dayKey(new Date(r.created_at as string));
+    commissionByDay[k] = (commissionByDay[k] ?? 0) + Number(amount);
+  });
+  const commissionData = days.map((d) => ({ date: d.slice(5), amount: commissionByDay[d] ?? 0 }));
 
   const stats = [
     { label: "إجمالي المستخدمين", value: usersTotal ?? 0, sub: `${usersToday ?? 0} اليوم`, icon: Users, color: "bg-purple-50", iconColor: "text-[#6D28D9]" },
@@ -69,6 +133,13 @@ export default async function AdminDashboard() {
             </div>
           );
         })}
+      </div>
+
+      <DailySeriesChart data={dailySeries} />
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <CategoryDistributionChart data={categoryData} />
+        <CommissionChart data={commissionData} />
       </div>
     </div>
   );

@@ -294,6 +294,7 @@ export const ADMIN_CONTENT = {
   notifications: "الإشعارات",
   settings: "الإعدادات",
   permissions: "الصلاحيات",
+  integrations: "التكاملات",
   auditLog: "سجل التدقيق",
   approvePayment: "اعتماد الدفع",
   rejectPayment: "رفض الدفع",
