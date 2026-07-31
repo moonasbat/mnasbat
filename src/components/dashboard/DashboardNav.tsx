@@ -16,14 +16,17 @@ const items = [
 export default function DashboardNav() {
   const pathname = usePathname();
   return (
-    <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible">
+    <nav
+      className="sticky top-16 z-10 -mx-4 px-4 py-2 bg-white/95 backdrop-blur-sm border-b border-gray-100 flex gap-1.5 overflow-x-auto whitespace-nowrap
+        md:static md:z-auto md:mx-0 md:px-0 md:py-0 md:bg-transparent md:border-0 md:flex-col md:gap-1 md:overflow-visible md:whitespace-normal"
+    >
       {items.map((item) => {
         const active = pathname.startsWith(item.href);
         return (
           <Link
             key={item.href}
             href={item.href}
-            className={`shrink-0 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            className={`shrink-0 px-3 py-1.5 text-xs md:px-4 md:py-2.5 md:text-sm rounded-xl font-medium transition-colors ${
               active ? "bg-[#6D28D9] text-white" : "text-gray-600 hover:bg-gray-50"
             }`}
           >
