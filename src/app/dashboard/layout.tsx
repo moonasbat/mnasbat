@@ -12,11 +12,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="min-h-screen flex flex-col">
       <Header profile={profile as Profile} />
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8 grid md:grid-cols-[220px_1fr] gap-8 items-start">
-        <div className="md:sticky md:top-20">
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8 grid md:grid-cols-[220px_1fr] gap-8 items-start min-w-0">
+        <div className="min-w-0 md:sticky md:top-20">
           <DashboardNav />
         </div>
-        <div>{children}</div>
+        <div className="min-w-0">{children}</div>
       </main>
       <Footer />
     </div>

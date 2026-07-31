@@ -18,8 +18,8 @@ export default function DashboardNav() {
   return (
     <nav
       style={{ top: "var(--header-h, 64px)" }}
-      className="sticky z-10 -mx-4 px-4 py-2 bg-white/95 backdrop-blur-sm border-b border-gray-100 flex gap-1.5 overflow-x-auto whitespace-nowrap
-        md:static md:z-auto md:mx-0 md:px-0 md:py-0 md:bg-transparent md:border-0 md:flex-col md:gap-1 md:overflow-visible md:whitespace-normal"
+      className="sticky z-10 w-full min-w-0 max-w-full py-2 bg-white/95 backdrop-blur-sm border-b border-gray-100 flex gap-1.5 overflow-x-auto whitespace-nowrap
+        md:static md:z-auto md:w-auto md:py-0 md:bg-transparent md:border-0 md:flex-col md:gap-1 md:overflow-visible md:whitespace-normal"
     >
       {items.map((item) => {
         const active = pathname.startsWith(item.href);

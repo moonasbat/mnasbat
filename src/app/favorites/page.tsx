@@ -23,13 +23,13 @@ export default async function FavoritesPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header profile={profile as Profile} />
-      <main className={`flex-1 max-w-6xl mx-auto w-full px-4 py-8 ${user ? "grid md:grid-cols-[220px_1fr] gap-8 items-start" : ""}`}>
+      <main className={`flex-1 max-w-6xl mx-auto w-full px-4 py-8 min-w-0 ${user ? "grid md:grid-cols-[220px_1fr] gap-8 items-start" : ""}`}>
         {user && (
-          <div className="md:sticky md:top-20">
+          <div className="min-w-0 md:sticky md:top-20">
             <DashboardNav />
           </div>
         )}
-        <div>
+        <div className="min-w-0">
           <h1 className="text-xl font-bold text-gray-900 mb-6">المفضلة</h1>
           {ads.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">

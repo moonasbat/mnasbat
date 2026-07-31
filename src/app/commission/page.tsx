@@ -43,13 +43,13 @@ export default async function CommissionPage({
     <div className="min-h-screen flex flex-col">
       <Header profile={profile as Profile} />
 
-      <main className={`flex-1 max-w-6xl mx-auto w-full px-4 py-8 ${user ? "grid md:grid-cols-[220px_1fr] gap-8 items-start" : ""}`}>
+      <main className={`flex-1 max-w-6xl mx-auto w-full px-4 py-8 min-w-0 ${user ? "grid md:grid-cols-[220px_1fr] gap-8 items-start" : ""}`}>
         {user && (
-          <div className="md:sticky md:top-20">
+          <div className="min-w-0 md:sticky md:top-20">
             <DashboardNav />
           </div>
         )}
-        <div className="max-w-3xl space-y-8">
+        <div className="min-w-0 max-w-3xl space-y-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">العمولة</h1>
           {isExempt ? (
