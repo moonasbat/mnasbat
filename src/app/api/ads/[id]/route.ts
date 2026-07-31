@@ -53,7 +53,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const durationDays = Number(settings?.value ?? 60);
     await supabase
       .from("ads")
-      .update({ status: "published", expires_at: new Date(Date.now() + durationDays * 86400000).toISOString() })
+      .update({
+        status: "published",
+        expires_at: new Date(Date.now() + durationDays * 86400000).toISOString(),
+        expiry_reminder_sent_at: null,
+      })
       .eq("id", id);
   } else {
     return NextResponse.json({ error: "إجراء غير معروف." }, { status: 400 });

@@ -1,11 +1,16 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Tajawal, Inter } from "next/font/google";
 import "./globals.css";
 import { Suspense } from "react";
 import Script from "next/script";
 import AuthListener from "@/components/AuthListener";
 import NavigationProgress from "@/components/NavigationProgress";
+import PwaInstall from "@/components/PwaInstall";
 import { createAdminClient } from "@/lib/supabase/admin";
+
+export const viewport: Viewport = {
+  themeColor: "#6D28D9",
+};
 
 const tajawal = Tajawal({
   variable: "--font-tajawal",
@@ -95,6 +100,7 @@ ttq.page();
           <AuthListener />
         </Suspense>
         {children}
+        <PwaInstall />
       </body>
     </html>
   );

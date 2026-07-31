@@ -8,6 +8,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Plus, HandCoins } from "lucide-react";
 
+function daysUntil(dateStr: string): number {
+  return Math.max(0, Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86400000));
+}
+
 export default async function MyAdsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -43,8 +47,15 @@ export default async function MyAdsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <Link href={adUrl(ad)} className="font-medium text-gray-900 text-sm hover:underline truncate">{ad.title}</Link>
-                  <span className="text-xs bg-gray-100 text-gray-600 rounded-lg px-2 py-0.5 shrink-0">{AD_STATUS_LABELS[ad.status]}</span>
+                  <span className={`text-xs rounded-lg px-2 py-0.5 shrink-0 ${ad.status === "expired" ? "bg-red-50 text-red-600" : "bg-gray-100 text-gray-600"}`}>
+                    {AD_STATUS_LABELS[ad.status]}
+                  </span>
                 </div>
+                {ad.status === "published" && ad.expires_at && daysUntil(ad.expires_at) <= 7 && (
+                  <p className="text-xs text-amber-600 mt-1 font-medium">
+                    ينتهي خلال {daysUntil(ad.expires_at)} {daysUntil(ad.expires_at) === 1 ? "يوم" : "أيام"} — جدده قبل أن يتوقف ظهوره
+                  </p>
+                )}
                 {showStats && (
                   <p className="text-xs text-gray-400 mt-1">
                     {ad.views_count} مشاهدة · {ad.messages_count} رسالة · {ad.favorites_count} مفضلة

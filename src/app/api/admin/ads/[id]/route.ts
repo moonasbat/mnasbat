@@ -16,6 +16,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     updates.status = "published";
     updates.published_at = new Date().toISOString();
     updates.expires_at = new Date(Date.now() + durationDays * 86400000).toISOString();
+    updates.expiry_reminder_sent_at = null;
   } else if (action === "reject") {
     if (!reason) return NextResponse.json({ error: "سبب الرفض مطلوب." }, { status: 400 });
     updates.status = "rejected";
