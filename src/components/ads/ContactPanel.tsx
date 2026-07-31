@@ -50,6 +50,16 @@ export default function ContactPanel({
     if (!res.ok) setFavorited((f) => !f);
   }
 
+  // location.href يرجع الرابط مُرمّزاً (%D8%A5...) رغم أن شريط العنوان يعرضه عربياً —
+  // نفكّ الترميز يدوياً حتى ما يظهر الرابط مشوّهاً عند مشاركته أو لصقه برسالة
+  function cleanAdUrl() {
+    try {
+      return decodeURI(window.location.href);
+    } catch {
+      return window.location.href;
+    }
+  }
+
   async function handleWhatsapp() {
     if (requireLogin()) return;
     await fetch("/api/contact/whatsapp", {
@@ -57,7 +67,7 @@ export default function ContactPanel({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ad_id: adId }),
     });
-    const text = encodeURIComponent(contactMessageTemplate(window.location.href));
+    const text = encodeURIComponent(contactMessageTemplate(cleanAdUrl()));
     window.open(`https://wa.me/${whatsapp?.replace(/[^0-9]/g, "")}?text=${text}`, "_blank");
   }
 
@@ -82,7 +92,7 @@ export default function ContactPanel({
   }
 
   async function share() {
-    const url = window.location.href;
+    const url = cleanAdUrl();
     if (navigator.share) {
       await navigator.share({ title: adTitle, url });
     } else {
@@ -98,7 +108,7 @@ export default function ContactPanel({
             <button
               onClick={() => {
                 if (requireLogin()) return;
-                if (!message.trim()) setMessage(contactMessageTemplate(window.location.href));
+                if (!message.trim()) setMessage(contactMessageTemplate(cleanAdUrl()));
                 setShowForm(true);
               }}
               className="w-full flex items-center justify-center gap-2 bg-[#6D28D9] text-white rounded-xl py-3 text-sm font-medium hover:bg-[#5B21B6] transition-colors"
