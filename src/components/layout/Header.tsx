@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Profile } from "@/lib/types";
 import { HOME_CONTENT, AUTH_CONTENT } from "@/lib/content";
@@ -15,8 +15,21 @@ export default function Header({ profile }: { profile?: Profile | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
   // الصفحة الرئيسية وصفحة النتائج عندهما بحث خاص بهما، لا داعٍ لتكراره في الهيدر
   const hideHeaderSearch = pathname === "/" || pathname === "/search";
+
+  // يقيس ارتفاع الهيدر الفعلي (يختلف حسب ظهور شريط البحث للجوال) ويعرّضه كمتغيّر CSS
+  // تعتمد عليه العناصر الثابتة (مثل قائمة لوحة التحكم) لتتموضع أسفله دون تراكب
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const update = () => document.documentElement.style.setProperty("--header-h", `${el.getBoundingClientRect().height}px`);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hideHeaderSearch]);
 
   async function handleLogout() {
     const supabase = createClient();
@@ -25,7 +38,7 @@ export default function Header({ profile }: { profile?: Profile | null }) {
   }
 
   return (
-    <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
+    <header ref={headerRef} className="bg-white border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
         <Link href="/" className="text-2xl font-bold text-[#6D28D9] shrink-0">
           مناسبات

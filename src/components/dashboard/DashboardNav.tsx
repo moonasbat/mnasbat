@@ -17,7 +17,8 @@ export default function DashboardNav() {
   const pathname = usePathname();
   return (
     <nav
-      className="sticky top-16 z-10 -mx-4 px-4 py-2 bg-white/95 backdrop-blur-sm border-b border-gray-100 flex gap-1.5 overflow-x-auto whitespace-nowrap
+      style={{ top: "var(--header-h, 64px)" }}
+      className="sticky z-10 -mx-4 px-4 py-2 bg-white/95 backdrop-blur-sm border-b border-gray-100 flex gap-1.5 overflow-x-auto whitespace-nowrap
         md:static md:z-auto md:mx-0 md:px-0 md:py-0 md:bg-transparent md:border-0 md:flex-col md:gap-1 md:overflow-visible md:whitespace-normal"
     >
       {items.map((item) => {
