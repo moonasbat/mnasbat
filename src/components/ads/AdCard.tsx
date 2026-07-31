@@ -36,6 +36,7 @@ export default function AdCard({ ad }: { ad: Ad }) {
   return (
     <Link
       href={adUrl(ad)}
+      prefetch={false}
       className="group block bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
     >
       <div className="relative aspect-[4/3] bg-gray-100">
