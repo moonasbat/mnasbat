@@ -17,6 +17,11 @@ export async function POST(request: NextRequest) {
   });
   if (!limit.ok) return NextResponse.json({ error: limit.error }, { status: 429 });
 
+  const { data: flag } = await supabase.from("feature_flags").select("enabled").eq("key", "comments_enabled").maybeSingle();
+  if (flag && flag.enabled === false) {
+    return NextResponse.json({ error: "التعليقات غير متاحة حالياً." }, { status: 403 });
+  }
+
   const { ad_id, body, parent_id } = await request.json();
   if (!body || !body.trim()) {
     return NextResponse.json({ error: "التعليق فارغ" }, { status: 400 });

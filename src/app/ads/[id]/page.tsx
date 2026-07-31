@@ -14,6 +14,7 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import AdGallery from "@/components/ads/AdGallery";
+import { getSiteFlags } from "@/lib/siteConfig";
 
 export default async function AdPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -52,7 +53,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
 
   await supabase.rpc("increment_ad_views", { ad_id_param: id });
 
-  const [{ data: profile }, { data: comments }, { data: favorite }, { data: sellerAds }, { data: parentCategory }, { data: similarAds }] = await Promise.all([
+  const [{ data: profile }, { data: comments }, { data: favorite }, { data: sellerAds }, { data: parentCategory }, { data: similarAds }, flags] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : Promise.resolve({ data: null }),
     supabase.from("comments").select("*, profiles(*)").eq("ad_id", id).eq("status", "visible").order("created_at", { ascending: false }),
     user ? supabase.from("favorites").select("id").eq("ad_id", id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
@@ -70,12 +71,15 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
       .neq("user_id", ad.user_id)
       .order("published_at", { ascending: false })
       .limit(8),
+    getSiteFlags(supabase),
   ]);
 
   const images: AdImage[] = (ad.ad_images ?? []).sort((a: AdImage, b: AdImage) => a.sort_order - b.sort_order);
   const seller = ad.profiles as Profile;
   const mainCategory = parentCategory ?? ad.categories;
   const subCategory = parentCategory ? ad.categories : null;
+  const whatsappEnabled = flags.whatsapp_enabled !== false;
+  const favoritesEnabled = flags.favorites_enabled !== false;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -150,10 +154,11 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
             <ContactPanel
               adId={ad.id}
               adTitle={ad.title}
-              whatsapp={ad.whatsapp}
+              whatsapp={whatsappEnabled ? ad.whatsapp : undefined}
               messagesEnabled={ad.messages_enabled}
               isLoggedIn={!!user}
               initialFavorited={!!favorite}
+              favoritesEnabled={favoritesEnabled}
             />
 
             <div className="text-center">

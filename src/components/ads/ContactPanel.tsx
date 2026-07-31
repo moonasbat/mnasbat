@@ -13,6 +13,7 @@ export default function ContactPanel({
   messagesEnabled,
   isLoggedIn,
   initialFavorited,
+  favoritesEnabled = true,
 }: {
   adId: string;
   adTitle: string;
@@ -20,6 +21,7 @@ export default function ContactPanel({
   messagesEnabled: boolean;
   isLoggedIn: boolean;
   initialFavorited: boolean;
+  favoritesEnabled?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -139,10 +141,12 @@ export default function ContactPanel({
       )}
 
       <div className="flex items-center justify-between pt-1">
-        <button onClick={toggleFavorite} className={`flex items-center gap-1.5 text-sm transition-colors ${favorited ? "text-red-500" : "text-gray-500 hover:text-red-500"}`}>
-          <Heart size={16} fill={favorited ? "currentColor" : "none"} />
-          {favorited ? AD_PAGE_CONTENT.removeFavorite : AD_PAGE_CONTENT.addFavorite}
-        </button>
+        {favoritesEnabled ? (
+          <button onClick={toggleFavorite} className={`flex items-center gap-1.5 text-sm transition-colors ${favorited ? "text-red-500" : "text-gray-500 hover:text-red-500"}`}>
+            <Heart size={16} fill={favorited ? "currentColor" : "none"} />
+            {favorited ? AD_PAGE_CONTENT.removeFavorite : AD_PAGE_CONTENT.addFavorite}
+          </button>
+        ) : <span />}
         <button onClick={share} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#6D28D9] transition-colors">
           <Share2 size={16} />
           {AD_PAGE_CONTENT.share}

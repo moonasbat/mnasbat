@@ -45,6 +45,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   } else if (action === "resume") {
     await supabase.from("ads").update({ status: "published" }).eq("id", id);
   } else if (action === "renew") {
+    const { data: flag } = await supabase.from("feature_flags").select("enabled").eq("key", "ad_renewal_enabled").maybeSingle();
+    if (flag && flag.enabled === false) {
+      return NextResponse.json({ error: "تجديد الإعلانات غير متاح حالياً." }, { status: 403 });
+    }
     const { data: settings } = await supabase.from("admin_settings").select("value").eq("key", "ad_duration_days").maybeSingle();
     const durationDays = Number(settings?.value ?? 60);
     await supabase

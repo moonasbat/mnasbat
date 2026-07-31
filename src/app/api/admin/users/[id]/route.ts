@@ -28,6 +28,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const { error } = await admin.from("profiles").update(updates).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
+  if (action === "ban" || action === "unban") {
+    await admin.from("notifications").insert({
+      user_id: id,
+      type: action === "ban" ? "ACCOUNT_BANNED" : "ACCOUNT_UNBANNED",
+      title: action === "ban" ? "تم إيقاف حسابك" : "تم إعادة تفعيل حسابك",
+      body: action === "ban" ? `تم إيقاف حسابك. السبب: ${reason ?? "غير محدد"}.` : "تمت إعادة تفعيل حسابك ويمكنك استخدام المنصة بشكل طبيعي.",
+    });
+  }
+
   await logAudit(user.id, `user_${action}`, "user", id, { reason, role });
   return NextResponse.json({ ok: true });
 }

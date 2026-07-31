@@ -33,8 +33,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     .select("id", { count: "exact", head: true })
     .eq("ad_id", id);
 
-  if (imagesCount && imagesCount > 10) {
-    return NextResponse.json({ error: "يمكنك إضافة 10 صور كحد أقصى." }, { status: 400 });
+  const { data: maxImagesSetting } = await supabase.from("admin_settings").select("value").eq("key", "max_images_per_ad").maybeSingle();
+  const maxImages = Number(maxImagesSetting?.value) || 10;
+
+  if (imagesCount && imagesCount > maxImages) {
+    return NextResponse.json({ error: `يمكنك إضافة ${maxImages} صور كحد أقصى.` }, { status: 400 });
   }
 
   // حفظ نسخة الإقرار — تاريخ ووقت الموافقة ومعرف الإعلان والمستخدم (القسم 8)

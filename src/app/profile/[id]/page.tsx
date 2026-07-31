@@ -11,18 +11,22 @@ import ReviewReplyForm from "@/components/ReviewReplyForm";
 import BlockUserButton from "@/components/BlockUserButton";
 import ReportDialog from "@/components/ReportDialog";
 import { formatGregorianDate } from "@/lib/formatTime";
+import { getSiteFlags } from "@/lib/siteConfig";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: currentProfile }, { data: seller }, { data: ads }, { data: reviews }] = await Promise.all([
+  const [{ data: currentProfile }, { data: seller }, { data: ads }, { data: reviews }, flags] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : Promise.resolve({ data: null }),
     supabase.from("profiles").select("*").eq("id", id).single(),
     supabase.from("ads").select("*, categories(*), ad_images(*)").eq("user_id", id).eq("status", "published").order("published_at", { ascending: false }),
     supabase.from("reviews").select("*, profiles!reviews_reviewer_id_fkey(*)").eq("reviewee_id", id).eq("status", "approved").order("created_at", { ascending: false }).limit(10),
+    getSiteFlags(supabase),
   ]);
+  const verificationEnabled = flags.verification_enabled !== false;
+  const reviewsEnabled = flags.reviews_enabled !== false;
 
   if (!seller) notFound();
 
@@ -44,7 +48,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           <div>
             <div className="flex items-center gap-2">
               <h1 className="font-bold text-gray-900 text-lg">{s.display_name}</h1>
-              {s.verification_status === "verified" && <ShieldCheck size={18} className="text-[#6D28D9]" />}
+              {verificationEnabled && s.verification_status === "verified" && <ShieldCheck size={18} className="text-[#6D28D9]" />}
             </div>
             {s.username && <p className="text-sm text-gray-400" dir="ltr">@{s.username}</p>}
             {s.city && <p className="text-sm text-gray-400">{s.city}</p>}
@@ -62,7 +66,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           )}
         </div>
 
-        {currentProfile && (currentProfile as Profile).id !== s.id && (
+        {reviewsEnabled && currentProfile && (currentProfile as Profile).id !== s.id && (
           <div className="mb-8">
             <AddReviewForm revieweeId={s.id} isLoggedIn={!!user} />
           </div>
@@ -81,7 +85,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           )}
         </section>
 
-        <section>
+        {reviewsEnabled && <section>
           <h2 className="font-bold text-gray-900 mb-4">التقييمات</h2>
           {reviews && reviews.length > 0 ? (
             <div className="space-y-3">
@@ -108,7 +112,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           ) : (
             <p className="text-sm text-gray-400">لا توجد تقييمات حتى الآن.</p>
           )}
-        </section>
+        </section>}
       </main>
 
       <Footer />

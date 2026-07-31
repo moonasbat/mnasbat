@@ -38,21 +38,28 @@ export async function POST(request: NextRequest) {
     const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
 
     const isReceipt = type === "receipt";
+    let applyWatermark = false;
+    if (!isReceipt) {
+      const { data: flag } = await supabase.from("feature_flags").select("enabled").eq("key", "watermark_enabled").maybeSingle();
+      applyWatermark = flag ? flag.enabled : true;
+    }
     const result = await cloudinary.uploader.upload(base64, {
       folder: isReceipt ? "mnasbat/receipts" : "mnasbat/ads",
       transformation: isReceipt
         ? [{ width: 1600, height: 1600, crop: "limit", quality: "auto", fetch_format: "auto" }]
-        : [
-            { width: 1600, height: 1600, crop: "limit", quality: "auto", fetch_format: "auto" },
-            {
-              overlay: { font_family: "Arial", font_size: 40, font_weight: "bold", text: "مناسبات" },
-              color: "#FFFFFF",
-              opacity: 60,
-              gravity: "south_east",
-              x: 20,
-              y: 20,
-            },
-          ],
+        : applyWatermark
+          ? [
+              { width: 1600, height: 1600, crop: "limit", quality: "auto", fetch_format: "auto" },
+              {
+                overlay: { font_family: "Arial", font_size: 40, font_weight: "bold", text: "مناسبات" },
+                color: "#FFFFFF",
+                opacity: 60,
+                gravity: "south_east",
+                x: 20,
+                y: 20,
+              },
+            ]
+          : [{ width: 1600, height: 1600, crop: "limit", quality: "auto", fetch_format: "auto" }],
     });
 
     return NextResponse.json({

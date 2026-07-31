@@ -8,6 +8,12 @@ import ToggleSwitch from "./ToggleSwitch";
 // إعدادات نصية/رقمية مجمّعة بأقسام مفهومة لمالك غير تقني
 const SETTINGS_GROUPS: { title: string; fields: [string, string, string][] }[] = [
   {
+    title: "عام",
+    fields: [
+      ["platform_name", "اسم المنصة", "يظهر في شعار الموقع وعنوان الصفحات"],
+    ],
+  },
+  {
     title: "العمولة",
     fields: [
       ["commission_rate", "نسبة العمولة", "النسبة % التي تُحسب من قيمة كل صفقة يُبلَّغ عنها"],
@@ -45,7 +51,7 @@ const SETTINGS_GROUPS: { title: string; fields: [string, string, string][] }[] =
 const FLAG_GROUPS: { title: string; keys: string[] }[] = [
   {
     title: "تسجيل الدخول",
-    keys: ["google_login_enabled", "phone_login_enabled", "email_login_enabled"],
+    keys: ["google_login_enabled"],
   },
   {
     title: "التواصل والتفاعل",
@@ -57,16 +63,14 @@ const FLAG_GROUPS: { title: string; keys: string[] }[] = [
   },
   {
     title: "أخرى",
-    keys: ["verification_enabled", "city_filter_enabled", "view_stats_enabled", "saved_search_enabled"],
+    keys: ["verification_enabled", "city_filter_enabled", "view_stats_enabled"],
   },
 ];
 
 const FLAG_DESCRIPTIONS: Record<string, string> = {
-  google_login_enabled: "السماح بتسجيل الدخول عبر حساب Google",
-  phone_login_enabled: "السماح بتسجيل الدخول برقم الجوال (يحتاج إعداد OTP لاحقاً)",
-  email_login_enabled: "السماح بتسجيل الدخول بالبريد وكلمة مرور",
-  comments_enabled: "إظهار قسم التعليقات تحت كل إعلان",
-  messages_enabled: "السماح بإرسال رسائل داخلية بين المستخدمين",
+  google_login_enabled: "السماح بتسجيل الدخول عبر حساب Google — هذه هي وسيلة تسجيل الدخول الوحيدة المتاحة حالياً، تعطيلها يوقف تسجيل الدخول بالكامل",
+  comments_enabled: "إظهار قسم التعليقات تحت كل إعلان (على مستوى الموقع بالكامل، بالإضافة إلى خيار كل إعلان على حدة)",
+  messages_enabled: "السماح بإرسال رسائل داخلية بين المستخدمين (على مستوى الموقع بالكامل، بالإضافة إلى خيار كل إعلان على حدة)",
   whatsapp_enabled: "إظهار زر التواصل عبر واتساب في صفحة الإعلان",
   favorites_enabled: "السماح بإضافة الإعلانات للمفضلة",
   reviews_enabled: "السماح بتقييم مقدمي الخدمات",
@@ -78,7 +82,6 @@ const FLAG_DESCRIPTIONS: Record<string, string> = {
   verification_enabled: "تفعيل نظام توثيق الحسابات (شارة موثّق)",
   city_filter_enabled: "إظهار فلتر المدينة في صفحة البحث",
   view_stats_enabled: "عرض عدد المشاهدات على الإعلانات للمعلنين",
-  saved_search_enabled: "السماح بحفظ عمليات البحث والتنبيه عليها (ميزة قيد التطوير)",
 };
 
 export default function AdminSettingsForm({

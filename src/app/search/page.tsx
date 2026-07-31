@@ -6,6 +6,7 @@ import CategoryBar from "@/components/CategoryBar";
 import LocationFilters from "@/components/LocationFilters";
 import { Ad, Category, Profile } from "@/lib/types";
 import { SEARCH_CONTENT } from "@/lib/content";
+import { getSiteFlags } from "@/lib/siteConfig";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -21,10 +22,12 @@ export default async function SearchPage({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: profile }, { data: allCategories }] = await Promise.all([
+  const [{ data: profile }, { data: allCategories }, flags] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : { data: null },
     supabase.from("categories").select("*").eq("is_active", true).order("sort_order"),
+    getSiteFlags(supabase),
   ]);
+  const cityFilterEnabled = flags.city_filter_enabled !== false;
 
   const categories = allCategories as Category[];
   const mainCategories = categories.filter((c) => !c.parent_id);
@@ -44,7 +47,7 @@ export default async function SearchPage({
     const ids = [mainCategory.id, ...subcategories.map((c) => c.id)];
     query = query.in("category_id", ids);
   }
-  if (city) query = query.eq("city", city);
+  if (city && cityFilterEnabled) query = query.eq("city", city);
   if (featured === "true") query = query.eq("is_featured", true);
 
   if (sort === "featured") {
@@ -113,10 +116,10 @@ export default async function SearchPage({
         {mainCategory && (
           <div className="mb-5 space-y-3">
             <h1 className="text-lg font-bold text-gray-900">{mainCategory.name}</h1>
-            <LocationFilters />
+            {cityFilterEnabled && <LocationFilters />}
           </div>
         )}
-        {!mainCategory && (
+        {!mainCategory && cityFilterEnabled && (
           <div className="mb-5">
             <LocationFilters />
           </div>

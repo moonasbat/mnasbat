@@ -10,7 +10,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const { reply } = await request.json();
   if (!reply?.trim()) return NextResponse.json({ error: "نص الرد فارغ." }, { status: 400 });
 
-  const { data: review } = await supabase.from("reviews").select("reviewee_id").eq("id", id).single();
+  const { data: review } = await supabase.from("reviews").select("reviewee_id, reviewer_id").eq("id", id).single();
   if (!review) return NextResponse.json({ error: "التقييم غير موجود." }, { status: 404 });
   if (review.reviewee_id !== user.id) return NextResponse.json({ error: "لا تملك صلاحية لتنفيذ هذا الإجراء." }, { status: 403 });
 
@@ -20,5 +20,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  await supabase.from("notifications").insert({
+    user_id: review.reviewer_id,
+    type: "REVIEW_REPLY",
+    title: "رد على تقييمك",
+    body: "قام المستخدم الذي قيّمته بالرد على تقييمك.",
+  });
+
   return NextResponse.json({ ok: true });
 }

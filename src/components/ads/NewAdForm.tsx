@@ -9,7 +9,7 @@ import { X, Upload, ShieldCheck, CheckCircle2, Circle, ChevronDown, MapPin, Load
 import SaudiPhoneInput from "@/components/SaudiPhoneInput";
 import { SAUDI_CITIES, nearestSaudiCity, suggestCategorySlug } from "@/lib/saudiCities";
 
-export default function NewAdForm({ categories, initialWhatsapp }: { categories: Category[]; initialWhatsapp?: string }) {
+export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 }: { categories: Category[]; initialWhatsapp?: string; maxImages?: number }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [title, setTitle] = useState("");
@@ -62,7 +62,7 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
   async function handleFiles(files: FileList | null) {
     if (!files) return;
     setError("");
-    const remaining = 10 - images.length;
+    const remaining = maxImages - images.length;
     const selected = Array.from(files).slice(0, remaining);
 
     for (const file of selected) {
@@ -295,7 +295,7 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
                 </button>
               </div>
             ))}
-            {images.length < 10 && (
+            {images.length < maxImages && (
               <label className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors ${uploading ? "border-[#6D28D9] bg-purple-50" : "border-gray-300 hover:border-[#6D28D9]"}`}>
                 {uploading ? (
                   <Loader2 size={20} className="text-[#6D28D9] animate-spin" />
@@ -307,7 +307,7 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
               </label>
             )}
           </div>
-          <p className="text-xs text-gray-400">{NEW_AD_CONTENT.maxImages} — {images.length}/10</p>
+          <p className="text-xs text-gray-400">{NEW_AD_CONTENT.maxImages} — {images.length}/{maxImages}</p>
 
           <div className="flex gap-2">
             <button onClick={() => setStep(1)} className="flex-1 border border-gray-200 rounded-xl py-3 text-sm font-medium">رجوع</button>

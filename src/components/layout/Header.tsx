@@ -15,9 +15,32 @@ export default function Header({ profile }: { profile?: Profile | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [unread, setUnread] = useState({ notifications: 0, messages: 0 });
+  const [platformName, setPlatformName] = useState("مناسبات");
   const headerRef = useRef<HTMLElement>(null);
   // الصفحة الرئيسية وصفحة النتائج عندهما بحث خاص بهما، لا داعٍ لتكراره في الهيدر
   const hideHeaderSearch = pathname === "/" || pathname === "/search";
+
+  // عداد حقيقي للإشعارات والرسائل غير المقروءة — يُحدَّث دورياً وعند العودة لتبويب الموقع
+  useEffect(() => {
+    if (!profile) return;
+    let cancelled = false;
+    async function load() {
+      const res = await fetch("/api/notifications/unread-count");
+      if (!res.ok || cancelled) return;
+      const data = await res.json();
+      setUnread({ notifications: data.notifications ?? 0, messages: data.messages ?? 0 });
+    }
+    load();
+    const interval = setInterval(load, 25000);
+    const onVisible = () => { if (!document.hidden) load(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [profile]);
 
   // يقيس ارتفاع الهيدر الفعلي (يختلف حسب ظهور شريط البحث للجوال) ويعرّضه كمتغيّر CSS
   // تعتمد عليه العناصر الثابتة (مثل قائمة لوحة التحكم) لتتموضع أسفله دون تراكب
@@ -31,6 +54,13 @@ export default function Header({ profile }: { profile?: Profile | null }) {
     return () => observer.disconnect();
   }, [hideHeaderSearch]);
 
+  useEffect(() => {
+    fetch("/api/site-config")
+      .then((r) => r.json())
+      .then((data) => { if (data.platform_name) setPlatformName(data.platform_name); })
+      .catch(() => {});
+  }, []);
+
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -41,7 +71,7 @@ export default function Header({ profile }: { profile?: Profile | null }) {
     <header ref={headerRef} className="bg-white border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
         <Link href="/" className="text-2xl font-bold text-[#6D28D9] shrink-0">
-          مناسبات
+          {platformName}
         </Link>
 
         {!hideHeaderSearch && (
@@ -74,11 +104,21 @@ export default function Header({ profile }: { profile?: Profile | null }) {
               <Link href="/favorites" className="p-2 text-gray-500 hover:text-[#6D28D9] transition-colors">
                 <Heart size={20} />
               </Link>
-              <Link href="/dashboard/messages" className="p-2 text-gray-500 hover:text-[#6D28D9] transition-colors">
+              <Link href="/dashboard/messages" className="relative p-2 text-gray-500 hover:text-[#6D28D9] transition-colors">
                 <MessageSquare size={20} />
+                {unread.messages > 0 && (
+                  <span className="absolute top-0.5 left-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                    {unread.messages > 9 ? "9+" : unread.messages}
+                  </span>
+                )}
               </Link>
-              <Link href="/dashboard/notifications" className="p-2 text-gray-500 hover:text-[#6D28D9] transition-colors">
+              <Link href="/dashboard/notifications" className="relative p-2 text-gray-500 hover:text-[#6D28D9] transition-colors">
                 <Bell size={20} />
+                {unread.notifications > 0 && (
+                  <span className="absolute top-0.5 left-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                    {unread.notifications > 9 ? "9+" : unread.notifications}
+                  </span>
+                )}
               </Link>
 
               <div className="relative">

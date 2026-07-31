@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Ad } from "@/lib/types";
 import { AD_STATUS_LABELS } from "@/lib/content";
+import { getSiteFlags } from "@/lib/siteConfig";
 import AdActions from "@/components/dashboard/AdActions";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,11 +11,12 @@ export default async function MyAdsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: ads } = await supabase
-    .from("ads")
-    .select("*, categories(*), ad_images(*)")
-    .eq("user_id", user!.id)
-    .order("created_at", { ascending: false });
+  const [{ data: ads }, flags] = await Promise.all([
+    supabase.from("ads").select("*, categories(*), ad_images(*)").eq("user_id", user!.id).order("created_at", { ascending: false }),
+    getSiteFlags(supabase),
+  ]);
+  const showStats = flags.view_stats_enabled !== false;
+  const renewalEnabled = flags.ad_renewal_enabled !== false;
 
   return (
     <div>
@@ -42,11 +44,13 @@ export default async function MyAdsPage() {
                   <Link href={`/ads/${ad.id}`} className="font-medium text-gray-900 text-sm hover:underline truncate">{ad.title}</Link>
                   <span className="text-xs bg-gray-100 text-gray-600 rounded-lg px-2 py-0.5 shrink-0">{AD_STATUS_LABELS[ad.status]}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
-                  {ad.views_count} مشاهدة · {ad.messages_count} رسالة · {ad.favorites_count} مفضلة
-                </p>
+                {showStats && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    {ad.views_count} مشاهدة · {ad.messages_count} رسالة · {ad.favorites_count} مفضلة
+                  </p>
+                )}
                 <div className="mt-2 flex flex-wrap items-center gap-3">
-                  <AdActions adId={ad.id} status={ad.status} />
+                  <AdActions adId={ad.id} status={ad.status} renewalEnabled={renewalEnabled} />
                   {ad.status === "published" && (
                     <Link
                       href={`/commission?ad=${ad.id}`}

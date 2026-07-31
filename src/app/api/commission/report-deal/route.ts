@@ -20,10 +20,15 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const { data: rateSetting } = await supabase.from("admin_settings").select("value").eq("key", "commission_rate").maybeSingle();
-  const rate = Number(rateSetting?.value ?? 5);
+  const { data: settingsRows } = await supabase.from("admin_settings").select("key,value").in("key", ["commission_rate", "commission_min", "commission_max"]);
+  const settingsMap = Object.fromEntries((settingsRows ?? []).map((r) => [r.key, r.value]));
+  const rate = Number(settingsMap.commission_rate ?? 5);
+  const minAmount = Number(settingsMap.commission_min ?? 0);
+  const maxAmount = Number(settingsMap.commission_max ?? 0);
   const value = Number(deal_value) || 0;
-  const amount = Math.round((value * rate) / 100 * 100) / 100;
+  let amount = Math.round((value * rate) / 100 * 100) / 100;
+  if (minAmount > 0 && amount < minAmount) amount = minAmount;
+  if (maxAmount > 0 && amount > maxAmount) amount = maxAmount;
 
   const { data: obligation, error } = await supabase
     .from("commission_obligations")

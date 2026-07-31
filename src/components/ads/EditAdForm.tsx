@@ -13,7 +13,7 @@ const CITIES = [
   "الطائف", "تبوك", "بريدة", "حائل", "أبها", "خميس مشيط", "جازان", "نجران",
 ];
 
-export default function EditAdForm({ ad, categories }: { ad: Ad; categories: Category[] }) {
+export default function EditAdForm({ ad, categories, maxImages = 10 }: { ad: Ad; categories: Category[]; maxImages?: number }) {
   const router = useRouter();
   const mainCategories = categories.filter((c) => !c.parent_id);
   const initialCategory = categories.find((c) => c.id === ad.category_id);
@@ -38,7 +38,7 @@ export default function EditAdForm({ ad, categories }: { ad: Ad; categories: Cat
   async function handleFiles(files: FileList | null) {
     if (!files) return;
     setError("");
-    const remaining = 10 - images.length;
+    const remaining = maxImages - images.length;
     const selected = Array.from(files).slice(0, remaining);
     const supabase = createClient();
 
@@ -189,7 +189,7 @@ export default function EditAdForm({ ad, categories }: { ad: Ad; categories: Cat
               </button>
             </div>
           ))}
-          {images.length < 10 && (
+          {images.length < maxImages && (
             <label className="aspect-square rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#6D28D9] transition-colors">
               <Upload size={20} className="text-gray-400" />
               <span className="text-xs text-gray-400">{uploading ? "جارٍ الرفع…" : NEW_AD_CONTENT.addImages}</span>
@@ -197,7 +197,7 @@ export default function EditAdForm({ ad, categories }: { ad: Ad; categories: Cat
             </label>
           )}
         </div>
-        <p className="text-xs text-gray-400 mt-2">{NEW_AD_CONTENT.maxImages} — {images.length}/10</p>
+        <p className="text-xs text-gray-400 mt-2">{NEW_AD_CONTENT.maxImages} — {images.length}/{maxImages}</p>
       </div>
 
       <button onClick={save} disabled={saving} className="w-full bg-[#6D28D9] text-white rounded-xl py-3 text-sm font-medium hover:bg-[#5B21B6] transition-colors disabled:opacity-50">

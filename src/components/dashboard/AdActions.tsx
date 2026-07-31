@@ -5,7 +5,7 @@ import { useState } from "react";
 import { AdStatus } from "@/lib/types";
 import { MY_ADS_CONTENT } from "@/lib/content";
 
-export default function AdActions({ adId, status }: { adId: string; status: AdStatus }) {
+export default function AdActions({ adId, status, renewalEnabled = true }: { adId: string; status: AdStatus; renewalEnabled?: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -37,7 +37,7 @@ export default function AdActions({ adId, status }: { adId: string; status: AdSt
       {status === "paused" && (
         <button disabled={loading} onClick={() => act("resume")} className="text-green-600 hover:underline">{MY_ADS_CONTENT.resume}</button>
       )}
-      {(status === "expired" || status === "paused") && (
+      {(status === "expired" || status === "paused") && renewalEnabled && (
         <button disabled={loading} onClick={() => act("renew")} className="text-[#6D28D9] hover:underline">{MY_ADS_CONTENT.renew}</button>
       )}
       <button disabled={loading} onClick={remove} className="text-red-600 hover:underline">{MY_ADS_CONTENT.delete}</button>

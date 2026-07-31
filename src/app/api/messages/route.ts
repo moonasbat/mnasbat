@@ -18,6 +18,11 @@ export async function POST(request: NextRequest) {
   });
   if (!limit.ok) return NextResponse.json({ error: limit.error }, { status: 429 });
 
+  const { data: flag } = await supabase.from("feature_flags").select("enabled").eq("key", "messages_enabled").maybeSingle();
+  if (flag && flag.enabled === false) {
+    return NextResponse.json({ error: "الرسائل الخاصة غير متاحة حالياً." }, { status: 403 });
+  }
+
   const { ad_id, body } = await request.json();
   if (!body || !body.trim()) {
     return NextResponse.json({ error: "الرسالة فارغة" }, { status: 400 });

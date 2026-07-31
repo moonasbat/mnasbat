@@ -7,6 +7,7 @@ import { Ad, Category, Profile } from "@/lib/types";
 import { HOME_CONTENT } from "@/lib/content";
 import { Plus, ChevronLeft, Search } from "lucide-react";
 import CategoryBar from "@/components/CategoryBar";
+import { getSiteFlags } from "@/lib/siteConfig";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -17,6 +18,7 @@ export default async function HomePage() {
     { data: categories },
     { data: featuredAds },
     { data: latestAds },
+    flags,
   ] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : { data: null },
     supabase.from("categories").select("*").eq("is_active", true).is("parent_id", null).order("sort_order"),
@@ -33,7 +35,9 @@ export default async function HomePage() {
       .eq("status", "published")
       .order("published_at", { ascending: false })
       .limit(20),
+    getSiteFlags(supabase),
   ]);
+  const showFeatured = flags.featured_ads_enabled !== false;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -72,7 +76,7 @@ export default async function HomePage() {
         <CategoryBar categories={(categories as Category[]) ?? []} />
 
         <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
-          {featuredAds && featuredAds.length > 0 && (
+          {showFeatured && featuredAds && featuredAds.length > 0 && (
             <section>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-900">{HOME_CONTENT.featuredAds}</h2>

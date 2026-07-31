@@ -6,6 +6,11 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { data: flag } = await supabase.from("feature_flags").select("enabled").eq("key", "reviews_enabled").maybeSingle();
+  if (flag && flag.enabled === false) {
+    return NextResponse.json({ error: "ميزة التقييمات غير متاحة حالياً." }, { status: 403 });
+  }
+
   const { reviewee_id, ad_id, is_positive, comment } = await request.json();
   if (reviewee_id === user.id) {
     return NextResponse.json({ error: "لا يمكنك تقييم نفسك." }, { status: 400 });

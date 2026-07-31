@@ -24,17 +24,22 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const obligation = (payment as unknown as { commission_obligations: { user_id: string; ad_id: string | null } }).commission_obligations;
     const ownerId = obligation.user_id;
 
-    // منح المزايا بعد الاعتماد فقط — القسم 53
-    await admin.from("feature_entitlements").insert([
-      { user_id: ownerId, feature_key: "commission_badge", source: "commission_payment", reason: "اعتماد إيصال عمولة" },
-      { user_id: ownerId, feature_key: "boosted_visibility", source: "commission_payment", reason: "اعتماد إيصال عمولة" },
-    ]);
+    // منح المزايا بعد الاعتماد فقط — القسم 53 (قابلة للتعطيل من لوحة التحكم عبر commission_perks_enabled)
+    const { data: perksFlag } = await admin.from("feature_flags").select("enabled").eq("key", "commission_perks_enabled").maybeSingle();
+    const perksEnabled = perksFlag ? perksFlag.enabled : true;
 
-    if (obligation.ad_id) {
-      await admin
-        .from("ads")
-        .update({ is_featured: true, featured_until: new Date(Date.now() + 14 * 86400000).toISOString() })
-        .eq("id", obligation.ad_id);
+    if (perksEnabled) {
+      await admin.from("feature_entitlements").insert([
+        { user_id: ownerId, feature_key: "commission_badge", source: "commission_payment", reason: "اعتماد إيصال عمولة" },
+        { user_id: ownerId, feature_key: "boosted_visibility", source: "commission_payment", reason: "اعتماد إيصال عمولة" },
+      ]);
+
+      if (obligation.ad_id) {
+        await admin
+          .from("ads")
+          .update({ is_featured: true, featured_until: new Date(Date.now() + 14 * 86400000).toISOString() })
+          .eq("id", obligation.ad_id);
+      }
     }
 
     await admin.from("notifications").insert({
