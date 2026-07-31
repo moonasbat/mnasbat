@@ -15,6 +15,42 @@ import { Star } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import AdGallery from "@/components/ads/AdGallery";
 import { getSiteFlags } from "@/lib/siteConfig";
+import type { Metadata } from "next";
+
+// عنوان/وصف/صورة مخصصة لكل إعلان عند مشاركة الرابط (واتساب، تويتر، إلخ) بدل عنوان الصفحة الرئيسية العام
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: ad } = await supabase
+    .from("ads")
+    .select("title, description, price, city, ad_images(url, sort_order)")
+    .eq("id", id)
+    .single();
+
+  if (!ad) return { title: "الإعلان غير متاح — مناسبات" };
+
+  const title = `${ad.title} — مناسبات`;
+  const description = ad.description?.slice(0, 160) || "اكتشف هذا الإعلان على منصة مناسبات.";
+  const images = (ad.ad_images as { url: string; sort_order: number }[] | null) ?? [];
+  const firstImage = [...images].sort((a, b) => a.sort_order - b.sort_order)[0]?.url;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      images: firstImage ? [{ url: firstImage, width: 1200, height: 900 }] : undefined,
+    },
+    twitter: {
+      card: firstImage ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: firstImage ? [firstImage] : undefined,
+    },
+  };
+}
 
 export default async function AdPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

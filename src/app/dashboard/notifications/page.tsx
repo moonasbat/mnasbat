@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { Notification } from "@/lib/types";
-import MarkAllRead from "@/components/dashboard/MarkAllRead";
 import { AUTH_CONTENT } from "@/lib/content";
 import { formatRelativeTime } from "@/lib/formatTime";
 
@@ -15,11 +14,16 @@ export default async function NotificationsPage() {
     .order("created_at", { ascending: false })
     .limit(50);
 
+  // مجرد فتح صفحة الإشعارات يعتبرها "مقروءة" — بدون الحاجة لضغط زر إضافي
+  const hasUnread = (notifications ?? []).some((n) => !n.is_read);
+  if (hasUnread) {
+    await supabase.from("notifications").update({ is_read: true }).eq("user_id", user!.id).eq("is_read", false);
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold text-gray-900">{AUTH_CONTENT.navNotifications}</h1>
-        <MarkAllRead />
       </div>
 
       {notifications && notifications.length > 0 ? (
