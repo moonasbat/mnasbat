@@ -4,6 +4,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* iOS Safari يكبّر الصفحة تلقائياً (zoom) عند التركيز على أي حقل خطه أصغر من 16px —
+   نفرض 16px كحد أدنى على كل حقول الإدخال بالجوال بدل تعطيل تكبير المستخدم يدوياً بالكامل */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -29,7 +29,6 @@ export default function ContactPanel({
   const [showForm, setShowForm] = useState(false);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
 
   function requireLogin() {
@@ -74,8 +73,8 @@ export default function ContactPanel({
     });
     setSending(false);
     if (res.ok) {
-      setSent(true);
-      setMessage("");
+      const data = await res.json();
+      router.push(`/dashboard/messages?c=${data.conversation_id}`);
     } else {
       const data = await res.json();
       setError(data.error ?? GENERIC_CONTENT.unexpectedError);
@@ -107,8 +106,6 @@ export default function ContactPanel({
               <MessageSquare size={18} />
               {AD_PAGE_CONTENT.sendMessage}
             </button>
-          ) : sent ? (
-            <p className="text-center text-sm text-green-700 bg-green-50 rounded-xl py-3">{GENERIC_CONTENT.success}</p>
           ) : (
             <div className="space-y-2">
               <textarea

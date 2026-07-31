@@ -2,7 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import MessagesInbox from "@/components/dashboard/MessagesInbox";
 import { MESSAGES_CONTENT } from "@/lib/content";
 
-export default async function DashboardMessagesPage() {
+export default async function DashboardMessagesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ c?: string }>;
+}) {
+  const { c: conversationId } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -15,7 +20,7 @@ export default async function DashboardMessagesPage() {
   return (
     <div>
       <h1 className="text-xl font-bold text-gray-900 mb-4">{MESSAGES_CONTENT.title}</h1>
-      <MessagesInbox conversations={conversations ?? []} currentUserId={user!.id} />
+      <MessagesInbox conversations={conversations ?? []} currentUserId={user!.id} initialConversationId={conversationId} />
     </div>
   );
 }
