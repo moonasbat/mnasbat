@@ -20,11 +20,14 @@ import type { Metadata } from "next";
 
 async function findAdByParam(supabase: Awaited<ReturnType<typeof createClient>>, param: string, columns: string): Promise<Record<string, any> | null> {
   const bySlug = await supabase.from("ads").select(columns).eq("slug", param).maybeSingle();
+  if (bySlug.error) console.error("[findAdByParam] slug query error", param, bySlug.error);
   if (bySlug.data) return bySlug.data;
   if (isUuid(param)) {
     const byId = await supabase.from("ads").select(columns).eq("id", param).maybeSingle();
+    if (byId.error) console.error("[findAdByParam] id query error", param, byId.error);
     if (byId.data) return byId.data;
   }
+  console.error("[findAdByParam] not found", param);
   return null;
 }
 
