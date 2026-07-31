@@ -43,6 +43,7 @@ export interface Category {
 
 export interface Ad {
   id: string;
+  slug?: string | null;
   user_id: string;
   category_id: string;
   title: string;

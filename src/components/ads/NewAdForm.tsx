@@ -29,6 +29,7 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [adId, setAdId] = useState<string | null>(null);
+  const [adSlug, setAdSlug] = useState<string | null>(null);
   const [creatingDraft, setCreatingDraft] = useState(false);
   const [savingStep3, setSavingStep3] = useState(false);
   const [declarationAccepted, setDeclarationAccepted] = useState(false);
@@ -120,6 +121,7 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
       return null;
     }
     const data = await res.json();
+    setAdSlug(data.slug ?? null);
     return data.id as string;
   }
 
@@ -196,7 +198,7 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
       setError(data.error ?? "تعذر نشر الإعلان.");
       return;
     }
-    router.push(adUrl({ id: adId, title }));
+    router.push(adUrl({ id: adId, slug: adSlug }));
     router.refresh();
   }
 

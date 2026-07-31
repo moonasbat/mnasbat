@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { generateUniqueAdSlug } from "@/lib/adSlug";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -27,11 +28,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "السعر غير صالح." }, { status: 400 });
   }
 
+  const slug = await generateUniqueAdSlug(supabase, title);
+
   const { data: ad, error } = await supabase
     .from("ads")
     .insert({
       user_id: user.id,
       title,
+      slug,
       description,
       category_id,
       city: city || null,
@@ -41,9 +45,9 @@ export async function POST(request: NextRequest) {
       comments_enabled: comments_enabled ?? true,
       status: "draft",
     })
-    .select("id")
+    .select("id, slug")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ id: ad.id });
+  return NextResponse.json({ id: ad.id, slug: ad.slug });
 }

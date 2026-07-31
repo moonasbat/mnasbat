@@ -15,21 +15,24 @@ import { Star } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import AdGallery from "@/components/ads/AdGallery";
 import { getSiteFlags } from "@/lib/siteConfig";
-import { extractAdId } from "@/lib/adSlug";
+import { isUuid } from "@/lib/adSlug";
 import type { Metadata } from "next";
+
+async function findAdByParam(supabase: Awaited<ReturnType<typeof createClient>>, param: string, columns: string): Promise<Record<string, any> | null> {
+  const bySlug = await supabase.from("ads").select(columns).eq("slug", param).maybeSingle();
+  if (bySlug.data) return bySlug.data;
+  if (isUuid(param)) {
+    const byId = await supabase.from("ads").select(columns).eq("id", param).maybeSingle();
+    if (byId.data) return byId.data;
+  }
+  return null;
+}
 
 // عنوان/وصف/صورة مخصصة لكل إعلان عند مشاركة الرابط (واتساب، تويتر، إلخ) بدل عنوان الصفحة الرئيسية العام
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id: param } = await params;
-  const id = extractAdId(param);
-  if (!id) return { title: "الإعلان غير متاح — مناسبات" };
-
   const supabase = await createClient();
-  const { data: ad } = await supabase
-    .from("ads")
-    .select("title, description, price, city, ad_images(url, sort_order)")
-    .eq("id", id)
-    .single();
+  const ad = await findAdByParam(supabase, param, "title, description, price, city, ad_images(url, sort_order)");
 
   if (!ad) return { title: "الإعلان غير متاح — مناسبات" };
 
@@ -58,17 +61,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function AdPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: param } = await params;
-  const id = extractAdId(param);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: ad } = id
-    ? await supabase
-        .from("ads")
-        .select("*, profiles(*), categories(*), ad_images(*)")
-        .eq("id", id)
-        .single()
-    : { data: null };
+  const ad = await findAdByParam(supabase, param, "*, profiles(*), categories(*), ad_images(*)");
 
   if (!ad) {
     return (
@@ -94,6 +90,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
     );
   }
 
+  const id = ad.id as string;
   await supabase.rpc("increment_ad_views", { ad_id_param: id });
 
   const [{ data: profile }, { data: comments }, { data: favorite }, { data: sellerAds }, { data: parentCategory }, { data: similarAds }, flags] = await Promise.all([
