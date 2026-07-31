@@ -30,8 +30,33 @@ export default function CategoryBar({ categories, activeSlug }: { categories: Ca
       style={{ top: "var(--header-h, 64px)" }}
       className="sticky z-30 bg-white border-b border-gray-100"
     >
-      <div className="max-w-7xl mx-auto px-4 py-3">
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+      <div className="max-w-7xl mx-auto px-4 py-2.5">
+        {/* جوال: شبكة صفّين تُمرَّر أفقياً (نفس كثافة حراج) بدل صف واحد طويل */}
+        <div className="md:hidden grid grid-rows-2 grid-flow-col auto-cols-[64px] gap-x-1 gap-y-1 overflow-x-auto pb-1 snap-x snap-mandatory scrollbar-none">
+          <Link
+            href="/"
+            className={`snap-start flex flex-col items-center gap-0.5 py-1.5 rounded-lg ${!activeSlug ? "text-[#6D28D9]" : "text-gray-600"}`}
+          >
+            <span className={`text-xl w-9 h-9 flex items-center justify-center rounded-full ${!activeSlug ? "bg-purple-50" : "bg-gray-50"}`}>🏠</span>
+            <span className="text-[10px] whitespace-nowrap font-medium">الرئيسية</span>
+          </Link>
+          {categories.map((cat) => {
+            const active = activeSlug === cat.slug;
+            return (
+              <Link
+                key={cat.id}
+                href={`/search?category=${cat.slug}`}
+                className={`snap-start flex flex-col items-center gap-0.5 py-1.5 rounded-lg ${active ? "text-[#6D28D9]" : "text-gray-600"}`}
+              >
+                <span className={`text-xl w-9 h-9 flex items-center justify-center rounded-full ${active ? "bg-purple-50" : "bg-gray-50"}`}>{cat.icon}</span>
+                <span className="text-[10px] whitespace-nowrap font-medium truncate max-w-[60px]">{cat.name}</span>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* سطح المكتب: صف أفقي واحد كما كان */}
+        <div className="hidden md:flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           <Link
             href="/"
             className={`shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl border-2 transition-colors ${

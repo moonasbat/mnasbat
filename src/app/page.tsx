@@ -44,10 +44,10 @@ export default async function HomePage() {
       <Header profile={profile as Profile} />
 
       <main className="flex-1">
-        <section className="bg-gradient-to-bl from-[#6D28D9] to-[#8B5CF6] text-white py-14 px-4">
+        <section className="bg-gradient-to-bl from-[#6D28D9] to-[#8B5CF6] text-white py-3 md:py-14 px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3">{HOME_CONTENT.title}</h1>
-            <p className="text-purple-100 mb-8 text-lg">{HOME_CONTENT.description}</p>
+            <h1 className="hidden md:block text-3xl md:text-4xl font-bold mb-3">{HOME_CONTENT.title}</h1>
+            <p className="hidden md:block text-purple-100 mb-8 text-lg">{HOME_CONTENT.description}</p>
 
             <form action="/search" className="flex gap-2 max-w-xl mx-auto">
               <div className="relative flex-1">
@@ -55,17 +55,17 @@ export default async function HomePage() {
                 <input
                   name="q"
                   placeholder={HOME_CONTENT.searchPlaceholder}
-                  className="w-full rounded-xl px-10 py-3 text-gray-900 text-sm focus:outline-none"
+                  className="w-full rounded-xl px-10 py-2.5 md:py-3 text-gray-900 text-sm focus:outline-none"
                 />
               </div>
-              <button className="bg-white text-[#6D28D9] font-bold px-5 py-3 rounded-xl hover:bg-purple-50 transition-colors">
+              <button className="bg-white text-[#6D28D9] font-bold px-4 md:px-5 py-2.5 md:py-3 rounded-xl hover:bg-purple-50 transition-colors text-sm md:text-base">
                 {HOME_CONTENT.searchButton}
               </button>
             </form>
 
             <Link
               href="/ads/new"
-              className="inline-flex items-center gap-2 mt-6 bg-white/10 border border-white/30 text-white font-medium px-5 py-2.5 rounded-xl hover:bg-white/20 transition-colors"
+              className="hidden md:inline-flex items-center gap-2 mt-6 bg-white/10 border border-white/30 text-white font-medium px-5 py-2.5 rounded-xl hover:bg-white/20 transition-colors"
             >
               <Plus size={18} />
               {HOME_CONTENT.addAdButton}
@@ -75,7 +75,7 @@ export default async function HomePage() {
 
         <CategoryBar categories={(categories as Category[]) ?? []} />
 
-        <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
+        <div className="max-w-7xl mx-auto px-4 py-5 md:py-8 space-y-6 md:space-y-10">
           {showFeatured && featuredAds && featuredAds.length > 0 && (
             <section>
               <div className="flex items-center justify-between mb-4">
