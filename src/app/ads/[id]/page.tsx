@@ -18,16 +18,24 @@ import { getSiteFlags } from "@/lib/siteConfig";
 import { isUuid } from "@/lib/adSlug";
 import type { Metadata } from "next";
 
-async function findAdByParam(supabase: Awaited<ReturnType<typeof createClient>>, param: string, columns: string): Promise<Record<string, any> | null> {
+// Next.js لا يضمن دائماً فك ترميز params في مكوّن الصفحة (بخلاف generateMetadata) —
+// نفك الترميز يدوياً لأن الرابط يحتوي نصاً عربياً (slug) قد يصل بصيغته المُرمّزة (%D9%81...)
+function decodeParam(param: string): string {
+  try {
+    return decodeURIComponent(param);
+  } catch {
+    return param;
+  }
+}
+
+async function findAdByParam(supabase: Awaited<ReturnType<typeof createClient>>, rawParam: string, columns: string): Promise<Record<string, any> | null> {
+  const param = decodeParam(rawParam);
   const bySlug = await supabase.from("ads").select(columns).eq("slug", param).maybeSingle();
-  if (bySlug.error) console.error("[findAdByParam] slug query error", param, bySlug.error);
   if (bySlug.data) return bySlug.data;
   if (isUuid(param)) {
     const byId = await supabase.from("ads").select(columns).eq("id", param).maybeSingle();
-    if (byId.error) console.error("[findAdByParam] id query error", param, byId.error);
     if (byId.data) return byId.data;
   }
-  console.error("[findAdByParam] not found", param);
   return null;
 }
 
