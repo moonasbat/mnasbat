@@ -13,6 +13,15 @@ export async function POST(request: NextRequest) {
   const { name, icon, parent_id, sort_order } = await request.json();
   if (!name?.trim()) return NextResponse.json({ error: "اسم التصنيف مطلوب." }, { status: 400 });
 
+  let finalSortOrder = sort_order;
+  if (finalSortOrder === undefined) {
+    // إلحاق التصنيف الجديد في نهاية مجموعته (نفس المستوى) بدل وضعه دائماً في البداية
+    let siblings = admin.from("categories").select("sort_order").order("sort_order", { ascending: false }).limit(1);
+    siblings = parent_id ? siblings.eq("parent_id", parent_id) : siblings.is("parent_id", null);
+    const { data: last } = await siblings.maybeSingle();
+    finalSortOrder = (last?.sort_order ?? -1) + 1;
+  }
+
   const { data, error } = await admin
     .from("categories")
     .insert({
@@ -20,7 +29,7 @@ export async function POST(request: NextRequest) {
       slug: generateSlug(),
       icon: parent_id ? null : (icon?.trim() || "✨"),
       parent_id: parent_id || null,
-      sort_order: sort_order ?? 0,
+      sort_order: finalSortOrder,
       is_active: true,
     })
     .select("*")

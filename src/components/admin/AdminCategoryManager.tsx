@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Category } from "@/lib/types";
 import ToggleSwitch from "./ToggleSwitch";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, X, ChevronUp, ChevronDown } from "lucide-react";
 
 async function callApi(method: "POST" | "PATCH" | "DELETE", body: Record<string, unknown>) {
   const res = await fetch("/api/admin/categories", {
@@ -52,7 +52,19 @@ function AddCategoryForm({ parentId, onDone }: { parentId?: string; onDone: () =
   );
 }
 
-function CategoryRow({ category, isSub }: { category: Category; isSub?: boolean }) {
+function CategoryRow({
+  category,
+  isSub,
+  canMoveUp,
+  canMoveDown,
+  onMove,
+}: {
+  category: Category;
+  isSub?: boolean;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  onMove: (direction: -1 | 1) => void;
+}) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(category.name);
@@ -99,7 +111,17 @@ function CategoryRow({ category, isSub }: { category: Category; isSub?: boolean 
 
   return (
     <div className={`flex items-center justify-between gap-2 py-2 ${isSub ? "pr-8 text-gray-600" : ""}`}>
-      <span className="text-sm">{isSub ? "└ " : `${category.icon ?? "✨"} `}{category.name}</span>
+      <div className="flex items-center gap-1 min-w-0">
+        <div className="flex flex-col shrink-0 -my-1">
+          <button onClick={() => onMove(-1)} disabled={!canMoveUp} className="text-gray-300 hover:text-[#6D28D9] disabled:opacity-30 disabled:hover:text-gray-300" aria-label="تحريك لأعلى">
+            <ChevronUp size={13} />
+          </button>
+          <button onClick={() => onMove(1)} disabled={!canMoveDown} className="text-gray-300 hover:text-[#6D28D9] disabled:opacity-30 disabled:hover:text-gray-300" aria-label="تحريك لأسفل">
+            <ChevronDown size={13} />
+          </button>
+        </div>
+        <span className="text-sm truncate">{isSub ? "└ " : `${category.icon ?? "✨"} `}{category.name}</span>
+      </div>
       <div className="flex items-center gap-2 shrink-0">
         <button onClick={() => setEditing(true)} className="text-gray-400 hover:text-[#6D28D9]"><Pencil size={14} /></button>
         <button onClick={remove} disabled={loading} className="text-gray-400 hover:text-red-600"><Trash2 size={14} /></button>
@@ -111,20 +133,45 @@ function CategoryRow({ category, isSub }: { category: Category; isSub?: boolean 
 
 export default function AdminCategoryManager({ categories }: { categories: Category[] }) {
   const router = useRouter();
-  const mains = categories.filter((c) => !c.parent_id);
+  const mains = categories.filter((c) => !c.parent_id).sort((a, b) => a.sort_order - b.sort_order);
   const [addingMain, setAddingMain] = useState(false);
   const [addingSubFor, setAddingSubFor] = useState<string | null>(null);
+
+  // يبدّل ترتيب عنصرين متجاورين ضمن نفس المجموعة (رئيسية أو فرعية لنفس الأب)
+  async function moveWithin(list: Category[], index: number, direction: -1 | 1) {
+    const otherIndex = index + direction;
+    if (otherIndex < 0 || otherIndex >= list.length) return;
+    const a = list[index];
+    const b = list[otherIndex];
+    await Promise.all([
+      callApi("PATCH", { id: a.id, sort_order: b.sort_order }),
+      callApi("PATCH", { id: b.id, sort_order: a.sort_order }),
+    ]);
+    router.refresh();
+  }
 
   return (
     <div className="space-y-4">
       <div className="bg-white border border-gray-100 rounded-2xl p-5 space-y-1 divide-y divide-gray-50">
-        {mains.map((main) => {
-          const subs = categories.filter((c) => c.parent_id === main.id);
+        {mains.map((main, mainIndex) => {
+          const subs = categories.filter((c) => c.parent_id === main.id).sort((a, b) => a.sort_order - b.sort_order);
           return (
             <div key={main.id} className="py-2">
-              <CategoryRow category={main} />
-              {subs.map((sc) => (
-                <CategoryRow key={sc.id} category={sc} isSub />
+              <CategoryRow
+                category={main}
+                canMoveUp={mainIndex > 0}
+                canMoveDown={mainIndex < mains.length - 1}
+                onMove={(direction) => moveWithin(mains, mainIndex, direction)}
+              />
+              {subs.map((sc, subIndex) => (
+                <CategoryRow
+                  key={sc.id}
+                  category={sc}
+                  isSub
+                  canMoveUp={subIndex > 0}
+                  canMoveDown={subIndex < subs.length - 1}
+                  onMove={(direction) => moveWithin(subs, subIndex, direction)}
+                />
               ))}
               {addingSubFor === main.id ? (
                 <div className="pr-8 pt-2">

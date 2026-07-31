@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminSettings, FeatureFlags } from "@/lib/types";
 import ToggleSwitch from "./ToggleSwitch";
@@ -99,17 +99,21 @@ export default function AdminSettingsForm({
   const [saving, setSaving] = useState<string | null>(null);
   const [savedKey, setSavedKey] = useState<string | null>(null);
 
+  const lastSavedRef = useRef<Record<string, string>>(settings);
+
   async function saveSetting(key: string, overrideValue?: string) {
-    const value = overrideValue ?? values[key];
+    const value = overrideValue ?? values[key] ?? "";
+    if (lastSavedRef.current[key] === value) return; // ما تغيّر شيء — لا داعي لطلب شبكة
     setSaving(key);
     await fetch("/api/admin/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ key, value }),
     });
+    lastSavedRef.current[key] = value;
     setSaving(null);
     setSavedKey(key);
-    setTimeout(() => setSavedKey(null), 2000);
+    setTimeout(() => setSavedKey(null), 1500);
     router.refresh();
   }
 
@@ -137,23 +141,20 @@ export default function AdminSettingsForm({
           <h2 className="font-bold text-gray-900 mb-4">{group.title}</h2>
           <div className="space-y-4">
             {group.fields.map(([key, label, desc]) => (
-              <div key={key} className="flex items-start gap-3">
-                <div className="flex-1">
+              <div key={key}>
+                <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-gray-800 block">{label}</label>
-                  {desc && <p className="text-xs text-gray-400 mt-0.5">{desc}</p>}
-                  <input
-                    value={values[key] ?? ""}
-                    onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
-                    className="mt-2 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
-                  />
+                  {saving === key && <span className="text-[11px] text-gray-400">جارٍ الحفظ…</span>}
+                  {savedKey === key && <span className="text-[11px] text-green-600">تم الحفظ ✓</span>}
                 </div>
-                <button
-                  onClick={() => saveSetting(key)}
-                  disabled={saving === key}
-                  className="mt-6 bg-[#6D28D9] text-white rounded-xl px-4 py-2 text-xs font-medium disabled:opacity-60 shrink-0"
-                >
-                  {savedKey === key ? "تم الحفظ ✓" : "حفظ"}
-                </button>
+                {desc && <p className="text-xs text-gray-400 mt-0.5">{desc}</p>}
+                <input
+                  value={values[key] ?? ""}
+                  onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
+                  onBlur={() => saveSetting(key)}
+                  onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
+                  className="mt-2 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                />
               </div>
             ))}
             {group.title === "الحساب البنكي لاستقبال العمولات" && (
