@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { AD_PAGE_CONTENT, GENERIC_CONTENT, contactMessageTemplate } from "@/lib/content";
-import { Heart, MessageSquare, Share2 } from "lucide-react";
+import { Heart, MessageSquare, Share2, Link2, Check } from "lucide-react";
 import { loginUrl } from "@/lib/loginRedirect";
 
 export default function ContactPanel({
@@ -30,6 +30,7 @@ export default function ContactPanel({
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
 
   function requireLogin() {
     if (!isLoggedIn) {
@@ -100,6 +101,14 @@ export default function ContactPanel({
     }
   }
 
+  // نسخ صريح بدل الاعتماد على نسخ المستخدم يدوياً من شريط العنوان — المتصفح هو من
+  // يقرر شكل الرابط عند النسخ اليدوي (غالباً مُرمّز) وهذا خارج عن تحكم الموقع
+  async function copyLink() {
+    await navigator.clipboard.writeText(cleanAdUrl());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-4 space-y-3">
       {messagesEnabled && (
@@ -154,10 +163,16 @@ export default function ContactPanel({
             {favorited ? AD_PAGE_CONTENT.removeFavorite : AD_PAGE_CONTENT.addFavorite}
           </button>
         ) : <span />}
-        <button onClick={share} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#6D28D9] transition-colors">
-          <Share2 size={16} />
-          {AD_PAGE_CONTENT.share}
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={copyLink} className={`flex items-center gap-1.5 text-sm transition-colors ${copied ? "text-green-600" : "text-gray-500 hover:text-[#6D28D9]"}`}>
+            {copied ? <Check size={16} /> : <Link2 size={16} />}
+            {copied ? "تم النسخ" : "نسخ الرابط"}
+          </button>
+          <button onClick={share} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#6D28D9] transition-colors">
+            <Share2 size={16} />
+            {AD_PAGE_CONTENT.share}
+          </button>
+        </div>
       </div>
     </div>
   );
