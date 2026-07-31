@@ -74,36 +74,45 @@ export default async function SearchPage({
     <div className="min-h-screen flex flex-col">
       <Header profile={profile as Profile} />
 
-      {/* شريط التصنيفات الكامل — ثابت في كل صفحات التصفح، يختفي فقط داخل صفحة الإعلان المفردة */}
-      <CategoryBar categories={mainCategories} />
+      {/* شريط التصنيفات الرئيسية — ثابت في كل صفحات التصفح، يختفي فقط داخل صفحة الإعلان المفردة */}
+      <CategoryBar categories={mainCategories} activeSlug={categorySlug} />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
+      {/* شريط التصنيفات الفرعية — ثابت أيضاً أسفل شريط التصنيفات الرئيسية مباشرة */}
+      {mainCategory && subcategories.length > 0 && (
+        <section
+          style={{ top: "calc(var(--header-h, 64px) + var(--category-bar-h, 0px))" }}
+          className="sticky z-20 bg-white border-b border-gray-100 min-w-0"
+        >
+          <div className="max-w-7xl mx-auto px-4 py-2.5">
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none min-w-0">
+              <Link
+                href={`/search?category=${mainCategory.slug}`}
+                className={`shrink-0 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                  !subCategory ? "bg-[#6D28D9] border-[#6D28D9] text-white" : "border-gray-200 text-gray-600 hover:border-[#6D28D9] hover:text-[#6D28D9]"
+                }`}
+              >
+                الكل
+              </Link>
+              {subcategories.map((sc) => (
+                <Link
+                  key={sc.id}
+                  href={`/search?category=${mainCategory.slug}&sub=${sc.slug}`}
+                  className={`shrink-0 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                    subCategory?.id === sc.id ? "bg-[#6D28D9] border-[#6D28D9] text-white" : "border-gray-200 text-gray-600 hover:border-[#6D28D9] hover:text-[#6D28D9]"
+                  }`}
+                >
+                  {sc.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6 min-w-0">
         {mainCategory && (
           <div className="mb-5 space-y-3">
             <h1 className="text-lg font-bold text-gray-900">{mainCategory.name}</h1>
-            {subcategories.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  href={`/search?category=${mainCategory.slug}`}
-                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
-                    !subCategory ? "bg-[#6D28D9] border-[#6D28D9] text-white" : "border-gray-200 text-gray-600 hover:border-[#6D28D9] hover:text-[#6D28D9]"
-                  }`}
-                >
-                  الكل
-                </Link>
-                {subcategories.map((sc) => (
-                  <Link
-                    key={sc.id}
-                    href={`/search?category=${mainCategory.slug}&sub=${sc.slug}`}
-                    className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
-                      subCategory?.id === sc.id ? "bg-[#6D28D9] border-[#6D28D9] text-white" : "border-gray-200 text-gray-600 hover:border-[#6D28D9] hover:text-[#6D28D9]"
-                    }`}
-                  >
-                    {sc.name}
-                  </Link>
-                ))}
-              </div>
-            )}
             <LocationFilters />
           </div>
         )}
