@@ -120,7 +120,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
               {ad.price ? (
                 <p className="text-xl font-bold text-[#6D28D9] mt-3">{formatNumber(ad.price)} ر.س</p>
               ) : (
-                <p className="text-sm text-gray-400 mt-3">السعر حسب الاتفاق</p>
+                <p className="text-sm text-gray-400 mt-3">حسب الاتفاق</p>
               )}
               <p className="text-gray-700 mt-4 whitespace-pre-line leading-relaxed">{ad.description}</p>
             </div>

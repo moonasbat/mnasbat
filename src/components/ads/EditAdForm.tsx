@@ -15,12 +15,18 @@ const CITIES = [
 
 export default function EditAdForm({ ad, categories }: { ad: Ad; categories: Category[] }) {
   const router = useRouter();
+  const mainCategories = categories.filter((c) => !c.parent_id);
+  const initialCategory = categories.find((c) => c.id === ad.category_id);
+  const initialMainId = initialCategory?.parent_id ? initialCategory.parent_id : ad.category_id;
+  const initialSubId = initialCategory?.parent_id ? ad.category_id : "";
   const [title, setTitle] = useState(ad.title);
   const [description, setDescription] = useState(ad.description);
-  const [categoryId, setCategoryId] = useState(ad.category_id);
+  const [categoryId, setCategoryId] = useState(initialMainId);
+  const [subCategoryId, setSubCategoryId] = useState(initialSubId);
   const [city, setCity] = useState(ad.city ?? "");
   const [price, setPrice] = useState(ad.price ? String(ad.price) : "");
   const [whatsapp, setWhatsapp] = useState(ad.whatsapp ?? "");
+  const [whatsappEnabled, setWhatsappEnabled] = useState(!!ad.whatsapp);
   const [messagesEnabled, setMessagesEnabled] = useState(ad.messages_enabled);
   const [commentsEnabled, setCommentsEnabled] = useState(ad.comments_enabled);
   const [images, setImages] = useState<AdImage[]>(ad.ad_images ?? []);
@@ -76,7 +82,8 @@ export default function EditAdForm({ ad, categories }: { ad: Ad; categories: Cat
     if (!title.trim()) return setError(NEW_AD_CONTENT.errors.titleRequired);
     if (!description.trim()) return setError(NEW_AD_CONTENT.errors.descriptionRequired);
     if (!categoryId) return setError(NEW_AD_CONTENT.errors.categoryRequired);
-    if (!whatsapp && !messagesEnabled) {
+    const whatsappActive = whatsappEnabled && !!whatsapp;
+    if (!whatsappActive && !messagesEnabled) {
       return setError("يجب تفعيل التواصل عبر واتساب أو السماح بالرسائل الخاصة — وسيلة تواصل واحدة على الأقل مطلوبة.");
     }
 
@@ -87,8 +94,8 @@ export default function EditAdForm({ ad, categories }: { ad: Ad; categories: Cat
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        action: "update", title, description, category_id: categoryId, city, price,
-        whatsapp, messages_enabled: messagesEnabled, comments_enabled: commentsEnabled,
+        action: "update", title, description, category_id: subCategoryId || categoryId, city, price,
+        whatsapp: whatsappActive ? whatsapp : "", messages_enabled: messagesEnabled, comments_enabled: commentsEnabled,
       }),
     });
     setSaving(false);
@@ -116,12 +123,31 @@ export default function EditAdForm({ ad, categories }: { ad: Ad; categories: Cat
       </div>
       <div>
         <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.categoryLabel}</label>
-        <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
-          {categories.map((c) => (
+        <select
+          value={categoryId}
+          onChange={(e) => { setCategoryId(e.target.value); setSubCategoryId(""); }}
+          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm"
+        >
+          {mainCategories.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
       </div>
+      {(() => {
+        const subCategories = categories.filter((c) => c.parent_id === categoryId);
+        if (subCategories.length === 0) return null;
+        return (
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-1">التصنيف الفرعي (اختياري)</label>
+            <select value={subCategoryId} onChange={(e) => setSubCategoryId(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
+              <option value="">بدون تصنيف فرعي</option>
+              {subCategories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </div>
+        );
+      })()}
       <div>
         <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.cityLabel}</label>
         <select value={city} onChange={(e) => setCity(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
@@ -136,8 +162,11 @@ export default function EditAdForm({ ad, categories }: { ad: Ad; categories: Cat
         <input value={price} onChange={(e) => setPrice(e.target.value)} type="number" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm" />
       </div>
       <div>
-        <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.whatsappLabel}</label>
-        <SaudiPhoneInput value={whatsapp} onChange={setWhatsapp} />
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+          <input type="checkbox" checked={whatsappEnabled} onChange={(e) => setWhatsappEnabled(e.target.checked)} />
+          {NEW_AD_CONTENT.whatsappLabel}
+        </label>
+        {whatsappEnabled && <SaudiPhoneInput value={whatsapp} onChange={setWhatsapp} />}
       </div>
       <label className="flex items-center gap-2 text-sm text-gray-700">
         <input type="checkbox" checked={messagesEnabled} onChange={(e) => setMessagesEnabled(e.target.checked)} />

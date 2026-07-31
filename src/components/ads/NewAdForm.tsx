@@ -15,11 +15,13 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [subCategoryId, setSubCategoryId] = useState("");
   const [categoryTouched, setCategoryTouched] = useState(false);
   const [city, setCity] = useState("");
   const [locating, setLocating] = useState(false);
   const [price, setPrice] = useState("");
   const [whatsapp, setWhatsapp] = useState(initialWhatsapp ?? "");
+  const [whatsappEnabled, setWhatsappEnabled] = useState(true);
   const [messagesEnabled, setMessagesEnabled] = useState(true);
   const [commentsEnabled, setCommentsEnabled] = useState(true);
   const [images, setImages] = useState<{ url: string; public_id: string }[]>([]);
@@ -32,12 +34,15 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
   const [declarationExpanded, setDeclarationExpanded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const mainCategories = categories.filter((c) => !c.parent_id);
+  const subCategories = categories.filter((c) => c.parent_id === categoryId);
+
   // اقتراح تصنيف تلقائي من العنوان — لا يُطبَّق إذا المستخدم غيّر التصنيف يدوياً
   useEffect(() => {
     if (categoryTouched) return;
     const slug = suggestCategorySlug(title);
     if (!slug) return;
-    const match = categories.find((c) => c.slug === slug);
+    const match = mainCategories.find((c) => c.slug === slug);
     if (match) setCategoryId(match.id);
   }, [title, categories, categoryTouched]);
 
@@ -103,8 +108,8 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        title, description, category_id: categoryId, city, price,
-        whatsapp, messages_enabled: messagesEnabled, comments_enabled: commentsEnabled,
+        title, description, category_id: subCategoryId || categoryId, city, price,
+        whatsapp: whatsappEnabled ? whatsapp : "", messages_enabled: messagesEnabled, comments_enabled: commentsEnabled,
       }),
     });
     setCreatingDraft(false);
@@ -147,7 +152,8 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
 
   async function goToStep4() {
     if (!adId) return;
-    if (!whatsapp && !messagesEnabled) {
+    const whatsappActive = whatsappEnabled && !!whatsapp;
+    if (!whatsappActive && !messagesEnabled) {
       setError("يجب تفعيل التواصل عبر واتساب أو السماح بالرسائل الخاصة — وسيلة تواصل واحدة على الأقل مطلوبة.");
       return;
     }
@@ -157,8 +163,8 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        action: "update", title, description, category_id: categoryId, city, price,
-        whatsapp, messages_enabled: messagesEnabled, comments_enabled: commentsEnabled,
+        action: "update", title, description, category_id: subCategoryId || categoryId, city, price,
+        whatsapp: whatsappActive ? whatsapp : "", messages_enabled: messagesEnabled, comments_enabled: commentsEnabled,
       }),
     });
     setSavingStep3(false);
@@ -217,11 +223,11 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
             <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.categoryLabel}</label>
             <select
               value={categoryId}
-              onChange={(e) => { setCategoryId(e.target.value); setCategoryTouched(true); }}
+              onChange={(e) => { setCategoryId(e.target.value); setSubCategoryId(""); setCategoryTouched(true); }}
               className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm"
             >
               <option value="">{NEW_AD_CONTENT.categoryPlaceholder}</option>
-              {categories.map((c) => (
+              {mainCategories.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
@@ -229,6 +235,21 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
               <p className="text-xs text-[#6D28D9] mt-1">تم اقتراح هذا التصنيف تلقائياً — يمكنك تغييره.</p>
             )}
           </div>
+          {categoryId && subCategories.length > 0 && (
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-1">التصنيف الفرعي (اختياري)</label>
+              <select
+                value={subCategoryId}
+                onChange={(e) => setSubCategoryId(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm"
+              >
+                <option value="">بدون تصنيف فرعي</option>
+                {subCategories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="text-sm font-medium text-gray-700 block">{NEW_AD_CONTENT.cityLabel}</label>
@@ -300,8 +321,11 @@ export default function NewAdForm({ categories, initialWhatsapp }: { categories:
       {step === 3 && (
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.whatsappLabel}</label>
-            <SaudiPhoneInput value={whatsapp} onChange={setWhatsapp} />
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+              <input type="checkbox" checked={whatsappEnabled} onChange={(e) => setWhatsappEnabled(e.target.checked)} />
+              {NEW_AD_CONTENT.whatsappLabel}
+            </label>
+            {whatsappEnabled && <SaudiPhoneInput value={whatsapp} onChange={setWhatsapp} />}
           </div>
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" checked={messagesEnabled} onChange={(e) => setMessagesEnabled(e.target.checked)} />

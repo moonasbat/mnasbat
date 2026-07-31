@@ -62,7 +62,7 @@ export default function AdCard({ ad }: { ad: Ad }) {
           {ad.price ? (
             <span className="font-bold text-[#6D28D9] text-sm">{formatNumber(ad.price)} ر.س</span>
           ) : (
-            <span className="text-xs text-gray-400">السعر حسب الاتفاق</span>
+            <span className="text-xs text-gray-400">حسب الاتفاق</span>
           )}
           <span className="text-xs text-gray-400">{timeLabel}</span>
         </div>
