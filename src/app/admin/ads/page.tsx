@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { formatNumber } from "@/lib/formatTime";
+import { adUrl } from "@/lib/adSlug";
 
 export default async function AdminAdsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const { status } = await searchParams;
@@ -77,7 +78,7 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Pro
                       {ad.price ? ` · ${formatNumber(ad.price)} ر.س` : ""}
                     </p>
                   </div>
-                  <Link href={`/ads/${ad.id}`} target="_blank" className="flex items-center gap-1 text-xs text-[#6D28D9] shrink-0 hover:underline">
+                  <Link href={adUrl(ad)} target="_blank" className="flex items-center gap-1 text-xs text-[#6D28D9] shrink-0 hover:underline">
                     فتح الصفحة الكاملة
                     <ExternalLink size={12} />
                   </Link>

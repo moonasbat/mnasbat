@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { X, Upload, ShieldCheck, CheckCircle2, Circle, ChevronDown, MapPin, Loader2 } from "lucide-react";
 import SaudiPhoneInput from "@/components/SaudiPhoneInput";
 import { SAUDI_CITIES, nearestSaudiCity, suggestCategorySlug } from "@/lib/saudiCities";
+import { adUrl } from "@/lib/adSlug";
 
 export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 }: { categories: Category[]; initialWhatsapp?: string; maxImages?: number }) {
   const router = useRouter();
@@ -195,7 +196,7 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
       setError(data.error ?? "تعذر نشر الإعلان.");
       return;
     }
-    router.push(`/ads/${adId}`);
+    router.push(adUrl({ id: adId, title }));
     router.refresh();
   }
 

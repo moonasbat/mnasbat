@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { loginUrl } from "@/lib/loginRedirect";
 import { formatRelativeTime, formatNumber } from "@/lib/formatTime";
+import { adUrl } from "@/lib/adSlug";
 
 export default function AdCard({ ad }: { ad: Ad }) {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function AdCard({ ad }: { ad: Ad }) {
 
   return (
     <Link
-      href={`/ads/${ad.id}`}
+      href={adUrl(ad)}
       className="group block bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
     >
       <div className="relative aspect-[4/3] bg-gray-100">

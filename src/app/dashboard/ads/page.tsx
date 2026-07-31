@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Ad } from "@/lib/types";
 import { AD_STATUS_LABELS } from "@/lib/content";
 import { getSiteFlags } from "@/lib/siteConfig";
+import { adUrl } from "@/lib/adSlug";
 import AdActions from "@/components/dashboard/AdActions";
 import Link from "next/link";
 import Image from "next/image";
@@ -41,7 +42,7 @@ export default async function MyAdsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <Link href={`/ads/${ad.id}`} className="font-medium text-gray-900 text-sm hover:underline truncate">{ad.title}</Link>
+                  <Link href={adUrl(ad)} className="font-medium text-gray-900 text-sm hover:underline truncate">{ad.title}</Link>
                   <span className="text-xs bg-gray-100 text-gray-600 rounded-lg px-2 py-0.5 shrink-0">{AD_STATUS_LABELS[ad.status]}</span>
                 </div>
                 {showStats && (
