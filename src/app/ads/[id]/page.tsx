@@ -8,14 +8,14 @@ import AdCard from "@/components/ads/AdCard";
 import { Ad, AdImage, Profile, Comment } from "@/lib/types";
 import { AD_PAGE_CONTENT } from "@/lib/content";
 import { formatRelativeTime, formatNumber } from "@/lib/formatTime";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import AdGallery from "@/components/ads/AdGallery";
 import { getSiteFlags } from "@/lib/siteConfig";
-import { extractAdId, adUrl } from "@/lib/adSlug";
+import { extractAdId } from "@/lib/adSlug";
 import type { Metadata } from "next";
 
 // عنوان/وصف/صورة مخصصة لكل إعلان عند مشاركة الرابط (واتساب، تويتر، إلخ) بدل عنوان الصفحة الرئيسية العام
@@ -92,12 +92,6 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
         <Footer />
       </div>
     );
-  }
-
-  // رابط أساسي (canonical) موحّد — يعيد التوجيه لو الرابط قديم (بدون العنوان) أو تغيّر عنوان الإعلان
-  const canonicalUrl = adUrl(ad);
-  if (`/ads/${param}` !== canonicalUrl) {
-    redirect(canonicalUrl);
   }
 
   await supabase.rpc("increment_ad_views", { ad_id_param: id });
