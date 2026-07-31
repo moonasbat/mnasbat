@@ -8,7 +8,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const { admin, user } = auth;
 
   const { status } = await request.json();
-  const { data: review } = await admin.from("reviews").select("reviewee_id, is_positive").eq("id", id).single();
+  const { data: review } = await admin.from("reviews").select("reviewee_id, rating").eq("id", id).single();
   if (!review) return NextResponse.json({ error: "غير موجود." }, { status: 404 });
 
   await admin.from("reviews").update({ status }).eq("id", id);
@@ -26,14 +26,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }
 
   if (status === "approved") {
-    const field = review.is_positive ? "positive_reviews" : "negative_reviews";
-    const { data: profile } = await admin.from("profiles").select(`${field}, total_reviews`).eq("id", review.reviewee_id).single();
+    const { data: profile } = await admin.from("profiles").select("rating_sum, total_reviews").eq("id", review.reviewee_id).single();
     if (profile) {
       await admin
         .from("profiles")
         .update({
-          [field]: ((profile as unknown as Record<string, number>)[field] ?? 0) + 1,
-          total_reviews: ((profile as unknown as Record<string, number>).total_reviews ?? 0) + 1,
+          rating_sum: (profile.rating_sum ?? 0) + review.rating,
+          total_reviews: (profile.total_reviews ?? 0) + 1,
         })
         .eq("id", review.reviewee_id);
     }

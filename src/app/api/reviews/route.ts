@@ -11,19 +11,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "ميزة التقييمات غير متاحة حالياً." }, { status: 403 });
   }
 
-  const { reviewee_id, ad_id, is_positive, comment } = await request.json();
+  const { reviewee_id, ad_id, rating, comment } = await request.json();
   if (reviewee_id === user.id) {
     return NextResponse.json({ error: "لا يمكنك تقييم نفسك." }, { status: 400 });
   }
   if (!comment?.trim()) {
     return NextResponse.json({ error: "التعليق مطلوب." }, { status: 400 });
   }
+  const ratingNum = Number(rating);
+  if (!Number.isInteger(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+    return NextResponse.json({ error: "التقييم يجب أن يكون من 1 إلى 5 نجوم." }, { status: 400 });
+  }
 
   const { error } = await supabase.from("reviews").insert({
     reviewer_id: user.id,
     reviewee_id,
     ad_id: ad_id || null,
-    is_positive,
+    rating: ratingNum,
     comment,
     status: "pending",
   });

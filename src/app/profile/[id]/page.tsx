@@ -4,7 +4,7 @@ import Footer from "@/components/layout/Footer";
 import AdCard from "@/components/ads/AdCard";
 import { Ad, Profile, Review } from "@/lib/types";
 import Image from "next/image";
-import { Star, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { notFound } from "next/navigation";
 import AddReviewForm from "@/components/AddReviewForm";
 import ReviewReplyForm from "@/components/ReviewReplyForm";
@@ -12,6 +12,8 @@ import BlockUserButton from "@/components/BlockUserButton";
 import ReportDialog from "@/components/ReportDialog";
 import { formatGregorianDate } from "@/lib/formatTime";
 import { getSiteFlags } from "@/lib/siteConfig";
+import { StarRatingDisplay } from "@/components/StarRating";
+import { averageRating } from "@/lib/rating";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -52,9 +54,15 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             </div>
             {s.username && <p className="text-sm text-gray-400" dir="ltr">@{s.username}</p>}
             {s.city && <p className="text-sm text-gray-400">{s.city}</p>}
-            <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
-              <Star size={14} className="text-amber-400" fill="currentColor" />
-              {s.positive_reviews} تقييم إيجابي · {s.total_reviews} إجمالي
+            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+              {s.total_reviews > 0 ? (
+                <>
+                  <StarRatingDisplay value={averageRating(s)} />
+                  <span>{averageRating(s).toFixed(1)} ({s.total_reviews} تقييم)</span>
+                </>
+              ) : (
+                <span className="text-gray-400">لا توجد تقييمات بعد</span>
+              )}
             </div>
             <p className="text-xs text-gray-400 mt-1">عضو منذ {formatGregorianDate(s.created_at)}</p>
           </div>
@@ -92,9 +100,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               {(reviews as Review[]).map((r) => (
                 <div key={r.id} className="bg-white border border-gray-100 rounded-2xl p-4">
                   <div className="flex items-center gap-2">
-                    <span className={r.is_positive ? "text-green-600" : "text-red-500"}>
-                      {r.is_positive ? "إيجابي" : "سلبي"}
-                    </span>
+                    <StarRatingDisplay value={r.rating} size={13} />
                     <span className="text-xs text-gray-400">— {r.profiles?.display_name}</span>
                   </div>
                   <p className="text-sm text-gray-700 mt-1">{r.comment}</p>

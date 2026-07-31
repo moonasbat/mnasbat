@@ -11,11 +11,12 @@ import { formatRelativeTime, formatNumber } from "@/lib/formatTime";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import AdGallery from "@/components/ads/AdGallery";
 import { getSiteFlags } from "@/lib/siteConfig";
 import { isUuid } from "@/lib/adSlug";
+import { StarRatingDisplay } from "@/components/StarRating";
+import { averageRating } from "@/lib/rating";
 import type { Metadata } from "next";
 
 // Next.js لا يضمن دائماً فك ترميز params في مكوّن الصفحة (بخلاف generateMetadata) —
@@ -194,9 +195,15 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
                 </div>
                 <div>
                   <p className="font-medium text-gray-900 text-sm">{seller.display_name}</p>
-                  <div className="flex items-center gap-1 text-xs text-gray-400">
-                    <Star size={12} className="text-amber-400" fill="currentColor" />
-                    {seller.positive_reviews} تقييم إيجابي
+                  <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                    {seller.total_reviews > 0 ? (
+                      <>
+                        <StarRatingDisplay value={averageRating(seller)} size={12} />
+                        <span>{averageRating(seller).toFixed(1)} ({seller.total_reviews})</span>
+                      </>
+                    ) : (
+                      <span>لا توجد تقييمات بعد</span>
+                    )}
                   </div>
                 </div>
               </Link>

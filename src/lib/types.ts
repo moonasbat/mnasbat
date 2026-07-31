@@ -25,8 +25,7 @@ export interface Profile {
   ban_reason?: string;
   verification_status: "none" | "verified";
   total_reviews: number;
-  positive_reviews: number;
-  negative_reviews: number;
+  rating_sum: number;
   created_at: string;
   updated_at: string;
 }
@@ -146,7 +145,7 @@ export interface Review {
   reviewer_id: string;
   reviewee_id: string;
   ad_id?: string;
-  is_positive: boolean;
+  rating: number;
   comment: string;
   status: "pending" | "approved" | "rejected";
   reply?: string | null;

@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Review } from "@/lib/types";
 import AdminReviewActions from "@/components/admin/AdminReviewActions";
+import { StarRatingDisplay } from "@/components/StarRating";
 
 export default async function AdminReviewsPage() {
   const admin = createAdminClient();
@@ -18,9 +19,10 @@ export default async function AdminReviewsPage() {
         {(reviews as unknown as (Review & { reviewer: { display_name: string }; reviewee: { display_name: string } })[])?.map((r) => (
           <div key={r.id} className="bg-white border border-gray-100 rounded-2xl p-4">
             <div className="flex items-center justify-between">
-              <span className={r.is_positive ? "text-green-600 text-sm" : "text-red-500 text-sm"}>
-                {r.is_positive ? "إيجابي" : "سلبي"} — {r.reviewer?.display_name} ← {r.reviewee?.display_name}
-              </span>
+              <div className="flex items-center gap-2 text-sm">
+                <StarRatingDisplay value={r.rating} />
+                <span className="text-gray-500">— {r.reviewer?.display_name} ← {r.reviewee?.display_name}</span>
+              </div>
               <AdminReviewActions reviewId={r.id} />
             </div>
             <p className="text-sm text-gray-700 mt-2">{r.comment}</p>
