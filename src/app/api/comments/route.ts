@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -47,12 +48,13 @@ export async function POST(request: NextRequest) {
     if (parentComment && parentComment.user_id !== user.id) notifyTargets.add(parentComment.user_id);
   }
   if (notifyTargets.size) {
+    const { title, body: notifBody } = await renderNotification(parent_id ? "COMMENT_REPLY" : "NEW_COMMENT");
     await supabase.from("notifications").insert(
       Array.from(notifyTargets).map((user_id) => ({
         user_id,
         type: "NEW_COMMENT",
-        title: parent_id ? "رد جديد على تعليقك" : "تعليق جديد",
-        body: parent_id ? "قام أحد المستخدمين بالرد على تعليقك." : "لديك تعليق جديد على أحد إعلاناتك.",
+        title,
+        body: notifBody,
         related_id: ad_id,
       }))
     );

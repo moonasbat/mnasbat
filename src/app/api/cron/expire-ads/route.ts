@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { NOTIFICATIONS_CONTENT } from "@/lib/content";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 const REMINDER_DAYS_BEFORE_EXPIRY = 3;
@@ -24,18 +24,14 @@ export async function GET(request: NextRequest) {
     .gt("expires_at", now.toISOString());
 
   if (expiringSoon && expiringSoon.length > 0) {
-    await admin.from("notifications").insert(
-      expiringSoon.map((ad) => ({
-        user_id: ad.user_id,
-        type: "AD_EXPIRING_SOON",
-        title: NOTIFICATIONS_CONTENT.adExpiringSoonTitle,
-        body: NOTIFICATIONS_CONTENT.adExpiringSoonBody(
-          ad.title,
-          Math.max(1, Math.ceil((new Date(ad.expires_at as string).getTime() - now.getTime()) / 86400000))
-        ),
-        related_id: ad.id,
-      }))
+    const rows = await Promise.all(
+      expiringSoon.map(async (ad) => {
+        const days = Math.max(1, Math.ceil((new Date(ad.expires_at as string).getTime() - now.getTime()) / 86400000));
+        const { title, body } = await renderNotification("AD_EXPIRING_SOON", { ad_title: ad.title, days });
+        return { user_id: ad.user_id, type: "AD_EXPIRING_SOON", title, body, related_id: ad.id };
+      })
     );
+    await admin.from("notifications").insert(rows);
     await admin
       .from("ads")
       .update({ expiry_reminder_sent_at: now.toISOString() })
@@ -52,14 +48,13 @@ export async function GET(request: NextRequest) {
     .lt("expires_at", now.toISOString());
 
   if (toExpire && toExpire.length > 0) {
-    await admin.from("notifications").insert(
-      toExpire.map((ad) => ({
-        user_id: ad.user_id,
-        type: "AD_EXPIRED",
-        title: NOTIFICATIONS_CONTENT.adExpiredTitle,
-        body: NOTIFICATIONS_CONTENT.adExpiredBody(ad.title),
-      }))
+    const rows = await Promise.all(
+      toExpire.map(async (ad) => {
+        const { title, body } = await renderNotification("AD_EXPIRED", { ad_title: ad.title });
+        return { user_id: ad.user_id, type: "AD_EXPIRED", title, body };
+      })
     );
+    await admin.from("notifications").insert(rows);
     await admin.from("ads").delete().in("id", toExpire.map((ad) => ad.id));
   }
 

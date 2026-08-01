@@ -1,4 +1,5 @@
 import { requireStaff, logAudit } from "@/lib/adminAuth";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -18,11 +19,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   if (["closed", "action_taken"].includes(status) && report) {
+    const { title, body } = await renderNotification("REPORT_RESOLVED", {
+      resolution_note: resolution_note || "تمت مراجعته واتخاذ الإجراء المناسب.",
+    });
     await admin.from("notifications").insert({
       user_id: report.reporter_id,
       type: "REPORT_RESOLVED",
-      title: "تم معالجة بلاغك",
-      body: resolution_note ? `تم معالجة بلاغك: ${resolution_note}` : "تم مراجعة بلاغك واتخاذ الإجراء المناسب.",
+      title,
+      body,
     });
   }
 

@@ -1,4 +1,5 @@
 import { requireStaff, logAudit } from "@/lib/adminAuth";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ paymentId: string }> }) {
@@ -42,11 +43,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       }
     }
 
+    const { title, body: notifBody } = await renderNotification("COMMISSION_RECEIPT_APPROVED");
     await admin.from("notifications").insert({
       user_id: ownerId,
       type: "COMMISSION_RECEIPT_APPROVED",
-      title: "تم اعتماد إيصال العمولة",
-      body: "تم اعتماد إيصال العمولة. شكراً لالتزامك.",
+      title,
+      body: notifBody,
     });
   } else if (action === "reject") {
     if (!reason) return NextResponse.json({ error: "سبب الرفض مطلوب." }, { status: 400 });
@@ -54,11 +56,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     await admin.from("commission_obligations").update({ status: "due" }).eq("id", payment.obligation_id);
 
     const ownerId = (payment as unknown as { commission_obligations: { user_id: string } }).commission_obligations.user_id;
+    const { title, body: notifBody } = await renderNotification("COMMISSION_RECEIPT_REJECTED", { reason });
     await admin.from("notifications").insert({
       user_id: ownerId,
       type: "COMMISSION_RECEIPT_REJECTED",
-      title: "تعذر اعتماد إيصال العمولة",
-      body: `تعذر اعتماد إيصال العمولة: ${reason}.`,
+      title,
+      body: notifBody,
     });
   } else if (action === "needs_info") {
     await admin.from("commission_payments").update({ status: "needs_info", reviewed_by: user.id }).eq("id", paymentId);

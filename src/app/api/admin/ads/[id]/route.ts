@@ -1,5 +1,6 @@
 import { requireStaff, logAudit } from "@/lib/adminAuth";
 import { grantReferralRewardIfApplicable } from "@/lib/referral";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -49,14 +50,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   if (updatedAd && (action === "approve" || action === "reject")) {
+    const { title, body } = await renderNotification(action === "approve" ? "AD_APPROVED" : "AD_REJECTED", {
+      ad_title: updatedAd.title,
+      reason: reason ?? "",
+    });
     await admin.from("notifications").insert({
       user_id: updatedAd.user_id,
       type: action === "approve" ? "AD_APPROVED" : "AD_REJECTED",
-      title: action === "approve" ? "تم قبول إعلانك" : "تم رفض إعلانك",
-      body:
-        action === "approve"
-          ? `تم قبول إعلانك "${updatedAd.title}" ونشره على الموقع.`
-          : `تم رفض إعلانك "${updatedAd.title}". السبب: ${reason}`,
+      title,
+      body,
       related_id: id,
     });
   }

@@ -1,4 +1,5 @@
 import { requireStaff, logAudit } from "@/lib/adminAuth";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -33,18 +34,22 @@ export async function POST(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   if (updatedAds && (action === "approve" || action === "reject")) {
-    await admin.from("notifications").insert(
-      updatedAds.map((ad) => ({
-        user_id: ad.user_id,
-        type: action === "approve" ? "AD_APPROVED" : "AD_REJECTED",
-        title: action === "approve" ? "تم قبول إعلانك" : "تم رفض إعلانك",
-        body:
-          action === "approve"
-            ? `تم قبول إعلانك "${ad.title}" ونشره على الموقع.`
-            : `تم رفض إعلانك "${ad.title}". السبب: ${reason}`,
-        related_id: ad.id,
-      }))
+    const rows = await Promise.all(
+      updatedAds.map(async (ad) => {
+        const { title, body } = await renderNotification(action === "approve" ? "AD_APPROVED" : "AD_REJECTED", {
+          ad_title: ad.title,
+          reason: reason ?? "",
+        });
+        return {
+          user_id: ad.user_id,
+          type: action === "approve" ? "AD_APPROVED" : "AD_REJECTED",
+          title,
+          body,
+          related_id: ad.id,
+        };
+      })
     );
+    await admin.from("notifications").insert(rows);
   }
 
   await logAudit(user.id, `ad_${action}`, "ad", undefined, { reason, bulk: true, count: ids.length });

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -21,11 +22,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
+  const { title, body: notifBody } = await renderNotification("REVIEW_REPLY");
   await supabase.from("notifications").insert({
     user_id: review.reviewer_id,
     type: "REVIEW_REPLY",
-    title: "رد على تقييمك",
-    body: "قام المستخدم الذي قيّمته بالرد على تقييمك.",
+    title,
+    body: notifBody,
   });
 
   return NextResponse.json({ ok: true });

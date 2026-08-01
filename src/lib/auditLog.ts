@@ -23,6 +23,7 @@ const ACTION_VERBS: Record<string, string> = {
   report_action: "عالج بلاغاً",
   review_moderated: "راجع تقييماً",
   setting_update: "غيّر إعداداً",
+  notification_template_update: "عدّل قالب إشعار",
 };
 
 const COMMENT_STATUS_LABELS: Record<string, string> = {
@@ -76,6 +77,8 @@ export function formatAuditAction(
       const status = meta.status as string | undefined;
       return status ? COMMENT_STATUS_LABELS[status] ?? verb : verb;
     }
+    case "notification_template_update":
+      return meta.title ? `${verb} «${meta.title}»` : verb;
     default:
       return verb;
   }

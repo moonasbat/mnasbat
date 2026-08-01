@@ -1,4 +1,5 @@
 import { requireStaff, logAudit } from "@/lib/adminAuth";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -14,14 +15,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   await admin.from("reviews").update({ status }).eq("id", id);
 
   if (status === "approved" || status === "rejected") {
+    const { title, body } = await renderNotification(status === "approved" ? "REVIEW_APPROVED" : "REVIEW_REJECTED");
     await admin.from("notifications").insert({
       user_id: review.reviewee_id,
       type: status === "approved" ? "REVIEW_APPROVED" : "REVIEW_REJECTED",
-      title: status === "approved" ? "تقييم جديد على ملفك" : "تم رفض تقييم",
-      body:
-        status === "approved"
-          ? "تمت الموافقة على تقييم جديد وتم نشره على ملفك الشخصي."
-          : "تم رفض أحد التقييمات المقدمة على ملفك الشخصي.",
+      title,
+      body,
     });
   }
 

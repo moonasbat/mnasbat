@@ -1,4 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
+import { renderNotification } from "@/lib/notificationTemplates";
 
 // عند نشر أول إعلان لمستخدم مُحال، يُكافأ من دعاه بتمييز أحد إعلاناته مجاناً — مرة واحدة فقط لكل مستخدم مُحال
 export async function grantReferralRewardIfApplicable(supabase: SupabaseClient, publishedUserId: string) {
@@ -31,13 +32,12 @@ export async function grantReferralRewardIfApplicable(supabase: SupabaseClient, 
       .eq("id", referrerAd.id);
   }
 
+  const { title, body } = await renderNotification(referrerAd ? "REFERRAL_REWARD_EARNED" : "REFERRAL_REWARD_PENDING", { days });
   await supabase.from("notifications").insert({
     user_id: publishedProfile.referred_by,
     type: "REFERRAL_REWARD",
-    title: "🎉 مكافأة إحالة",
-    body: referrerAd
-      ? `أحد الأصدقاء الذين دعوتهم نشر أول إعلان له! حصلت على تمييز مجاني لأحد إعلاناتك لمدة ${days} أيام.`
-      : `أحد الأصدقاء الذين دعوتهم نشر أول إعلان له! انشر إعلاناً واحصل على تمييز مجاني لمدة ${days} أيام.`,
+    title,
+    body,
   });
 
   await supabase.from("profiles").update({ referral_rewarded: true }).eq("id", publishedUserId);

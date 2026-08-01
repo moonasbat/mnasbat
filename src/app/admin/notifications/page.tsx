@@ -1,4 +1,5 @@
 import SendNotificationForm from "@/components/admin/SendNotificationForm";
+import NotificationTemplatesManager from "@/components/admin/NotificationTemplatesManager";
 import PageHeader from "@/components/admin/PageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AuditLog } from "@/lib/types";
@@ -6,8 +7,23 @@ import { formatRelativeTime } from "@/lib/formatTime";
 import EmptyState from "@/components/admin/EmptyState";
 import { Bell } from "lucide-react";
 
-export default async function AdminNotificationsPage() {
+export default async function AdminNotificationsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab } = await searchParams;
+  const activeTab = tab === "templates" ? "templates" : "send";
+
   const admin = createAdminClient();
+
+  if (activeTab === "templates") {
+    const { data: templates } = await admin.from("notification_templates").select("*").order("category");
+    return (
+      <div className="space-y-6">
+        <PageHeader title="الإشعارات" subtitle="أرسل إشعاراً لفئة محددة من المستخدمين، أو عدّل نصوص الإشعارات التلقائية للموقع." />
+        <NotificationTabs active="templates" />
+        <NotificationTemplatesManager templates={templates ?? []} />
+      </div>
+    );
+  }
+
   const { data: logs } = await admin
     .from("audit_logs")
     .select("*, profiles(display_name)")
@@ -19,7 +35,8 @@ export default async function AdminNotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="الإشعارات" subtitle="أرسل إشعاراً لكل المستخدمين أو لفئة محددة منهم، وراجع سجل ما أرسلته سابقاً." />
+      <PageHeader title="الإشعارات" subtitle="أرسل إشعاراً لفئة محددة من المستخدمين، أو عدّل نصوص الإشعارات التلقائية للموقع." />
+      <NotificationTabs active="send" />
       <SendNotificationForm />
 
       <div>
@@ -48,6 +65,25 @@ export default async function AdminNotificationsPage() {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function NotificationTabs({ active }: { active: "send" | "templates" }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <a
+        href="/admin/notifications"
+        className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-colors ${active === "send" ? "bg-[#6D28D9] text-white" : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300"}`}
+      >
+        الإرسال
+      </a>
+      <a
+        href="/admin/notifications?tab=templates"
+        className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-colors ${active === "templates" ? "bg-[#6D28D9] text-white" : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300"}`}
+      >
+        قوالب النصوص
+      </a>
     </div>
   );
 }

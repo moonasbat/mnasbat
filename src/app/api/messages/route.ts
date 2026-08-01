@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 // إنشاء/جلب محادثة مرتبطة بإعلان وإرسال رسالة أولى — يسجل contact_event من نوع message
@@ -61,11 +62,12 @@ export async function POST(request: NextRequest) {
 
   await supabase.from("messages").insert({ conversation_id: conversation!.id, sender_id: user.id, body });
   await supabase.from("contact_events").insert({ ad_id, user_id: user.id, type: "message" });
+  const { title, body: notifBody } = await renderNotification("NEW_MESSAGE_AD");
   await supabase.from("notifications").insert({
     user_id: ad.user_id,
     type: "NEW_MESSAGE",
-    title: "رسالة جديدة",
-    body: "لديك رسالة جديدة بخصوص أحد إعلاناتك.",
+    title,
+    body: notifBody,
     related_id: conversation!.id,
   });
 

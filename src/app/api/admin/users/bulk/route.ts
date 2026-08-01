@@ -1,4 +1,5 @@
 import { requireStaff, logAudit } from "@/lib/adminAuth";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -23,12 +24,15 @@ export async function POST(request: NextRequest) {
   const { error } = await admin.from("profiles").update(updates).in("id", ids);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
+  const { title, body: notifBody } = await renderNotification(action === "ban" ? "ACCOUNT_BANNED" : "ACCOUNT_UNBANNED", {
+    reason: reason ?? "غير محدد",
+  });
   await admin.from("notifications").insert(
     ids.map((id: string) => ({
       user_id: id,
       type: action === "ban" ? "ACCOUNT_BANNED" : "ACCOUNT_UNBANNED",
-      title: action === "ban" ? "تم إيقاف حسابك" : "تم إعادة تفعيل حسابك",
-      body: action === "ban" ? `تم إيقاف حسابك. السبب: ${reason ?? "غير محدد"}.` : "تمت إعادة تفعيل حسابك ويمكنك استخدام المنصة بشكل طبيعي.",
+      title,
+      body: notifBody,
     }))
   );
 

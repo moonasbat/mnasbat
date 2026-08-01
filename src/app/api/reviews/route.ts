@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -46,11 +47,12 @@ export async function POST(request: NextRequest) {
         .update({ rating_sum: (profile.rating_sum ?? 0) + ratingNum, total_reviews: (profile.total_reviews ?? 0) + 1 })
         .eq("id", reviewee_id);
     }
+    const { title, body: notifBody } = await renderNotification("REVIEW_APPROVED");
     await supabase.from("notifications").insert({
       user_id: reviewee_id,
       type: "REVIEW_APPROVED",
-      title: "تقييم جديد على ملفك",
-      body: "حصلت على تقييم جديد وتم نشره مباشرة على ملفك الشخصي.",
+      title,
+      body: notifBody,
     });
   }
 

@@ -179,23 +179,6 @@ export const MY_ADS_CONTENT = {
   delete: "حذف الإعلان",
 };
 
-export const NOTIFICATIONS_CONTENT = {
-  newMessage: (adTitle: string) => `لديك رسالة جديدة بخصوص إعلانك: ${adTitle}.`,
-  adPublished: "تم نشر إعلانك بنجاح.",
-  adRejected: (adTitle: string) => `تم رفض إعلانك: ${adTitle}.`,
-  adPaused: (adTitle: string) => `تم إيقاف إعلانك: ${adTitle}.`,
-  adExpiringSoon: (adTitle: string) => `اقترب انتهاء إعلانك: ${adTitle}.`,
-  adExpiringSoonTitle: "إعلانك على وشك الانتهاء",
-  adExpiringSoonBody: (adTitle: string, days: number) => `متبقي ${days} أيام على انتهاء إعلانك "${adTitle}". جدده الآن ليستمر ظهوره للمهتمين.`,
-  adExpiredTitle: "انتهت مدة إعلانك وتم حذفه",
-  adExpiredBody: (adTitle: string) => `انتهت مدة عرض إعلانك "${adTitle}" ولم يُجدَّد في الوقت المناسب، فتم حذفه نهائياً. يمكنك نشره من جديد في أي وقت.`,
-  commissionDue: "لديك عمولة مستحقة مرتبطة بإعلانك.",
-  receiptReceived: "تم استلام إيصال العمولة وهو الآن قيد المراجعة.",
-  receiptApproved: "تم اعتماد إيصال العمولة.",
-  receiptRejected: (reason: string) => `تعذر اعتماد إيصال العمولة: ${reason}.`,
-  featureActivated: "تم تفعيل ميزة جديدة لحسابك.",
-};
-
 export const REPORT_REASONS = [
   "محتوى مخالف",
   "احتيال أو تضليل",

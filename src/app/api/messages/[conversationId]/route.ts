@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 async function requireParticipant(supabase: Awaited<ReturnType<typeof createClient>>, conversationId: string, userId: string) {
@@ -57,11 +58,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   const recipientId = conversation.buyer_id === user.id ? conversation.seller_id : conversation.buyer_id;
+  const { title, body: notifBody } = await renderNotification("NEW_MESSAGE_REPLY");
   await supabase.from("notifications").insert({
     user_id: recipientId,
     type: "NEW_MESSAGE",
-    title: "رسالة جديدة",
-    body: "لديك رسالة جديدة في إحدى محادثاتك.",
+    title,
+    body: notifBody,
     related_id: conversationId,
   });
 
