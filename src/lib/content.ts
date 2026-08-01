@@ -179,44 +179,6 @@ export const MY_ADS_CONTENT = {
   delete: "حذف الإعلان",
 };
 
-export const COMMISSION_CONTENT = {
-  pageTitle: "العمولة",
-  intro: "العمولة التزام على المعلن عند تحقق الصفقة وفق سياسة مناسبات.",
-  due: "المستحق",
-  inReview: "قيد المراجعة",
-  paid: "المدفوع",
-  payButton: "إدفع العمولة",
-  uploadReceipt: "رفع إيصال التحويل",
-  obligationDetails: "تفاصيل الالتزام",
-  adNumber: "رقم الإعلان",
-  dealValue: "قيمة الصفقة",
-  rate: "نسبة العمولة",
-  amount: "قيمة العمولة",
-  paymentStatus: "حالة الدفع",
-  paymentPageIntro: "شكراً لالتزامك بسياسة العمولة في مناسبات. حوّل قيمة العمولة المستحقة إلى الحساب البنكي الموضح أدناه، ثم ارفع إيصال التحويل حتى تتمكن الإدارة من مراجعة العملية.",
-  bank: "البنك",
-  accountName: "اسم صاحب الحساب",
-  iban: "رقم الآيبان IBAN",
-  amountDue: "المبلغ المستحق",
-  transferReason: (adNumber: string) => `سبب التحويل: عمولة مناسبات — إعلان رقم ${adNumber}`,
-  uploadReceiptButton: "رفع إيصال التحويل",
-  sendForReview: "إرسال للمراجعة",
-  receiptNotApproval: "رفع الإيصال لا يعني اعتماد الدفع. يتم اعتماد العملية بعد مراجعة التحويل من فريق مناسبات.",
-  receiptSubmitted: "تم إرسال الإيصال وهو قيد المراجعة.",
-  receiptApproved: "تم اعتماد إيصال العمولة. شكراً لالتزامك.",
-  receiptRejected: "تعذر اعتماد إيصال العمولة.",
-  reuploadAllowed: "يمكنك رفع إيصال صحيح وإرساله للمراجعة مرة أخرى.",
-};
-
-export const FEATURES_CONTENT = {
-  title: "مزايا حسابك",
-  approvedIntro: "تم اعتماد العمولة، وأصبحت المزايا التالية متاحة لك:",
-  commissionBadge: "شارة ملتزم بالعمولة",
-  boostedVisibility: "تحسين ظهور الإعلان",
-  extraFeatures: "مزايا إضافية مفعلة لحسابك",
-  expiresOn: (date: string) => `تنتهي الميزة في: ${date}`,
-};
-
 export const NOTIFICATIONS_CONTENT = {
   newMessage: (adTitle: string) => `لديك رسالة جديدة بخصوص إعلانك: ${adTitle}.`,
   adPublished: "تم نشر إعلانك بنجاح.",

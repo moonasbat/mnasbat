@@ -63,5 +63,19 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  return NextResponse.json({ ok: true, expiringSoon: expiringSoon?.length ?? 0, expired: expired?.length ?? 0 });
+  // إلغاء تمييز الإعلانات التي انتهت مدة تمييزها (featured_until) — كانت تبقى مميزة للأبد بدون هذا الفحص
+  const { data: unfeatured } = await admin
+    .from("ads")
+    .update({ is_featured: false })
+    .eq("is_featured", true)
+    .not("featured_until", "is", null)
+    .lt("featured_until", now.toISOString())
+    .select("id");
+
+  return NextResponse.json({
+    ok: true,
+    expiringSoon: expiringSoon?.length ?? 0,
+    expired: expired?.length ?? 0,
+    unfeatured: unfeatured?.length ?? 0,
+  });
 }
