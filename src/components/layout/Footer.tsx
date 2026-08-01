@@ -7,6 +7,7 @@ const links = [
   { href: "/pages/content-policy", label: "المحتوى الممنوع" },
   { href: "/pages/review-policy", label: "سياسة التقييم" },
   { href: "/help", label: "مركز المساعدة" },
+  { href: "/contact", label: "تواصل معنا" },
 ];
 
 export default function Footer() {

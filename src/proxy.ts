@@ -3,6 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED_PATHS = ["/dashboard", "/admin", "/ads/new"];
 const ONBOARDING_EXEMPT = ["/onboarding", "/login", "/auth", "/api", "/help", "/pages"];
+const MAINTENANCE_EXEMPT = ["/maintenance", "/login", "/auth", "/admin", "/api"];
+const STAFF_ROLES = ["admin", "moderator", "super_admin"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -29,6 +31,27 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
+
+  // وضع الصيانة — يمنع كل الزوار غير الموظفين عن الموقع، ويبقي وصول الإدارة والـAPI شغّالاً
+  const isMaintenanceExempt = MAINTENANCE_EXEMPT.some((p) => path === p || path.startsWith(`${p}/`));
+  if (!isMaintenanceExempt) {
+    const { data: maintenanceFlag } = await supabase
+      .from("feature_flags")
+      .select("enabled")
+      .eq("key", "maintenance_mode_enabled")
+      .maybeSingle();
+    if (maintenanceFlag?.enabled) {
+      let isStaff = false;
+      if (user) {
+        const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+        isStaff = !!profile && STAFF_ROLES.includes(profile.role);
+      }
+      if (!isStaff) {
+        return NextResponse.redirect(new URL("/maintenance", request.url));
+      }
+    }
+  }
+
   const isProtected = PROTECTED_PATHS.some((p) => path === p || path.startsWith(`${p}/`));
 
   const target = path + request.nextUrl.search;

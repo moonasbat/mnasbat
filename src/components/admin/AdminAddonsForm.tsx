@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminSettings, FeatureFlags } from "@/lib/types";
 import ToggleSwitch from "@/components/admin/ToggleSwitch";
-import { CheckCircle2, Circle, BarChart3, Search, Share2, Music2, Megaphone, MessageCircle } from "lucide-react";
+import { CheckCircle2, Circle, BarChart3, Search, Share2, Music2, Megaphone, MessageCircle, Wrench, Mail } from "lucide-react";
 
 const CONNECT_ADDONS: { key: string; title: string; icon: React.ElementType; label: string; placeholder: string; help: string; helpUrl: string }[] = [
   {
@@ -191,6 +191,54 @@ export default function AdminAddonsForm({ settings, flags }: { settings: AdminSe
             <p className="text-[11px] mt-1.5 h-4">
               {saving === "whatsapp_support_number" && <span className="text-gray-400">جارٍ الحفظ…</span>}
               {savedKey === "whatsapp_support_number" && <span className="text-green-600">تم الحفظ ✓</span>}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-sm font-bold text-gray-500 mb-3">التحكم بالموقع</h2>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="bg-white border border-gray-100 rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-[#6D28D9] shrink-0">
+                  <Wrench size={16} />
+                </div>
+                <h3 className="font-bold text-gray-900">وضع الصيانة</h3>
+              </div>
+              <ToggleSwitch checked={!!flagState.maintenance_mode_enabled} onChange={() => toggleFlag("maintenance_mode_enabled")} />
+            </div>
+            <p className="text-xs text-gray-400 mb-3">
+              يمنع كل الزوار من دخول الموقع ويعرض لهم رسالة صيانة، مع بقاء دخولك أنت وفريق الإدارة شغّالاً بشكل طبيعي.
+            </p>
+            <label className="text-sm font-medium text-gray-700 block mb-1">رسالة الصيانة</label>
+            <input
+              value={values.maintenance_message ?? ""}
+              onChange={(e) => setValues((v) => ({ ...v, maintenance_message: e.target.value }))}
+              onBlur={() => saveSetting("maintenance_message")}
+              onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
+              placeholder="الموقع تحت الصيانة حالياً، سنعود قريباً."
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+            />
+            <p className="text-[11px] mt-1.5 h-4">
+              {saving === "maintenance_message" && <span className="text-gray-400">جارٍ الحفظ…</span>}
+              {savedKey === "maintenance_message" && <span className="text-green-600">تم الحفظ ✓</span>}
+            </p>
+          </div>
+
+          <div className="bg-white border border-gray-100 rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-[#6D28D9] shrink-0">
+                  <Mail size={16} />
+                </div>
+                <h3 className="font-bold text-gray-900">نموذج تواصل معنا</h3>
+              </div>
+              <ToggleSwitch checked={!!flagState.contact_form_enabled} onChange={() => toggleFlag("contact_form_enabled")} />
+            </div>
+            <p className="text-xs text-gray-400">
+              صفحة "تواصل معنا" جاهزة وموجودة بالفوتر — أي رسالة يرسلها زائر توصلك إشعاراً مباشراً داخل لوحة التحكم، بدون أي إعداد خارجي.
             </p>
           </div>
         </div>
