@@ -9,12 +9,14 @@ export default async function ContactPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: profile }, { data: flag }] = await Promise.all([
+  const [{ data: profile }, { data: flag }, { data: recaptchaSetting }] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : Promise.resolve({ data: null }),
     supabase.from("feature_flags").select("enabled").eq("key", "contact_form_enabled").maybeSingle(),
+    supabase.from("admin_settings").select("value").eq("key", "recaptcha_site_key").maybeSingle(),
   ]);
 
   const enabled = flag ? flag.enabled !== false : true;
+  const recaptchaSiteKey = recaptchaSetting?.value?.trim() || undefined;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -25,7 +27,7 @@ export default async function ContactPage() {
           <h1 className="text-2xl font-bold text-gray-900">تواصل معنا</h1>
         </div>
         {enabled ? (
-          <ContactForm profile={profile as Profile | null} />
+          <ContactForm profile={profile as Profile | null} recaptchaSiteKey={recaptchaSiteKey} />
         ) : (
           <p className="text-sm text-gray-400 text-center py-16">التواصل عبر النموذج متوقف مؤقتاً.</p>
         )}

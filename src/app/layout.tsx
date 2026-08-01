@@ -39,6 +39,10 @@ async function getIntegrationSettings() {
       "announcement_text",
       "announcement_link",
       "whatsapp_support_number",
+      "gtm_container_id",
+      "snapchat_pixel_id",
+      "clarity_project_id",
+      "recaptcha_site_key",
     ]);
   const map: Record<string, string> = {};
   (data ?? []).forEach((r) => (map[r.key] = r.value));
@@ -75,6 +79,10 @@ export default async function RootLayout({
   const ga4 = settings.ga4_measurement_id;
   const fbPixel = settings.facebook_pixel_id;
   const tiktokPixel = settings.tiktok_pixel_id;
+  const gtm = settings.gtm_container_id;
+  const snapPixel = settings.snapchat_pixel_id;
+  const clarityId = settings.clarity_project_id;
+  const recaptchaSiteKey = settings.recaptcha_site_key;
   const showAnnouncement = addonFlags.announcement_bar_enabled && settings.announcement_text?.trim();
   const showFloatingWhatsapp = addonFlags.floating_whatsapp_enabled && settings.whatsapp_support_number?.trim();
 
@@ -129,6 +137,26 @@ ttq.load('${tiktokPixel}');
 ttq.page();
 }(window, document, 'ttq');`}
           </Script>
+        )}
+        {gtm && (
+          <Script id="gtm-init" strategy="afterInteractive">
+            {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${gtm}');`}
+          </Script>
+        )}
+        {snapPixel && (
+          <Script id="snapchat-pixel-init" strategy="afterInteractive">
+            {`(function(e,t,n){if(e.snaptr)return;var a=e.snaptr=function(){a.handleRequest?a.handleRequest.apply(a,arguments):a.queue.push(arguments)};a.queue=[];var s='script';var r=t.createElement(s);r.async=!0;r.src=n;var u=t.getElementsByTagName(s)[0];u.parentNode.insertBefore(r,u);})(window,document,'https://sc-static.net/scevent.min.js');
+snaptr('init', '${snapPixel}', {});
+snaptr('track', 'PAGE_VIEW');`}
+          </Script>
+        )}
+        {clarityId && (
+          <Script id="clarity-init" strategy="afterInteractive">
+            {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window, document, "clarity", "script", "${clarityId}");`}
+          </Script>
+        )}
+        {recaptchaSiteKey && (
+          <Script src={`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`} strategy="afterInteractive" />
         )}
         {showAnnouncement && <AnnouncementBar text={settings.announcement_text} link={settings.announcement_link || undefined} />}
         <Suspense>

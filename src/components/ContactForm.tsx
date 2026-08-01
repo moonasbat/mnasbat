@@ -4,7 +4,16 @@ import { useState } from "react";
 import { Profile } from "@/lib/types";
 import { CheckCircle2 } from "lucide-react";
 
-export default function ContactForm({ profile }: { profile?: Profile | null }) {
+declare global {
+  interface Window {
+    grecaptcha?: {
+      ready: (cb: () => void) => void;
+      execute: (siteKey: string, opts: { action: string }) => Promise<string>;
+    };
+  }
+}
+
+export default function ContactForm({ profile, recaptchaSiteKey }: { profile?: Profile | null; recaptchaSiteKey?: string }) {
   const [name, setName] = useState(profile?.display_name ?? "");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -12,13 +21,23 @@ export default function ContactForm({ profile }: { profile?: Profile | null }) {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
 
+  async function getRecaptchaToken(): Promise<string | undefined> {
+    if (!recaptchaSiteKey || !window.grecaptcha) return undefined;
+    return new Promise((resolve) => {
+      window.grecaptcha!.ready(() => {
+        window.grecaptcha!.execute(recaptchaSiteKey, { action: "contact" }).then(resolve).catch(() => resolve(undefined));
+      });
+    });
+  }
+
   async function submit() {
     setError("");
     setSending(true);
+    const recaptchaToken = await getRecaptchaToken();
     const res = await fetch("/api/contact", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, message }),
+      body: JSON.stringify({ name, email, message, recaptchaToken }),
     });
     setSending(false);
     if (res.ok) {
@@ -57,6 +76,7 @@ export default function ContactForm({ profile }: { profile?: Profile | null }) {
       <button onClick={submit} disabled={sending} className="bg-[#6D28D9] text-white rounded-xl px-6 py-2.5 text-sm font-medium disabled:opacity-60">
         {sending ? "جارٍ الإرسال…" : "إرسال"}
       </button>
+      {recaptchaSiteKey && <p className="text-[11px] text-gray-400">هذا النموذج محمي بواسطة reCAPTCHA.</p>}
     </div>
   );
 }

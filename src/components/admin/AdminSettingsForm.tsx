@@ -46,6 +46,27 @@ const SETTINGS_GROUPS: { title: string; fields: [string, string, string][] }[] =
       ["rate_limit_reports_per_day", "بلاغات لكل مستخدم/يوم", ""],
     ],
   },
+  {
+    title: "شريط إعلان الموقع",
+    fields: [
+      ["announcement_text", "نص الشريط", "يظهر أعلى كل صفحات الموقع عند تفعيل «شريط الإعلان» أدناه"],
+      ["announcement_link", "رابط عند الضغط (اختياري)", ""],
+    ],
+  },
+  {
+    title: "زر واتساب العائم ووضع الصيانة",
+    fields: [
+      ["whatsapp_support_number", "رقم واتساب الدعم", "بصيغة +9665xxxxxxxx"],
+      ["maintenance_message", "رسالة وضع الصيانة", ""],
+    ],
+  },
+  {
+    title: "شارة الأكثر مشاهدة والإحالة",
+    fields: [
+      ["trending_views_threshold", "حد المشاهدات لشارة الأكثر مشاهدة", ""],
+      ["referral_reward_days", "مدة مكافأة الإحالة (أيام تمييز)", ""],
+    ],
+  },
 ];
 
 const FLAG_GROUPS: { title: string; keys: string[] }[] = [
@@ -65,6 +86,18 @@ const FLAG_GROUPS: { title: string; keys: string[] }[] = [
     title: "أخرى",
     keys: ["verification_enabled", "city_filter_enabled", "view_stats_enabled"],
   },
+  {
+    title: "ميزات إضافية",
+    keys: [
+      "announcement_bar_enabled",
+      "floating_whatsapp_enabled",
+      "maintenance_mode_enabled",
+      "contact_form_enabled",
+      "trending_badge_enabled",
+      "referral_program_enabled",
+      "vacation_mode_enabled",
+    ],
+  },
 ];
 
 const FLAG_DESCRIPTIONS: Record<string, string> = {
@@ -82,6 +115,13 @@ const FLAG_DESCRIPTIONS: Record<string, string> = {
   verification_enabled: "تفعيل نظام توثيق الحسابات (شارة موثّق)",
   city_filter_enabled: "إظهار فلتر المدينة في صفحة البحث",
   view_stats_enabled: "عرض عدد المشاهدات على الإعلانات للمعلنين",
+  announcement_bar_enabled: "شريط بنفسجي أعلى كل صفحات الموقع لعرض تنبيه أو عرض خاص — النص والرابط أعلاه",
+  floating_whatsapp_enabled: "زر عائم يظهر في كل صفحات الموقع للتواصل السريع مع رقم الدعم أعلاه",
+  maintenance_mode_enabled: "يمنع كل الزوار غير الموظفين عن الموقع ويعرض رسالة الصيانة أعلاه",
+  contact_form_enabled: "تفعيل صفحة «تواصل معنا» — أي رسالة تصلك كإشعار مباشر في لوحة التحكم",
+  trending_badge_enabled: "شارة تلقائية على أي إعلان يتجاوز حد المشاهدات أعلاه",
+  referral_program_enabled: "كل مستخدم يحصل على رابط دعوة خاص به، ويكافَأ بتمييز مجاني عند نشر مدعوّه أول إعلان",
+  vacation_mode_enabled: "يظهر في إعدادات كل مستخدم — يوقف كل إعلاناته مؤقتاً بضغطة واحدة",
 };
 
 export default function AdminSettingsForm({
