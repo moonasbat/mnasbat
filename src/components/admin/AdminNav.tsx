@@ -7,6 +7,7 @@ import { UserRole } from "@/lib/types";
 import { canManageUsers, canManageSettings, canManageEmployees, canReviewCommissions, canHandleReports, canModerateAds } from "@/lib/permissions";
 import { ADMIN_CONTENT } from "@/lib/content";
 import { Menu, X } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function AdminNav({ role }: { role: UserRole }) {
   const pathname = usePathname();
@@ -53,13 +54,16 @@ export default function AdminNav({ role }: { role: UserRole }) {
       {/* شريط علوي للجوال */}
       <div className="md:hidden flex items-center justify-between bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-30">
         <Link href="/" className="text-lg font-bold text-[#6D28D9]">مناسبات</Link>
-        <button
-          onClick={() => setOpen(true)}
-          className="text-gray-600 p-2 rounded-lg hover:bg-gray-50"
-          aria-label="فتح القائمة"
-        >
-          <Menu size={22} />
-        </button>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <button
+            onClick={() => setOpen(true)}
+            className="text-gray-600 p-2 rounded-lg hover:bg-gray-50"
+            aria-label="فتح القائمة"
+          >
+            <Menu size={22} />
+          </button>
+        </div>
       </div>
 
       {/* قائمة منسدلة للجوال */}
@@ -80,7 +84,10 @@ export default function AdminNav({ role }: { role: UserRole }) {
 
       {/* شريط جانبي لسطح المكتب */}
       <aside className="w-56 shrink-0 bg-white border-l border-gray-100 min-h-screen p-4 hidden md:block">
-        <Link href="/" className="text-xl font-bold text-[#6D28D9] block mb-6">مناسبات</Link>
+        <div className="flex items-center justify-between mb-6">
+          <Link href="/" className="text-xl font-bold text-[#6D28D9]">مناسبات</Link>
+          <ThemeToggle />
+        </div>
         {navLinks}
       </aside>
     </>

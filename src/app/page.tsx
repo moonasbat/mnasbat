@@ -55,10 +55,10 @@ export default async function HomePage() {
                 <input
                   name="q"
                   placeholder={HOME_CONTENT.searchPlaceholder}
-                  className="w-full rounded-xl px-10 py-2.5 md:py-3 text-gray-900 text-sm focus:outline-none"
+                  className="w-full rounded-xl px-10 py-2.5 md:py-3 bg-[#ffffff]! text-[#1f2937]! text-sm focus:outline-none"
                 />
               </div>
-              <button className="bg-white text-[#6D28D9] font-bold px-4 md:px-5 py-2.5 md:py-3 rounded-xl hover:bg-purple-50 transition-colors text-sm md:text-base">
+              <button className="bg-[#ffffff] text-[#6d28d9] font-bold px-4 md:px-5 py-2.5 md:py-3 rounded-xl hover:bg-[#f5f3ff] transition-colors text-sm md:text-base">
                 {HOME_CONTENT.searchButton}
               </button>
             </form>

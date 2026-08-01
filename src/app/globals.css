@@ -99,38 +99,93 @@ html, body {
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* وضع ليلي مريح للعين — رمادي داكن بلمسة بنفسجية دافئة تناسب هوية الموقع، بدل الأسود الخالص */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  color-scheme: dark;
+  --background: #16151b;
+  --foreground: #f0eff5;
+  --card: #1e1d25;
+  --card-foreground: #f0eff5;
+  --popover: #1e1d25;
+  --popover-foreground: #f0eff5;
+  --primary: #f0eff5;
+  --primary-foreground: #1e1d25;
+  --secondary: #26252e;
+  --secondary-foreground: #f0eff5;
+  --muted: #26252e;
+  --muted-foreground: #9b99ab;
+  --accent: #26252e;
+  --accent-foreground: #f0eff5;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --border: #2c2b35;
+  --input: #2c2b35;
+  --ring: #6d6b7d;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: #1e1d25;
+  --sidebar-foreground: #f0eff5;
+  --sidebar-primary: #A78BFA;
+  --sidebar-primary-foreground: #1e1d25;
+  --sidebar-accent: #26252e;
+  --sidebar-accent-foreground: #f0eff5;
+  --sidebar-border: #2c2b35;
+  --sidebar-ring: #6d6b7d;
+}
+
+/* ترجمة ألوان Tailwind الثابتة (gray/purple/red/amber/green/blue) المستخدمة في مكونات الموقع
+   إلى نظيراتها الليلية، بدل إعادة كتابة كل مكون على حدة */
+.dark .bg-white { background-color: var(--card); }
+.dark .bg-gray-50 { background-color: #1a191f; }
+.dark .bg-gray-100 { background-color: #24232c; }
+.dark .bg-gray-200 { background-color: #2c2b35; }
+.dark .bg-gray-300 { background-color: #38373f; }
+.dark .bg-purple-50 { background-color: #241d3a; }
+.dark .bg-red-50 { background-color: #2c1c1c; }
+.dark .bg-amber-50 { background-color: #2c2416; }
+.dark .bg-green-50 { background-color: #172a20; }
+.dark .bg-blue-50 { background-color: #17222e; }
+
+.dark .hover\:bg-gray-50:hover { background-color: #24232c; }
+.dark .hover\:bg-purple-50:hover { background-color: #2c2447; }
+
+.dark .text-gray-900 { color: #f2f1f5; }
+.dark .text-gray-800 { color: #e4e3ea; }
+.dark .text-gray-700 { color: #cfced8; }
+.dark .text-gray-600 { color: #b3b2c0; }
+.dark .text-gray-500 { color: #9997a8; }
+.dark .text-gray-400 { color: #7a7889; }
+.dark .text-gray-300 { color: #5c5a6a; }
+.dark .text-gray-200 { color: #45434f; }
+.dark .text-\[\#6D28D9\] { color: #A78BFA; }
+
+.dark .hover\:text-gray-300:hover { color: #6f6d80; }
+.dark .hover\:text-gray-500:hover { color: #9997a8; }
+
+.dark .border-gray-50 { border-color: #201f27; }
+.dark .border-gray-100 { border-color: #29282f; }
+.dark .border-gray-200 { border-color: #34333c; }
+.dark .border-gray-300 { border-color: #403f49; }
+.dark .border-purple-100 { border-color: #3a2f57; }
+.dark .hover\:border-gray-300:hover { border-color: #454350; }
+
+.dark .divide-gray-50 > :not([hidden]) ~ :not([hidden]) { border-color: #1f1e26; }
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: #29282f; }
+
+/* حقول الإدخال العامة — خلفية وألوان مريحة بدل الأبيض الافتراضي؛
+   العناصر التي يجب أن تبقى بيضاء دائماً (مثل بحث الهيرو) تستخدم لون صريح بعلامة ! لتجاوز هذه القاعدة */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: var(--card);
+  color: var(--foreground);
+  border-color: var(--border);
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #6f6d80;
 }
 
 @layer base {

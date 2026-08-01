@@ -10,6 +10,7 @@ import { HOME_CONTENT, AUTH_CONTENT } from "@/lib/content";
 import { isStaff } from "@/lib/permissions";
 import { loginUrl } from "@/lib/loginRedirect";
 import { Bell, MessageSquare, Heart, Plus, LogOut, User, Settings, LayoutDashboard } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Header({ profile }: { profile?: Profile | null }) {
   const router = useRouter();
@@ -91,6 +92,7 @@ export default function Header({ profile }: { profile?: Profile | null }) {
         )}
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <Link
             href="/ads/new"
             className="hidden sm:flex items-center gap-2 bg-[#6D28D9] text-white rounded-xl px-4 py-2 text-sm font-medium hover:bg-[#5B21B6] transition-colors"
