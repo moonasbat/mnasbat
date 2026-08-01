@@ -155,7 +155,13 @@ html {
 .dark .hover\:bg-gray-50:hover { background-color: #24232c; }
 .dark .hover\:bg-purple-50:hover { background-color: #2c2447; }
 
-.dark .text-gray-900 { color: #f2f1f5; }
+/* أشكال شفافية محددة مستخدمة فعلياً في لوحة التحكم — لازم تُعرَّف صراحة لأنها أصناف CSS مختلفة عن bg-white/bg-gray-50 العادية */
+.dark .bg-white\/80 { background-color: rgb(30 29 37 / 0.85); }
+.dark .bg-gray-50\/80 { background-color: rgb(26 25 31 / 0.85); }
+.dark .bg-\[\#6D28D9\]\/10 { background-color: rgb(167 139 250 / 0.14); }
+.dark .bg-\[\#6D28D9\]\/20 { background-color: rgb(167 139 250 / 0.22); }
+
+.dark .text-gray-900 { color: #eae8f0; }
 .dark .text-gray-800 { color: #e4e3ea; }
 .dark .text-gray-700 { color: #cfced8; }
 .dark .text-gray-600 { color: #b3b2c0; }
@@ -164,6 +170,16 @@ html {
 .dark .text-gray-300 { color: #5c5a6a; }
 .dark .text-gray-200 { color: #45434f; }
 .dark .text-\[\#6D28D9\] { color: #A78BFA; }
+
+/* ألوان نصوص الشارات (Badge) — تُفتَّح صراحة لأن الدرجات الأصلية مصمّمة لخلفية بيضاء وتصير شبه غير مقروءة على خلفياتها الليلية الداكنة */
+.dark .text-green-700 { color: #6ee7a8; }
+.dark .text-green-600 { color: #5fd897; }
+.dark .text-red-700 { color: #f4a3a3; }
+.dark .text-red-600 { color: #f18b8b; }
+.dark .text-amber-700 { color: #f3ca7c; }
+.dark .text-amber-600 { color: #f0bd5c; }
+.dark .text-blue-700 { color: #8fc3f5; }
+.dark .text-blue-600 { color: #79b6f2; }
 
 .dark .hover\:text-gray-300:hover { color: #6f6d80; }
 .dark .hover\:text-gray-500:hover { color: #9997a8; }
@@ -202,6 +218,15 @@ html {
   html {
     font-family: var(--font-tajawal), sans-serif;
   }
+}
+
+/* رسوم Recharts في لوحة التحكم — خطوط الشبكة ونصوص المحاور تتبع ألوان الثيم بدل درجات رمادي ثابتة تختفي بالوضع الليلي */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--border);
+}
+.recharts-text.recharts-cartesian-axis-tick-value {
+  fill: var(--muted-foreground);
 }
 
 .scrollbar-none {

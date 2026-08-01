@@ -4,6 +4,14 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContai
 
 const PIE_COLORS = ["#6D28D9", "#8B5CF6", "#A78BFA", "#C4B5FD", "#DDD6FE", "#F59E0B", "#10B981", "#3B82F6", "#EC4899", "#F97316"];
 
+const TOOLTIP_STYLE = {
+  fontSize: 12,
+  borderRadius: 8,
+  background: "var(--card)",
+  border: "1px solid var(--border)",
+  color: "var(--foreground)",
+};
+
 export function DailySeriesChart({ data }: { data: { date: string; ads: number; users: number }[] }) {
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-5">
@@ -23,7 +31,7 @@ export function DailySeriesChart({ data }: { data: { date: string; ads: number; 
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
           <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#9ca3af" />
           <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" allowDecimals={false} />
-          <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, direction: "rtl" }} />
+          <Tooltip contentStyle={{ ...TOOLTIP_STYLE, direction: "rtl" }} />
           <Area type="monotone" dataKey="ads" name="إعلانات جديدة" stroke="#6D28D9" fill="url(#colorAds)" strokeWidth={2} />
           <Area type="monotone" dataKey="users" name="مستخدمون جدد" stroke="#10B981" fill="url(#colorUsers)" strokeWidth={2} />
         </AreaChart>
@@ -46,7 +54,7 @@ export function CategoryDistributionChart({ data }: { data: { name: string; coun
                 <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+            <Tooltip contentStyle={TOOLTIP_STYLE} />
           </PieChart>
         </ResponsiveContainer>
       )}
@@ -63,7 +71,7 @@ export function CommissionChart({ data }: { data: { date: string; amount: number
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
           <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#9ca3af" />
           <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" />
-          <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} formatter={(v) => [`${Number(v).toLocaleString("en-US")} ر.س`, "المبلغ"]} />
+          <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v) => [`${Number(v).toLocaleString("en-US")} ر.س`, "المبلغ"]} />
           <Bar dataKey="amount" name="المبلغ" fill="#6D28D9" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>

@@ -56,7 +56,7 @@ export default function AdminNav({ role, displayName }: { role: UserRole; displa
   return (
     <>
       {/* شريط علوي للجوال */}
-      <div className="md:hidden flex items-center justify-between bg-white border-b border-gray-100 px-4 py-3 sticky top-0 z-30">
+      <div className="md:hidden flex items-center justify-between bg-gray-50 border-b border-gray-100 px-4 py-3 sticky top-0 z-30">
         <Link href="/" className="text-lg font-bold text-[#6D28D9]">مناسبات</Link>
         <div className="flex items-center gap-1">
           <ThemeToggle />
@@ -74,7 +74,7 @@ export default function AdminNav({ role, displayName }: { role: UserRole; displa
       {open && (
         <div className="md:hidden fixed inset-0 z-40 flex">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <div className="relative w-72 bg-white h-full p-4 mr-auto overflow-y-auto shadow-xl" dir="rtl">
+          <div className="relative w-72 bg-gray-50 h-full p-4 mr-auto overflow-y-auto shadow-xl" dir="rtl">
             <div className="flex items-center justify-between mb-6">
               <Link href="/" className="text-xl font-bold text-[#6D28D9]">مناسبات</Link>
               <button onClick={() => setOpen(false)} className="text-gray-400 p-1" aria-label="إغلاق القائمة">
@@ -87,7 +87,7 @@ export default function AdminNav({ role, displayName }: { role: UserRole; displa
       )}
 
       {/* شريط جانبي لسطح المكتب */}
-      <aside className="w-64 shrink-0 bg-white border-l border-gray-100 min-h-screen hidden md:flex md:flex-col">
+      <aside className="w-64 shrink-0 bg-gray-50 border-l border-gray-100 min-h-screen hidden md:flex md:flex-col">
         <div className="p-4 border-b border-gray-50">
           <Link href="/" className="text-xl font-bold text-[#6D28D9]">مناسبات</Link>
           <p className="text-[11px] text-gray-400 mt-0.5">لوحة تحكم المنصة</p>

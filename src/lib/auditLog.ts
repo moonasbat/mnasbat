@@ -94,6 +94,19 @@ export const TARGET_TYPE_LABELS: Record<string, string> = {
   comment: "تعليق",
 };
 
+export const TARGET_TYPE_COLORS: Record<string, "gray" | "green" | "red" | "amber" | "blue" | "purple"> = {
+  user: "blue",
+  ad: "purple",
+  commission_payment: "green",
+  category: "gray",
+  feature_flag: "amber",
+  notification: "blue",
+  report: "red",
+  review: "amber",
+  admin_setting: "gray",
+  comment: "gray",
+};
+
 function resolveReportStatus(status: string) {
   const labels: Record<string, string> = {
     new: "جديد",

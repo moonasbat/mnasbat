@@ -5,7 +5,7 @@ import PageHeader from "@/components/admin/PageHeader";
 import EmptyState from "@/components/admin/EmptyState";
 import Pagination from "@/components/admin/Pagination";
 import { ScrollText } from "lucide-react";
-import { formatAuditAction, TARGET_TYPE_LABELS } from "@/lib/auditLog";
+import { formatAuditAction, TARGET_TYPE_LABELS, TARGET_TYPE_COLORS } from "@/lib/auditLog";
 import Badge from "@/components/admin/Badge";
 
 const PAGE_SIZE = 40;
@@ -73,7 +73,7 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Pro
                   <td className="px-4 py-3 text-gray-900">{formatAuditAction(l, flagLabels)}</td>
                   <td className="px-4 py-3 text-gray-500">{l.profiles?.display_name ?? "النظام"}</td>
                   <td className="px-4 py-3">
-                    {l.target_type && <Badge color="gray">{TARGET_TYPE_LABELS[l.target_type] ?? l.target_type}</Badge>}
+                    {l.target_type && <Badge color={TARGET_TYPE_COLORS[l.target_type] ?? "gray"}>{TARGET_TYPE_LABELS[l.target_type] ?? l.target_type}</Badge>}
                   </td>
                   <td className="px-4 py-3 text-gray-400 text-xs">{formatGregorianDateTime(l.created_at)}</td>
                 </tr>
