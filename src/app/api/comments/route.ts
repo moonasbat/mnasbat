@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
         type: "NEW_COMMENT",
         title: parent_id ? "رد جديد على تعليقك" : "تعليق جديد",
         body: parent_id ? "قام أحد المستخدمين بالرد على تعليقك." : "لديك تعليق جديد على أحد إعلاناتك.",
+        related_id: ad_id,
       }))
     );
   }

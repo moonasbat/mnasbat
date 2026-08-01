@@ -23,15 +23,36 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "التقييم يجب أن يكون من 1 إلى 5 نجوم." }, { status: 400 });
   }
 
+  const { data: manualFlag } = await supabase.from("feature_flags").select("enabled").eq("key", "reviews_manual_moderation_enabled").maybeSingle();
+  const requiresManualReview = manualFlag ? manualFlag.enabled !== false : true;
+  const status = requiresManualReview ? "pending" : "approved";
+
   const { error } = await supabase.from("reviews").insert({
     reviewer_id: user.id,
     reviewee_id,
     ad_id: ad_id || null,
     rating: ratingNum,
     comment,
-    status: "pending",
+    status,
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  if (status === "approved") {
+    const { data: profile } = await supabase.from("profiles").select("rating_sum, total_reviews").eq("id", reviewee_id).single();
+    if (profile) {
+      await supabase
+        .from("profiles")
+        .update({ rating_sum: (profile.rating_sum ?? 0) + ratingNum, total_reviews: (profile.total_reviews ?? 0) + 1 })
+        .eq("id", reviewee_id);
+    }
+    await supabase.from("notifications").insert({
+      user_id: reviewee_id,
+      type: "REVIEW_APPROVED",
+      title: "تقييم جديد على ملفك",
+      body: "حصلت على تقييم جديد وتم نشره مباشرة على ملفك الشخصي.",
+    });
+  }
+
   return NextResponse.json({ ok: true });
 }

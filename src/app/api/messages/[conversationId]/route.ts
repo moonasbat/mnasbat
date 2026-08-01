@@ -62,6 +62,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     type: "NEW_MESSAGE",
     title: "رسالة جديدة",
     body: "لديك رسالة جديدة في إحدى محادثاتك.",
+    related_id: conversationId,
   });
 
   return NextResponse.json({ message });

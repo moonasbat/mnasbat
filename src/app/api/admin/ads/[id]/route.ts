@@ -57,6 +57,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         action === "approve"
           ? `تم قبول إعلانك "${updatedAd.title}" ونشره على الموقع.`
           : `تم رفض إعلانك "${updatedAd.title}". السبب: ${reason}`,
+      related_id: id,
     });
   }
 

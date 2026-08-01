@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
     type: "NEW_MESSAGE",
     title: "رسالة جديدة",
     body: "لديك رسالة جديدة بخصوص أحد إعلاناتك.",
+    related_id: conversation!.id,
   });
 
   return NextResponse.json({ ok: true, conversation_id: conversation!.id });

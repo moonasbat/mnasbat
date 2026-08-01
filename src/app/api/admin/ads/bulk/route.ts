@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
           action === "approve"
             ? `تم قبول إعلانك "${ad.title}" ونشره على الموقع.`
             : `تم رفض إعلانك "${ad.title}". السبب: ${reason}`,
+        related_id: ad.id,
       }))
     );
   }

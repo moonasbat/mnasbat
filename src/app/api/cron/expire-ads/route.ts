@@ -42,26 +42,28 @@ export async function GET(request: NextRequest) {
       .in("id", expiringSoon.map((ad) => ad.id));
   }
 
-  const { data: expired, error } = await admin
+  // الإعلانات المنشورة اللي انتهت مدتها ولم تُجدَّد (التجديد يحرّك expires_at للمستقبل فيخرجها من هذا الاستعلام)
+  // تُحذف نهائياً بدل تعليقها كـ"منتهي" — commission_obligations.ad_id يتحول لـ null تلقائياً (on delete set null)
+  // ويبقى السجل المالي محفوظاً، وباقي الجداول المرتبطة (صور، تعليقات، مفضلة، محادثات) تُحذف معه بالكامل
+  const { data: toExpire } = await admin
     .from("ads")
-    .update({ status: "expired" })
+    .select("id, title, user_id")
     .eq("status", "published")
-    .lt("expires_at", now.toISOString())
-    .select("id, title, user_id");
+    .lt("expires_at", now.toISOString());
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  if (expired && expired.length > 0) {
+  if (toExpire && toExpire.length > 0) {
     await admin.from("notifications").insert(
-      expired.map((ad) => ({
+      toExpire.map((ad) => ({
         user_id: ad.user_id,
         type: "AD_EXPIRED",
         title: NOTIFICATIONS_CONTENT.adExpiredTitle,
         body: NOTIFICATIONS_CONTENT.adExpiredBody(ad.title),
-        related_id: ad.id,
       }))
     );
+    await admin.from("ads").delete().in("id", toExpire.map((ad) => ad.id));
   }
+
+  const expired = toExpire;
 
   // إلغاء تمييز الإعلانات التي انتهت مدة تمييزها (featured_until) — كانت تبقى مميزة للأبد بدون هذا الفحص
   const { data: unfeatured } = await admin

@@ -64,7 +64,7 @@ export const SETTINGS_GROUPS: { title: string; fields: [string, string, string][
 
 export const FLAG_GROUPS: { title: string; keys: string[] }[] = [
   { title: "تسجيل الدخول", keys: ["google_login_enabled"] },
-  { title: "التواصل والتفاعل", keys: ["comments_enabled", "messages_enabled", "whatsapp_enabled", "favorites_enabled", "reviews_enabled"] },
+  { title: "التواصل والتفاعل", keys: ["comments_enabled", "messages_enabled", "whatsapp_enabled", "favorites_enabled", "reviews_enabled", "reviews_manual_moderation_enabled"] },
   { title: "الإعلانات والمزايا", keys: ["manual_review_enabled", "featured_ads_enabled", "commission_perks_enabled", "ad_renewal_enabled", "watermark_enabled"] },
   { title: "أخرى", keys: ["verification_enabled", "city_filter_enabled", "view_stats_enabled"] },
   {
@@ -88,6 +88,7 @@ export const FLAG_DESCRIPTIONS: Record<string, string> = {
   whatsapp_enabled: "إظهار زر التواصل عبر واتساب في صفحة الإعلان",
   favorites_enabled: "السماح بإضافة الإعلانات للمفضلة",
   reviews_enabled: "السماح بتقييم مقدمي الخدمات",
+  reviews_manual_moderation_enabled: "كل تقييم جديد ينتظر موافقتك قبل ما يظهر للعامة (موصى به). إيقافه ينشر التقييمات فوراً بدون مراجعة",
   manual_review_enabled: "كل إعلان جديد ينتظر موافقتك قبل ما يظهر للعامة (موصى به). إيقافه يعني نشر الإعلانات فوراً بدون مراجعة",
   featured_ads_enabled: "تفعيل قسم «الإعلانات المميزة» في الصفحة الرئيسية",
   commission_perks_enabled: "منح مزايا (شارة، أولوية ظهور) للمستخدمين بعد اعتماد دفع العمولة",

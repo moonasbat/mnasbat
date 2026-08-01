@@ -2,9 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Notification } from "@/lib/types";
 import { AUTH_CONTENT } from "@/lib/content";
 import { formatRelativeTime } from "@/lib/formatTime";
+import { resolveNotificationLink } from "@/lib/notificationLink";
 import Link from "next/link";
-
-const AD_NOTIFICATION_TYPES = new Set(["AD_EXPIRING_SOON", "AD_EXPIRED", "AD_APPROVED", "AD_REJECTED"]);
 
 export default async function NotificationsPage() {
   const supabase = await createClient();
@@ -32,16 +31,16 @@ export default async function NotificationsPage() {
       {notifications && notifications.length > 0 ? (
         <div className="space-y-2">
           {(notifications as Notification[]).map((n) => {
-            const linkable = AD_NOTIFICATION_TYPES.has(n.type);
+            const href = resolveNotificationLink(n.type, n.related_id);
             const body = (
-              <div className={`rounded-2xl p-4 border ${n.is_read ? "bg-white border-gray-100" : "bg-purple-50 border-purple-100"} ${linkable ? "hover:border-[#6D28D9] transition-colors" : ""}`}>
+              <div className={`rounded-2xl p-4 border ${n.is_read ? "bg-white border-gray-100" : "bg-purple-50 border-purple-100"} ${href ? "hover:border-[#6D28D9] transition-colors" : ""}`}>
                 <p className="text-sm font-medium text-gray-900">{n.title}</p>
                 <p className="text-sm text-gray-600 mt-0.5">{n.body}</p>
                 <p className="text-xs text-gray-400 mt-1">{formatRelativeTime(n.created_at)}</p>
               </div>
             );
-            return linkable ? (
-              <Link key={n.id} href="/dashboard/ads" className="block">
+            return href ? (
+              <Link key={n.id} href={href} className="block">
                 {body}
               </Link>
             ) : (
