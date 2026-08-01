@@ -11,6 +11,9 @@ import PageHeader from "@/components/admin/PageHeader";
 import Badge from "@/components/admin/Badge";
 import EmptyState from "@/components/admin/EmptyState";
 import Pagination from "@/components/admin/Pagination";
+import { BulkSelectionProvider } from "@/components/admin/bulk/BulkSelectionContext";
+import BulkCheckbox from "@/components/admin/bulk/BulkCheckbox";
+import BulkActionBar from "@/components/admin/bulk/BulkActionBar";
 
 const PAGE_SIZE = 30;
 
@@ -51,9 +54,11 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
 
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         {users.length > 0 ? (
+          <BulkSelectionProvider>
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-gray-500 text-xs">
               <tr>
+                <th className="text-right px-4 py-3 font-medium w-8"></th>
                 <th className="text-right px-4 py-3 font-medium">الاسم</th>
                 <th className="text-right px-4 py-3 font-medium">الدور</th>
                 <th className="text-right px-4 py-3 font-medium">الحالة</th>
@@ -64,6 +69,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
             <tbody className="divide-y divide-gray-100">
               {users.map((u) => (
                 <tr key={u.id} className="hover:bg-gray-50/60 transition-colors">
+                  <td className="px-4 py-3"><BulkCheckbox id={u.id} /></td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
                       <Link href={`/admin/users/${u.id}`} className="flex items-center gap-2.5 hover:underline text-gray-900 font-medium">
@@ -94,6 +100,14 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
               ))}
             </tbody>
           </table>
+          <BulkActionBar
+            endpoint="/api/admin/users/bulk"
+            actions={[
+              { value: "ban", label: "حظر المحدد", color: "bg-red-600 hover:bg-red-500", needsReason: true },
+              { value: "unban", label: "فك حظر المحدد", color: "bg-green-600 hover:bg-green-500" },
+            ]}
+          />
+          </BulkSelectionProvider>
         ) : (
           <EmptyState icon={UsersIcon} title="لا يوجد مستخدمون مطابقون" body={q ? "جرّب كلمة بحث مختلفة." : undefined} />
         )}

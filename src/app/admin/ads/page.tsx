@@ -11,6 +11,9 @@ import PageHeader from "@/components/admin/PageHeader";
 import Badge from "@/components/admin/Badge";
 import EmptyState from "@/components/admin/EmptyState";
 import Pagination from "@/components/admin/Pagination";
+import { BulkSelectionProvider } from "@/components/admin/bulk/BulkSelectionContext";
+import BulkCheckbox from "@/components/admin/bulk/BulkCheckbox";
+import BulkActionBar from "@/components/admin/bulk/BulkActionBar";
 
 const STATUS_COLOR: Record<string, "green" | "amber" | "gray" | "red"> = {
   published: "green",
@@ -80,11 +83,13 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Pro
         ))}
       </div>
 
+      <BulkSelectionProvider>
       <div className="space-y-3">
         {ads.map((ad) => {
           const image = ad.ad_images?.[0]?.url;
           return (
             <div key={ad.id} className="bg-white rounded-2xl border border-gray-100 p-4 flex gap-4 hover:border-gray-200 transition-colors">
+              <div className="flex items-center shrink-0"><BulkCheckbox id={ad.id} /></div>
               <div className="relative w-28 h-28 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                 {image ? (
                   <Image src={image} alt={ad.title} fill className="object-cover" />
@@ -134,6 +139,17 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Pro
           </div>
         )}
       </div>
+
+      <BulkActionBar
+        endpoint="/api/admin/ads/bulk"
+        actions={[
+          { value: "approve", label: "اعتماد المحدد", color: "bg-green-600 hover:bg-green-500" },
+          { value: "reject", label: "رفض المحدد", color: "bg-red-600 hover:bg-red-500", needsReason: true },
+          { value: "pause", label: "إيقاف المحدد", color: "bg-amber-600 hover:bg-amber-500" },
+          { value: "remove", label: "حذف المحدد", color: "bg-gray-700 hover:bg-gray-600" },
+        ]}
+      />
+      </BulkSelectionProvider>
 
       {ads.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-100">

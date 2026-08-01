@@ -8,8 +8,23 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if ("error" in auth) return auth.error;
   const { admin, user } = auth;
 
-  const { action, reason } = await request.json();
+  const { action, reason, fields } = await request.json();
   const updates: Record<string, unknown> = {};
+
+  if (action === "edit") {
+    const allowed = ["title", "description", "category_id", "city", "price"];
+    const editUpdates: Record<string, unknown> = {};
+    for (const key of allowed) {
+      if (fields && key in fields) editUpdates[key] = fields[key];
+    }
+    if (Object.keys(editUpdates).length === 0) {
+      return NextResponse.json({ error: "ما فيه أي تعديل." }, { status: 400 });
+    }
+    const { error } = await admin.from("ads").update(editUpdates).eq("id", id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    await logAudit(user.id, "ad_edit", "ad", id, editUpdates);
+    return NextResponse.json({ ok: true });
+  }
 
   if (action === "approve") {
     const { data: settings } = await admin.from("admin_settings").select("value").eq("key", "ad_duration_days").maybeSingle();

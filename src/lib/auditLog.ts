@@ -11,6 +11,7 @@ const ACTION_VERBS: Record<string, string> = {
   ad_reject: "رفض إعلاناً",
   ad_pause: "أوقف إعلاناً",
   ad_remove: "حذف إعلاناً",
+  ad_edit: "عدّل بيانات إعلان",
   commission_payment_approve: "اعتمد إيصال عمولة",
   commission_payment_reject: "رفض إيصال عمولة",
   commission_payment_needs_info: "طلب معلومات إضافية عن إيصال عمولة",
@@ -36,6 +37,7 @@ export function formatAuditAction(
 ): string {
   const meta = (log.metadata ?? {}) as Record<string, unknown>;
   const verb = ACTION_VERBS[log.action] ?? "نفّذ إجراءً إدارياً";
+  const bulkSuffix = meta.bulk && typeof meta.count === "number" ? ` (${meta.count} عنصر دفعة واحدة)` : "";
 
   switch (log.action) {
     case "setting_update": {
@@ -51,17 +53,25 @@ export function formatAuditAction(
       return `${verb} إلى «${role ? ROLE_LABELS[role as keyof typeof ROLE_LABELS] ?? role : "—"}»`;
     }
     case "user_ban":
-      return meta.reason ? `${verb} — السبب: ${meta.reason}` : verb;
+      return (meta.reason ? `${verb} — السبب: ${meta.reason}` : verb) + bulkSuffix;
     case "ad_reject":
     case "commission_payment_reject":
-      return meta.reason ? `${verb} — السبب: ${meta.reason}` : verb;
+      return (meta.reason ? `${verb} — السبب: ${meta.reason}` : verb) + bulkSuffix;
+    case "ad_approve":
+    case "ad_pause":
+    case "ad_remove":
+    case "user_unban":
+      return verb + bulkSuffix;
     case "report_action":
       return meta.status ? `${verb} — الحالة: ${resolveReportStatus(meta.status as string)}` : verb;
     case "category_create":
     case "category_update":
       return meta.name ? `${verb} «${meta.name}»` : verb;
-    case "notification_sent":
-      return meta.broadcast ? `${verb} لجميع المستخدمين` : verb;
+    case "notification_sent": {
+      const segmentLabel = (meta.segmentLabel as string | undefined) ?? (meta.broadcast ? "جميع المستخدمين" : "مستخدم واحد");
+      const count = meta.count as number | undefined;
+      return `${verb} «${meta.title ?? ""}» إلى ${segmentLabel}${count ? ` (${count} مستلم)` : ""}`;
+    }
     case "comment_remove": {
       const status = meta.status as string | undefined;
       return status ? COMMENT_STATUS_LABELS[status] ?? verb : verb;

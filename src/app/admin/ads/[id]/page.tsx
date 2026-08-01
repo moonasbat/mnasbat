@@ -6,6 +6,7 @@ import { formatGregorianDate, formatNumber, formatRelativeTime } from "@/lib/for
 import { adUrl } from "@/lib/adSlug";
 import { profileUrl } from "@/lib/profileUrl";
 import AdminAdActions from "@/components/admin/AdminAdActions";
+import AdminAdEditForm from "@/components/admin/AdminAdEditForm";
 import PageHeader from "@/components/admin/PageHeader";
 import Badge from "@/components/admin/Badge";
 import EmptyState from "@/components/admin/EmptyState";
@@ -40,10 +41,11 @@ export default async function AdminAdDetailPage({ params }: { params: Promise<{ 
   const { data: ad } = await admin.from("ads").select("*, profiles(*), categories(*), ad_images(*)").eq("id", id).single();
   if (!ad) notFound();
 
-  const [{ data: reports }, { data: comments }, { data: obligation }] = await Promise.all([
+  const [{ data: reports }, { data: comments }, { data: obligation }, { data: categories }] = await Promise.all([
     admin.from("reports").select("*").eq("target_type", "ad").eq("target_id", id).order("created_at", { ascending: false }),
     admin.from("comments").select("*, profiles(display_name)").eq("ad_id", id).order("created_at", { ascending: false }).limit(20),
     admin.from("commission_obligations").select("*").eq("ad_id", id).order("created_at", { ascending: false }).maybeSingle(),
+    admin.from("categories").select("id,name").eq("is_active", true).order("sort_order"),
   ]);
 
   const a = ad as Ad;
@@ -92,6 +94,14 @@ export default async function AdminAdDetailPage({ params }: { params: Promise<{ 
         )}
 
         <p className="text-sm text-gray-700 mt-4 whitespace-pre-wrap">{a.description}</p>
+
+        <div className="mt-3 pt-3 border-t border-gray-50">
+          <AdminAdEditForm
+            adId={a.id}
+            initial={{ title: a.title, description: a.description, category_id: a.category_id, city: a.city, price: a.price ?? null }}
+            categories={(categories ?? []) as { id: string; name: string }[]}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
