@@ -4,50 +4,54 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserRole } from "@/lib/types";
-import { canManageUsers, canManageSettings, canManageEmployees, canReviewCommissions, canHandleReports, canModerateAds } from "@/lib/permissions";
-import { ADMIN_CONTENT } from "@/lib/content";
-import { Menu, X } from "lucide-react";
+import { ROLE_LABELS } from "@/lib/permissions";
+import { ADMIN_NAV_GROUPS } from "@/lib/adminNav";
+import { Menu, X, ExternalLink } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
-export default function AdminNav({ role }: { role: UserRole }) {
+function NavLinks({ role, pathname }: { role: UserRole; pathname: string }) {
+  return (
+    <nav className="space-y-5">
+      {ADMIN_NAV_GROUPS.map((group) => {
+        const items = group.items.filter((i) => i.show(role));
+        if (items.length === 0) return null;
+        return (
+          <div key={group.title || "root"}>
+            {group.title && (
+              <p className="px-3 mb-1.5 text-[11px] font-bold text-gray-400 tracking-wide">{group.title}</p>
+            )}
+            <div className="space-y-0.5">
+              {items.map((item) => {
+                const active = pathname === item.href;
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                      active ? "bg-[#6D28D9] text-white shadow-sm shadow-[#6D28D9]/20" : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon size={17} className={active ? "text-white" : "text-gray-400"} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
+
+export default function AdminNav({ role, displayName }: { role: UserRole; displayName?: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
-
-  const items = [
-    { href: "/admin", label: ADMIN_CONTENT.overview, show: true },
-    { href: "/admin/users", label: ADMIN_CONTENT.users, show: canManageUsers(role) },
-    { href: "/admin/ads", label: ADMIN_CONTENT.ads, show: canModerateAds(role) },
-    { href: "/admin/reports", label: ADMIN_CONTENT.reports, show: canHandleReports(role) },
-    { href: "/admin/reviews", label: ADMIN_CONTENT.reviews, show: canModerateAds(role) },
-    { href: "/admin/commissions", label: ADMIN_CONTENT.commissions, show: canReviewCommissions(role) },
-    { href: "/admin/categories", label: ADMIN_CONTENT.categories, show: role === "super_admin" },
-    { href: "/admin/notifications", label: ADMIN_CONTENT.notifications, show: canManageUsers(role) },
-    { href: "/admin/settings", label: ADMIN_CONTENT.settings, show: canManageSettings(role) },
-    { href: "/admin/addons", label: ADMIN_CONTENT.addons, show: role === "super_admin" },
-    { href: "/admin/employees", label: ADMIN_CONTENT.permissions, show: canManageEmployees(role) },
-    { href: "/admin/audit-log", label: ADMIN_CONTENT.auditLog, show: role === "super_admin" || role === "admin" },
-  ];
-
-  const navLinks = (
-    <nav className="space-y-1">
-      {items.filter((i) => i.show).map((item) => {
-        const active = pathname === item.href;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`block px-3 py-2 rounded-xl text-sm font-medium transition-colors ${active ? "bg-[#6D28D9] text-white" : "text-gray-600 hover:bg-gray-50"}`}
-          >
-            {item.label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
 
   return (
     <>
@@ -70,25 +74,46 @@ export default function AdminNav({ role }: { role: UserRole }) {
       {open && (
         <div className="md:hidden fixed inset-0 z-40 flex">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <div className="relative w-64 bg-white h-full p-4 mr-auto overflow-y-auto shadow-xl" dir="rtl">
+          <div className="relative w-72 bg-white h-full p-4 mr-auto overflow-y-auto shadow-xl" dir="rtl">
             <div className="flex items-center justify-between mb-6">
               <Link href="/" className="text-xl font-bold text-[#6D28D9]">مناسبات</Link>
               <button onClick={() => setOpen(false)} className="text-gray-400 p-1" aria-label="إغلاق القائمة">
                 <X size={20} />
               </button>
             </div>
-            {navLinks}
+            <NavLinks role={role} pathname={pathname} />
           </div>
         </div>
       )}
 
       {/* شريط جانبي لسطح المكتب */}
-      <aside className="w-56 shrink-0 bg-white border-l border-gray-100 min-h-screen p-4 hidden md:block">
-        <div className="flex items-center justify-between mb-6">
+      <aside className="w-64 shrink-0 bg-white border-l border-gray-100 min-h-screen hidden md:flex md:flex-col">
+        <div className="p-4 border-b border-gray-50">
           <Link href="/" className="text-xl font-bold text-[#6D28D9]">مناسبات</Link>
-          <ThemeToggle />
+          <p className="text-[11px] text-gray-400 mt-0.5">لوحة تحكم المنصة</p>
         </div>
-        {navLinks}
+        <div className="flex-1 p-3 overflow-y-auto">
+          <NavLinks role={role} pathname={pathname} />
+        </div>
+        <div className="p-3 border-t border-gray-50 space-y-2">
+          <div className="flex items-center gap-2.5 px-2 py-1.5">
+            <div className="w-8 h-8 rounded-full bg-[#6D28D9]/10 text-[#6D28D9] flex items-center justify-center text-xs font-bold shrink-0">
+              {(displayName ?? "M").slice(0, 1)}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-gray-800 truncate">{displayName ?? "—"}</p>
+              <p className="text-[11px] text-gray-400">{ROLE_LABELS[role]}</p>
+            </div>
+          </div>
+          <Link
+            href="/"
+            target="_blank"
+            className="flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-medium text-gray-500 hover:bg-gray-50"
+          >
+            <ExternalLink size={14} />
+            عرض الموقع
+          </Link>
+        </div>
       </aside>
     </>
   );

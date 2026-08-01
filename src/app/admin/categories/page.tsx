@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Category } from "@/lib/types";
 import AdminCategoryManager from "@/components/admin/AdminCategoryManager";
+import PageHeader from "@/components/admin/PageHeader";
 
 export default async function AdminCategoriesPage() {
   const admin = createAdminClient();
@@ -8,12 +9,10 @@ export default async function AdminCategoriesPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">التصنيفات</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          أضف أو عدّل أو فعّل/عطّل أي تصنيف رئيسي أو فرعي. لا يمكن حذف تصنيف مرتبط بإعلانات — عطّله بدل حذفه.
-        </p>
-      </div>
+      <PageHeader
+        title="التصنيفات"
+        subtitle="أضف أو عدّل أو فعّل/عطّل أي تصنيف رئيسي أو فرعي. لا يمكن حذف تصنيف مرتبط بإعلانات — عطّله بدل حذفه."
+      />
       <AdminCategoryManager categories={(categories as Category[]) ?? []} />
     </div>
   );

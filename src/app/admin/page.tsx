@@ -1,8 +1,10 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { Users, Megaphone, DollarSign, Flag, AlertTriangle } from "lucide-react";
+import { Users, Megaphone, DollarSign, Flag, AlertTriangle, Star, Receipt, ArrowLeft, Clock } from "lucide-react";
 import Link from "next/link";
-import { formatNumber } from "@/lib/formatTime";
+import { formatNumber, formatRelativeTime } from "@/lib/formatTime";
 import { DailySeriesChart, CategoryDistributionChart, CommissionChart } from "@/components/admin/AdminDashboardCharts";
+import PageHeader from "@/components/admin/PageHeader";
+import { AuditLog } from "@/lib/types";
 
 function dayKey(d: Date) {
   return d.toISOString().slice(0, 10);
@@ -36,6 +38,8 @@ export default async function AdminDashboard() {
     { data: usersLast30 },
     { data: adsByCategory },
     { data: commissionsLast30 },
+    { count: reviewsPending },
+    { data: recentLogs },
   ] = await Promise.all([
     admin.from("profiles").select("id", { count: "exact", head: true }),
     admin.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", new Date(Date.now() - 86400000).toISOString()),
@@ -49,6 +53,8 @@ export default async function AdminDashboard() {
     admin.from("profiles").select("created_at").gte("created_at", cutoff),
     admin.from("ads").select("category:categories(name)").eq("status", "published"),
     admin.from("commission_payments").select("created_at, obligation:commission_obligations(amount)").eq("status", "approved").gte("created_at", cutoff),
+    admin.from("reviews").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    admin.from("audit_logs").select("*, profiles(display_name)").order("created_at", { ascending: false }).limit(6),
   ]);
 
   const bankActive = bankRow?.value === "true";
@@ -101,9 +107,16 @@ export default async function AdminDashboard() {
     { label: "بلاغات مفتوحة", value: reportsOpen ?? 0, sub: "تحتاج مراجعة", icon: Flag, color: "bg-amber-50", iconColor: "text-amber-600" },
   ];
 
+  const queue = [
+    { label: "إعلانات بانتظار المراجعة", count: adsPending ?? 0, href: "/admin/ads?status=pending_review", icon: Megaphone },
+    { label: "تقييمات بانتظار الموافقة", count: reviewsPending ?? 0, href: "/admin/reviews", icon: Star },
+    { label: "بلاغات مفتوحة", count: reportsOpen ?? 0, href: "/admin/reports", icon: Flag },
+    { label: "إيصالات عمولة بانتظار المراجعة", count: receiptsPending ?? 0, href: "/admin/commissions", icon: Receipt },
+  ].filter((q) => q.count > 0);
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">لوحة التحكم</h1>
+      <PageHeader title="لوحة التحكم" subtitle="نظرة سريعة على أداء المنصة وما يحتاج انتباهك الآن." />
 
       {!bankActive && (
         <Link
@@ -113,6 +126,33 @@ export default async function AdminDashboard() {
           <AlertTriangle size={18} className="shrink-0" />
           الحساب البنكي غير مفعّل بعد — المستخدمون لن يستطيعوا دفع العمولة حتى تدخل بيانات البنك وتفعّله من الإعدادات.
         </Link>
+      )}
+
+      {queue.length > 0 && (
+        <div>
+          <p className="text-sm font-bold text-gray-700 mb-2.5">يحتاج انتباهك</p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {queue.map((q) => {
+              const Icon = q.icon;
+              return (
+                <Link
+                  key={q.label}
+                  href={q.href}
+                  className="group flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 hover:border-[#6D28D9]/30 hover:shadow-sm transition-all"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-[#6D28D9]/10 text-[#6D28D9] flex items-center justify-center shrink-0">
+                    <Icon size={16} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-lg font-bold text-gray-900 leading-none">{q.count}</p>
+                    <p className="text-xs text-gray-500 mt-1 truncate">{q.label}</p>
+                  </div>
+                  <ArrowLeft size={14} className="mr-auto text-gray-300 group-hover:text-[#6D28D9] transition-colors shrink-0" />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -140,6 +180,31 @@ export default async function AdminDashboard() {
       <div className="grid md:grid-cols-2 gap-4">
         <CategoryDistributionChart data={categoryData} />
         <CommissionChart data={commissionData} />
+      </div>
+
+      <div className="bg-white border border-gray-100 rounded-2xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-bold text-gray-700">آخر النشاطات</p>
+          <Link href="/admin/audit-log" className="text-xs text-[#6D28D9] hover:underline">سجل التدقيق كاملاً</Link>
+        </div>
+        {recentLogs && recentLogs.length > 0 ? (
+          <div className="divide-y divide-gray-50">
+            {(recentLogs as (AuditLog & { profiles: { display_name: string } | null })[]).map((l) => (
+              <div key={l.id} className="flex items-center gap-3 py-2.5 text-sm">
+                <div className="w-7 h-7 rounded-lg bg-gray-50 text-gray-400 flex items-center justify-center shrink-0">
+                  <Clock size={13} />
+                </div>
+                <p className="text-gray-700 flex-1 min-w-0 truncate">
+                  <span className="font-medium text-gray-900">{l.profiles?.display_name ?? "النظام"}</span>{" "}
+                  <span className="text-gray-500">{l.action}</span>
+                </p>
+                <span className="text-xs text-gray-400 shrink-0">{formatRelativeTime(l.created_at)}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-gray-400 text-center py-6">لا يوجد نشاط مسجّل بعد.</p>
+        )}
       </div>
     </div>
   );

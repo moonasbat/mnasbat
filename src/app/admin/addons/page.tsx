@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminSettings } from "@/lib/types";
 import AdminAddonsForm from "@/components/admin/AdminAddonsForm";
+import PageHeader from "@/components/admin/PageHeader";
 
 const SETTINGS_KEYS = [
   "ga4_measurement_id",
@@ -23,12 +24,7 @@ export default async function AdminAddonsPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">الإضافات</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          أدوات حقيقية من مزوّديها الرسميين — الصق المعرف من حساب الأداة نفسها ليصير مفعّلاً على موقعك فوراً.
-        </p>
-      </div>
+      <PageHeader title="الإضافات" subtitle="أدوات حقيقية من مزوّديها الرسميين — الصق المعرف من حساب الأداة نفسها ليصير مفعّلاً على موقعك فوراً." />
       <AdminAddonsForm settings={settings} />
     </div>
   );

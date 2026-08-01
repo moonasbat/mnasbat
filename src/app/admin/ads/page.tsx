@@ -4,23 +4,46 @@ import { AD_STATUS_LABELS } from "@/lib/content";
 import AdminAdActions from "@/components/admin/AdminAdActions";
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, Download } from "lucide-react";
+import { ExternalLink, Download, Megaphone } from "lucide-react";
 import { formatNumber } from "@/lib/formatTime";
 import { adUrl } from "@/lib/adSlug";
+import PageHeader from "@/components/admin/PageHeader";
+import Badge from "@/components/admin/Badge";
+import EmptyState from "@/components/admin/EmptyState";
+import Pagination from "@/components/admin/Pagination";
 
-export default async function AdminAdsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
-  const { status } = await searchParams;
-  const admin = createAdminClient();
+const STATUS_COLOR: Record<string, "green" | "amber" | "gray" | "red"> = {
+  published: "green",
+  pending_review: "amber",
+  paused: "gray",
+  rejected: "red",
+  expired: "gray",
+  removed: "red",
+  draft: "gray",
+  archived: "gray",
+};
+
+const PAGE_SIZE = 20;
+
+export default async function AdminAdsPage({ searchParams }: { searchParams: Promise<{ status?: string; page?: string }> }) {
+  const { status, page: pageParam } = await searchParams;
   const activeStatus = status ?? "pending_review";
+  const page = Math.max(1, Number(pageParam) || 1);
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  const admin = createAdminClient();
 
   let query = admin
     .from("ads")
     .select("*, profiles(*), categories(*), ad_images(*)")
     .order("created_at", { ascending: false })
-    .limit(100);
+    .range(from, to + 1);
   if (activeStatus !== "all") query = query.eq("status", activeStatus);
 
-  const { data: ads } = await query;
+  const { data: rows } = await query;
+  const ads = (rows ?? []).slice(0, PAGE_SIZE) as Ad[];
+  const hasMore = (rows?.length ?? 0) > PAGE_SIZE;
 
   const statuses: [string, string][] = [
     ["pending_review", "قيد المراجعة"],
@@ -34,25 +57,23 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Pro
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">مراجعة الإعلانات</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            راجع الصورة والوصف قبل الاعتماد أو الرفض — لا حاجة لمغادرة هذه الصفحة.
-          </p>
-        </div>
-        <a href="/api/admin/export?type=ads" className="flex items-center gap-1.5 text-sm text-[#6D28D9] hover:underline shrink-0">
-          <Download size={15} />
-          تصدير CSV
-        </a>
-      </div>
+      <PageHeader
+        title="مراجعة الإعلانات"
+        subtitle="راجع الصورة والوصف قبل الاعتماد أو الرفض — لا حاجة لمغادرة هذه الصفحة."
+        action={
+          <a href="/api/admin/export?type=ads" className="flex items-center gap-1.5 text-sm font-medium bg-white border border-gray-200 rounded-xl px-3.5 py-2 text-gray-600 hover:border-gray-300">
+            <Download size={15} />
+            تصدير CSV
+          </a>
+        }
+      />
 
       <div className="flex flex-wrap gap-2">
         {statuses.map(([key, label]) => (
           <a
             key={key}
             href={`/admin/ads?status=${key}`}
-            className={`px-3 py-1.5 rounded-xl text-xs ${activeStatus === key ? "bg-[#6D28D9] text-white" : "bg-white border border-gray-200 text-gray-600"}`}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition-colors ${activeStatus === key ? "bg-[#6D28D9] text-white" : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300"}`}
           >
             {label}
           </a>
@@ -60,10 +81,10 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Pro
       </div>
 
       <div className="space-y-3">
-        {(ads as Ad[])?.map((ad) => {
+        {ads.map((ad) => {
           const image = ad.ad_images?.[0]?.url;
           return (
-            <div key={ad.id} className="bg-white rounded-2xl border border-gray-100 p-4 flex gap-4">
+            <div key={ad.id} className="bg-white rounded-2xl border border-gray-100 p-4 flex gap-4 hover:border-gray-200 transition-colors">
               <div className="relative w-28 h-28 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                 {image ? (
                   <Image src={image} alt={ad.title} fill className="object-cover" />
@@ -77,7 +98,7 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Pro
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="font-bold text-gray-900">{ad.title}</h3>
-                      <span className="text-xs bg-gray-100 rounded-lg px-2 py-0.5 shrink-0">{AD_STATUS_LABELS[ad.status]}</span>
+                      <Badge color={STATUS_COLOR[ad.status] ?? "gray"}>{AD_STATUS_LABELS[ad.status]}</Badge>
                     </div>
                     <p className="text-xs text-gray-400 mt-0.5">
                       {ad.profiles?.display_name} · {ad.categories?.name} {ad.city ? `· ${ad.city}` : ""}
@@ -103,12 +124,18 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Pro
             </div>
           );
         })}
-        {(!ads || ads.length === 0) && (
-          <p className="text-center text-sm text-gray-400 py-10 bg-white rounded-2xl border border-gray-100">
-            لا توجد إعلانات في هذا التصنيف حالياً.
-          </p>
+        {ads.length === 0 && (
+          <div className="bg-white rounded-2xl border border-gray-100">
+            <EmptyState icon={Megaphone} title="لا توجد إعلانات في هذا التصنيف حالياً" />
+          </div>
         )}
       </div>
+
+      {ads.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-100">
+          <Pagination page={page} hasMore={hasMore} basePath="/admin/ads" extraParams={{ status: activeStatus }} />
+        </div>
+      )}
     </div>
   );
 }
