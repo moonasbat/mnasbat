@@ -4,6 +4,7 @@ import Footer from "@/components/layout/Footer";
 import { AdminSettings, Profile, StaticPage } from "@/lib/types";
 import { formatGregorianDate } from "@/lib/formatTime";
 import { notFound } from "next/navigation";
+import BackButton from "@/components/BackButton";
 
 export default async function StaticPageView({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -42,7 +43,10 @@ export default async function StaticPageView({ params }: { params: Promise<{ slu
     <div className="min-h-screen flex flex-col">
       <Header profile={profile as Profile} />
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-10">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">{p.title}</h1>
+        <div className="flex items-center gap-3 mb-6">
+          <BackButton />
+          <h1 className="text-2xl font-bold text-gray-900">{p.title}</h1>
+        </div>
         {liveBlock}
         <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: p.content }} />
       </main>

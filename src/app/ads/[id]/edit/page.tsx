@@ -4,6 +4,7 @@ import Footer from "@/components/layout/Footer";
 import EditAdForm from "@/components/ads/EditAdForm";
 import { Ad, Category, Profile } from "@/lib/types";
 import { notFound, redirect } from "next/navigation";
+import BackButton from "@/components/BackButton";
 
 export default async function EditAdPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -26,7 +27,10 @@ export default async function EditAdPage({ params }: { params: Promise<{ id: str
     <div className="min-h-screen flex flex-col">
       <Header profile={profile as Profile} />
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
-        <h1 className="text-xl font-bold text-gray-900 mb-1">تعديل الإعلان</h1>
+        <div className="flex items-center gap-3 mb-1">
+          <BackButton fallbackHref="/dashboard/ads" />
+          <h1 className="text-xl font-bold text-gray-900">تعديل الإعلان</h1>
+        </div>
         <p className="text-sm text-gray-500 mb-6">حدّث بيانات إعلانك ثم احفظ التعديلات.</p>
         <EditAdForm ad={ad as Ad} categories={(categories as Category[]) ?? []} maxImages={maxImages} />
       </main>

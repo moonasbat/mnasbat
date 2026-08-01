@@ -4,6 +4,7 @@ import Footer from "@/components/layout/Footer";
 import { Profile, StaticPage } from "@/lib/types";
 import { SAFETY_TIPS } from "@/lib/content";
 import { ShieldAlert } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 export default async function HelpPage() {
   const supabase = await createClient();
@@ -18,7 +19,10 @@ export default async function HelpPage() {
     <div className="min-h-screen flex flex-col">
       <Header profile={profile as Profile} />
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-10">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">مركز المساعدة</h1>
+        <div className="flex items-center gap-3 mb-6">
+          <BackButton />
+          <h1 className="text-2xl font-bold text-gray-900">مركز المساعدة</h1>
+        </div>
 
         <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed mb-10" dangerouslySetInnerHTML={{ __html: (faq as StaticPage)?.content ?? "" }} />
 

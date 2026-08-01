@@ -4,6 +4,7 @@ import Footer from "@/components/layout/Footer";
 import NewAdForm from "@/components/ads/NewAdForm";
 import { Category, Profile } from "@/lib/types";
 import { NEW_AD_CONTENT } from "@/lib/content";
+import BackButton from "@/components/BackButton";
 
 export default async function NewAdPage() {
   const supabase = await createClient();
@@ -21,7 +22,10 @@ export default async function NewAdPage() {
       <Header profile={profile as Profile} />
 
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8">
-        <h1 className="text-xl font-bold text-gray-900 mb-1">{NEW_AD_CONTENT.pageTitle}</h1>
+        <div className="flex items-center gap-3 mb-1">
+          <BackButton />
+          <h1 className="text-xl font-bold text-gray-900">{NEW_AD_CONTENT.pageTitle}</h1>
+        </div>
         <p className="text-sm text-gray-500 mb-6">{NEW_AD_CONTENT.pageSubtitle}</p>
         <NewAdForm categories={(categories as Category[]) ?? []} initialWhatsapp={(profile as Profile)?.whatsapp} maxImages={maxImages} />
       </main>

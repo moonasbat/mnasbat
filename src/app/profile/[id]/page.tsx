@@ -14,6 +14,7 @@ import { formatGregorianDate } from "@/lib/formatTime";
 import { getSiteFlags } from "@/lib/siteConfig";
 import { StarRatingDisplay } from "@/components/StarRating";
 import { averageRating } from "@/lib/rating";
+import BackButton from "@/components/BackButton";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -39,6 +40,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
       <Header profile={currentProfile as Profile} />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
+        <div className="mb-5">
+          <BackButton />
+        </div>
         <div className="bg-white border border-gray-100 rounded-2xl p-6 flex items-center gap-4 mb-8">
           <div className="w-16 h-16 rounded-full bg-[#6D28D9] text-white flex items-center justify-center text-xl font-bold shrink-0">
             {s.avatar_url ? (
