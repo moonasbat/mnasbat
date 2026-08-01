@@ -5,6 +5,8 @@ import { Profile, StaticPage } from "@/lib/types";
 import { SAFETY_TIPS } from "@/lib/content";
 import { ShieldAlert } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import FaqAccordion from "@/components/FaqAccordion";
+import { parseFaqSections } from "@/lib/faq";
 
 export default async function HelpPage() {
   const supabase = await createClient();
@@ -15,6 +17,8 @@ export default async function HelpPage() {
     supabase.from("static_pages").select("*").eq("slug", "faq").single(),
   ]);
 
+  const faqSections = parseFaqSections((faq as StaticPage)?.content ?? "");
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header profile={profile as Profile} />
@@ -24,7 +28,11 @@ export default async function HelpPage() {
           <h1 className="text-2xl font-bold text-gray-900">مركز المساعدة</h1>
         </div>
 
-        <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed mb-10" dangerouslySetInnerHTML={{ __html: (faq as StaticPage)?.content ?? "" }} />
+        <p className="text-sm text-gray-500 mb-6">أسئلة يتكرر سؤالنا عنها — اضغط أي سؤال لعرض الإجابة.</p>
+
+        <div className="mb-10">
+          <FaqAccordion sections={faqSections} />
+        </div>
 
         <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-3">
