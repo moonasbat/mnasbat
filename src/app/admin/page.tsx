@@ -5,6 +5,7 @@ import { formatNumber, formatRelativeTime } from "@/lib/formatTime";
 import { DailySeriesChart, CategoryDistributionChart, CommissionChart } from "@/components/admin/AdminDashboardCharts";
 import PageHeader from "@/components/admin/PageHeader";
 import { AuditLog } from "@/lib/types";
+import { formatAuditAction } from "@/lib/auditLog";
 
 function dayKey(d: Date) {
   return d.toISOString().slice(0, 10);
@@ -40,6 +41,7 @@ export default async function AdminDashboard() {
     { data: commissionsLast30 },
     { count: reviewsPending },
     { data: recentLogs },
+    { data: flagRows },
   ] = await Promise.all([
     admin.from("profiles").select("id", { count: "exact", head: true }),
     admin.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", new Date(Date.now() - 86400000).toISOString()),
@@ -55,7 +57,11 @@ export default async function AdminDashboard() {
     admin.from("commission_payments").select("created_at, obligation:commission_obligations(amount)").eq("status", "approved").gte("created_at", cutoff),
     admin.from("reviews").select("id", { count: "exact", head: true }).eq("status", "pending"),
     admin.from("audit_logs").select("*, profiles(display_name)").order("created_at", { ascending: false }).limit(6),
+    admin.from("feature_flags").select("key,label"),
   ]);
+
+  const flagLabels: Record<string, string> = {};
+  (flagRows ?? []).forEach((r) => (flagLabels[r.key] = r.label ?? r.key));
 
   const bankActive = bankRow?.value === "true";
 
@@ -196,7 +202,7 @@ export default async function AdminDashboard() {
                 </div>
                 <p className="text-gray-700 flex-1 min-w-0 truncate">
                   <span className="font-medium text-gray-900">{l.profiles?.display_name ?? "النظام"}</span>{" "}
-                  <span className="text-gray-500">{l.action}</span>
+                  <span className="text-gray-500">{formatAuditAction(l, flagLabels)}</span>
                 </p>
                 <span className="text-xs text-gray-400 shrink-0">{formatRelativeTime(l.created_at)}</span>
               </div>

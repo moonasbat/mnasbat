@@ -5,7 +5,8 @@ import { ROLE_LABELS } from "@/lib/permissions";
 import AdminUserActions from "@/components/admin/AdminUserActions";
 import { formatGregorianDate } from "@/lib/formatTime";
 import { profileUrl } from "@/lib/profileUrl";
-import { Download, Users as UsersIcon } from "lucide-react";
+import { Download, Users as UsersIcon, ExternalLink } from "lucide-react";
+import Link from "next/link";
 import PageHeader from "@/components/admin/PageHeader";
 import Badge from "@/components/admin/Badge";
 import EmptyState from "@/components/admin/EmptyState";
@@ -64,17 +65,22 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
               {users.map((u) => (
                 <tr key={u.id} className="hover:bg-gray-50/60 transition-colors">
                   <td className="px-4 py-3">
-                    <a href={profileUrl(u)} className="flex items-center gap-2.5 hover:underline text-gray-900 font-medium">
-                      <div className="w-7 h-7 rounded-full bg-[#6D28D9]/10 text-[#6D28D9] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
-                        {u.avatar_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={u.avatar_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          (u.display_name ?? "?").slice(0, 1)
-                        )}
-                      </div>
-                      {u.display_name}
-                    </a>
+                    <div className="flex items-center gap-2.5">
+                      <Link href={`/admin/users/${u.id}`} className="flex items-center gap-2.5 hover:underline text-gray-900 font-medium">
+                        <div className="w-7 h-7 rounded-full bg-[#6D28D9]/10 text-[#6D28D9] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
+                          {u.avatar_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={u.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            (u.display_name ?? "?").slice(0, 1)
+                          )}
+                        </div>
+                        {u.display_name}
+                      </Link>
+                      <a href={profileUrl(u)} target="_blank" className="text-gray-300 hover:text-[#6D28D9]" title="عرض الملف العام">
+                        <ExternalLink size={13} />
+                      </a>
+                    </div>
                   </td>
                   <td className="px-4 py-3"><Badge color={u.role === "user" ? "gray" : "purple"}>{ROLE_LABELS[u.role]}</Badge></td>
                   <td className="px-4 py-3">

@@ -6,6 +6,7 @@ import PageHeader from "@/components/admin/PageHeader";
 import Badge from "@/components/admin/Badge";
 import EmptyState from "@/components/admin/EmptyState";
 import { ShieldCheck } from "lucide-react";
+import Link from "next/link";
 
 export default async function AdminEmployeesPage() {
   const admin = createAdminClient();
@@ -33,7 +34,9 @@ export default async function AdminEmployeesPage() {
             <tbody className="divide-y divide-gray-100">
               {list.map((u) => (
                 <tr key={u.id} className="hover:bg-gray-50/60 transition-colors">
-                  <td className="px-4 py-3 font-medium text-gray-900">{u.display_name}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900">
+                    <Link href={`/admin/users/${u.id}`} className="hover:underline">{u.display_name}</Link>
+                  </td>
                   <td className="px-4 py-3"><Badge color="purple">{ROLE_LABELS[u.role]}</Badge></td>
                   <td className="px-4 py-3"><AdminUserActions userId={u.id} isBanned={u.is_banned} role={u.role} canChangeRole /></td>
                 </tr>

@@ -11,6 +11,7 @@ import {
   Bell,
   ShieldCheck,
   ScrollText,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 import { UserRole } from "@/lib/types";
@@ -38,6 +39,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { href: "/admin/ads", label: ADMIN_CONTENT.ads, icon: Megaphone, show: canModerateAds },
       { href: "/admin/categories", label: ADMIN_CONTENT.categories, icon: LayoutGrid, show: (r) => r === "super_admin" },
       { href: "/admin/reviews", label: ADMIN_CONTENT.reviews, icon: Star, show: canModerateAds },
+      { href: "/admin/comments", label: ADMIN_CONTENT.comments, icon: MessageSquare, show: canModerateAds },
     ],
   },
   {

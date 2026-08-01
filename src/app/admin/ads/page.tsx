@@ -4,7 +4,7 @@ import { AD_STATUS_LABELS } from "@/lib/content";
 import AdminAdActions from "@/components/admin/AdminAdActions";
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, Download, Megaphone } from "lucide-react";
+import { ExternalLink, Download, Megaphone, Eye, Heart } from "lucide-react";
 import { formatNumber } from "@/lib/formatTime";
 import { adUrl } from "@/lib/adSlug";
 import PageHeader from "@/components/admin/PageHeader";
@@ -97,13 +97,17 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Pro
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-gray-900">{ad.title}</h3>
+                      <Link href={`/admin/ads/${ad.id}`} className="font-bold text-gray-900 hover:underline">{ad.title}</Link>
                       <Badge color={STATUS_COLOR[ad.status] ?? "gray"}>{AD_STATUS_LABELS[ad.status]}</Badge>
                     </div>
                     <p className="text-xs text-gray-400 mt-0.5">
                       {ad.profiles?.display_name} · {ad.categories?.name} {ad.city ? `· ${ad.city}` : ""}
                       {ad.price ? ` · ${formatNumber(ad.price)} ر.س` : ""}
                     </p>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                      <span className="flex items-center gap-1"><Eye size={12} /> {formatNumber(ad.views_count ?? 0)}</span>
+                      <span className="flex items-center gap-1"><Heart size={12} /> {formatNumber(ad.favorites_count ?? 0)}</span>
+                    </div>
                   </div>
                   <Link href={adUrl(ad)} target="_blank" className="flex items-center gap-1 text-xs text-[#6D28D9] shrink-0 hover:underline">
                     فتح الصفحة الكاملة
