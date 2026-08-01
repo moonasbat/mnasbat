@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import AdminCommissionActions from "@/components/admin/AdminCommissionActions";
 import { CommissionPayment } from "@/lib/types";
 import { formatNumber } from "@/lib/formatTime";
+import { Download } from "lucide-react";
 
 export default async function AdminCommissionsPage() {
   const admin = createAdminClient();
@@ -13,7 +14,13 @@ export default async function AdminCommissionsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-gray-900">إيصالات التحويل</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-gray-900">إيصالات التحويل</h1>
+        <a href="/api/admin/export?type=commissions" className="flex items-center gap-1.5 text-sm text-[#6D28D9] hover:underline">
+          <Download size={15} />
+          تصدير CSV
+        </a>
+      </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <table className="w-full text-sm">

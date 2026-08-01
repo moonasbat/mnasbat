@@ -4,7 +4,7 @@ import Footer from "@/components/layout/Footer";
 import AdCard from "@/components/ads/AdCard";
 import { Ad, Profile, Review } from "@/lib/types";
 import Image from "next/image";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, PlaneTakeoff } from "lucide-react";
 import { notFound } from "next/navigation";
 import AddReviewForm from "@/components/AddReviewForm";
 import ReviewReplyForm from "@/components/ReviewReplyForm";
@@ -67,6 +67,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="font-bold text-gray-900 text-lg">{s.display_name}</h1>
                 {verificationEnabled && s.verification_status === "verified" && <ShieldCheck size={18} className="text-[#6D28D9] shrink-0" />}
+                {s.vacation_mode && (
+                  <span className="flex items-center gap-1 bg-amber-50 text-amber-700 text-xs font-medium px-2 py-0.5 rounded-lg shrink-0">
+                    <PlaneTakeoff size={11} />
+                    غير متاح مؤقتاً
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center gap-2 flex-wrap text-sm text-gray-400 mt-0.5">

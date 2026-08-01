@@ -7,7 +7,7 @@ import { Ad, Category, Profile } from "@/lib/types";
 import { HOME_CONTENT } from "@/lib/content";
 import { Plus, ChevronLeft, Search } from "lucide-react";
 import CategoryBar from "@/components/CategoryBar";
-import { getSiteFlags } from "@/lib/siteConfig";
+import { getSiteFlags, getSiteSettings } from "@/lib/siteConfig";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -19,6 +19,7 @@ export default async function HomePage() {
     { data: featuredAds },
     { data: latestAds },
     flags,
+    settings,
   ] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : { data: null },
     supabase.from("categories").select("*").eq("is_active", true).is("parent_id", null).order("sort_order"),
@@ -36,8 +37,11 @@ export default async function HomePage() {
       .order("published_at", { ascending: false })
       .limit(20),
     getSiteFlags(supabase),
+    getSiteSettings(supabase),
   ]);
   const showFeatured = flags.featured_ads_enabled !== false;
+  const trendingEnabled = flags.trending_badge_enabled !== false;
+  const trendingThreshold = Number(settings.trending_views_threshold) || 50;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -87,7 +91,7 @@ export default async function HomePage() {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {(featuredAds as Ad[]).map((ad) => (
-                  <AdCard key={ad.id} ad={ad} />
+                  <AdCard key={ad.id} ad={ad} trendingEnabled={trendingEnabled} trendingThreshold={trendingThreshold} />
                 ))}
               </div>
             </section>
@@ -105,7 +109,7 @@ export default async function HomePage() {
             {latestAds && latestAds.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {(latestAds as Ad[]).map((ad) => (
-                  <AdCard key={ad.id} ad={ad} />
+                  <AdCard key={ad.id} ad={ad} trendingEnabled={trendingEnabled} trendingThreshold={trendingThreshold} />
                 ))}
               </div>
             ) : (

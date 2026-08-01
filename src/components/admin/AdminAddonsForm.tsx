@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminSettings, FeatureFlags } from "@/lib/types";
 import ToggleSwitch from "@/components/admin/ToggleSwitch";
-import { CheckCircle2, Circle, BarChart3, Search, Share2, Music2, Megaphone, MessageCircle, Wrench, Mail } from "lucide-react";
+import { CheckCircle2, Circle, BarChart3, Search, Share2, Music2, Megaphone, MessageCircle, Wrench, Mail, Flame, Gift, PlaneTakeoff } from "lucide-react";
 
 const CONNECT_ADDONS: { key: string; title: string; icon: React.ElementType; label: string; placeholder: string; help: string; helpUrl: string }[] = [
   {
@@ -239,6 +239,84 @@ export default function AdminAddonsForm({ settings, flags }: { settings: AdminSe
             </div>
             <p className="text-xs text-gray-400">
               صفحة "تواصل معنا" جاهزة وموجودة بالفوتر — أي رسالة يرسلها زائر توصلك إشعاراً مباشراً داخل لوحة التحكم، بدون أي إعداد خارجي.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-sm font-bold text-gray-500 mb-3">النمو والمشاركة</h2>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="bg-white border border-gray-100 rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-[#6D28D9] shrink-0">
+                  <Flame size={16} />
+                </div>
+                <h3 className="font-bold text-gray-900">شارة الأكثر مشاهدة</h3>
+              </div>
+              <ToggleSwitch checked={!!flagState.trending_badge_enabled} onChange={() => toggleFlag("trending_badge_enabled")} />
+            </div>
+            <p className="text-xs text-gray-400 mb-3">تظهر تلقائياً على أي إعلان يتجاوز عدد مشاهداته الحد المحدد.</p>
+            <label className="text-sm font-medium text-gray-700 block mb-1">حد المشاهدات</label>
+            <input
+              type="number"
+              value={values.trending_views_threshold ?? ""}
+              onChange={(e) => setValues((v) => ({ ...v, trending_views_threshold: e.target.value }))}
+              onBlur={() => saveSetting("trending_views_threshold")}
+              onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
+              placeholder="50"
+              dir="ltr"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+            />
+            <p className="text-[11px] mt-1.5 h-4">
+              {saving === "trending_views_threshold" && <span className="text-gray-400">جارٍ الحفظ…</span>}
+              {savedKey === "trending_views_threshold" && <span className="text-green-600">تم الحفظ ✓</span>}
+            </p>
+          </div>
+
+          <div className="bg-white border border-gray-100 rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-[#6D28D9] shrink-0">
+                  <Gift size={16} />
+                </div>
+                <h3 className="font-bold text-gray-900">نظام الإحالة</h3>
+              </div>
+              <ToggleSwitch checked={!!flagState.referral_program_enabled} onChange={() => toggleFlag("referral_program_enabled")} />
+            </div>
+            <p className="text-xs text-gray-400 mb-3">
+              كل مستخدم يجد رابط دعوة خاص به في إعداداته — لما مدعوّه ينشر أول إعلان، يحصل الداعي على تمييز مجاني لأحد إعلاناته.
+            </p>
+            <label className="text-sm font-medium text-gray-700 block mb-1">مدة التمييز (أيام)</label>
+            <input
+              type="number"
+              value={values.referral_reward_days ?? ""}
+              onChange={(e) => setValues((v) => ({ ...v, referral_reward_days: e.target.value }))}
+              onBlur={() => saveSetting("referral_reward_days")}
+              onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
+              placeholder="7"
+              dir="ltr"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+            />
+            <p className="text-[11px] mt-1.5 h-4">
+              {saving === "referral_reward_days" && <span className="text-gray-400">جارٍ الحفظ…</span>}
+              {savedKey === "referral_reward_days" && <span className="text-green-600">تم الحفظ ✓</span>}
+            </p>
+          </div>
+
+          <div className="bg-white border border-gray-100 rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-[#6D28D9] shrink-0">
+                  <PlaneTakeoff size={16} />
+                </div>
+                <h3 className="font-bold text-gray-900">وضع غير متاح للمعلن</h3>
+              </div>
+              <ToggleSwitch checked={!!flagState.vacation_mode_enabled} onChange={() => toggleFlag("vacation_mode_enabled")} />
+            </div>
+            <p className="text-xs text-gray-400">
+              يظهر في إعدادات كل مستخدم — يوقف كل إعلاناته دفعة واحدة مؤقتاً ويعيدها تلقائياً عند إلغائه.
             </p>
           </div>
         </div>

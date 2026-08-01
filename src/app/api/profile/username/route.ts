@@ -24,5 +24,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
+  // ربط الإحالة — أول مرة يكمّل فيها المستخدم اسم المستخدم (التسجيل)، إن وُجدت كوكي دعوة صالحة
+  const refCookie = request.cookies.get("mnasbat_ref")?.value;
+  if (refCookie) {
+    const { data: currentProfile } = await supabase.from("profiles").select("referred_by").eq("id", user.id).maybeSingle();
+    if (currentProfile && !currentProfile.referred_by) {
+      const { data: referrer } = await supabase.from("profiles").select("id").ilike("username", refCookie).maybeSingle();
+      if (referrer && referrer.id !== user.id) {
+        await supabase.from("profiles").update({ referred_by: referrer.id }).eq("id", user.id);
+      }
+    }
+  }
+
   return NextResponse.json({ ok: true });
 }

@@ -27,6 +27,9 @@ export interface Profile {
   total_reviews: number;
   rating_sum: number;
   last_seen_at?: string;
+  referred_by?: string;
+  referral_rewarded?: boolean;
+  vacation_mode?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -57,6 +60,7 @@ export interface Ad {
   comments_enabled: boolean;
   is_featured: boolean;
   featured_until?: string;
+  auto_paused_by_vacation?: boolean;
   views_count: number;
   favorites_count: number;
   comments_count: number;

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { COMMISSION_DECLARATION_TEXT } from "@/lib/content";
+import { grantReferralRewardIfApplicable } from "@/lib/referral";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -68,6 +69,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const { error } = await supabase.from("ads").update(updates).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  if (updates.status === "published") {
+    await grantReferralRewardIfApplicable(supabase, user.id);
+  }
 
   return NextResponse.json({ ok: true, status: updates.status });
 }

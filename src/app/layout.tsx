@@ -7,6 +7,7 @@ import AuthListener from "@/components/AuthListener";
 import NavigationProgress from "@/components/NavigationProgress";
 import PwaInstall from "@/components/PwaInstall";
 import AnnouncementBar from "@/components/AnnouncementBar";
+import ReferralCapture from "@/components/ReferralCapture";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -133,6 +134,7 @@ ttq.page();
         <Suspense>
           <NavigationProgress />
           <AuthListener />
+          <ReferralCapture />
         </Suspense>
         {children}
         <PwaInstall />

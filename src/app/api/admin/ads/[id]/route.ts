@@ -1,4 +1,5 @@
 import { requireStaff, logAudit } from "@/lib/adminAuth";
+import { grantReferralRewardIfApplicable } from "@/lib/referral";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -42,6 +43,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           ? `تم قبول إعلانك "${updatedAd.title}" ونشره على الموقع.`
           : `تم رفض إعلانك "${updatedAd.title}". السبب: ${reason}`,
     });
+  }
+
+  if (updatedAd && action === "approve") {
+    await grantReferralRewardIfApplicable(admin, updatedAd.user_id);
   }
 
   await logAudit(user.id, `ad_${action}`, "ad", id, { reason });

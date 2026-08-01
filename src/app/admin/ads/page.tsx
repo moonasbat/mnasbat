@@ -4,7 +4,7 @@ import { AD_STATUS_LABELS } from "@/lib/content";
 import AdminAdActions from "@/components/admin/AdminAdActions";
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Download } from "lucide-react";
 import { formatNumber } from "@/lib/formatTime";
 import { adUrl } from "@/lib/adSlug";
 
@@ -34,11 +34,17 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Pro
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">مراجعة الإعلانات</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          راجع الصورة والوصف قبل الاعتماد أو الرفض — لا حاجة لمغادرة هذه الصفحة.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">مراجعة الإعلانات</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            راجع الصورة والوصف قبل الاعتماد أو الرفض — لا حاجة لمغادرة هذه الصفحة.
+          </p>
+        </div>
+        <a href="/api/admin/export?type=ads" className="flex items-center gap-1.5 text-sm text-[#6D28D9] hover:underline shrink-0">
+          <Download size={15} />
+          تصدير CSV
+        </a>
       </div>
 
       <div className="flex flex-wrap gap-2">

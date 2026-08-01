@@ -9,8 +9,17 @@ import { useRouter, usePathname } from "next/navigation";
 import { loginUrl } from "@/lib/loginRedirect";
 import { formatRelativeTime, formatNumber } from "@/lib/formatTime";
 import { adUrl } from "@/lib/adSlug";
+import { Flame } from "lucide-react";
 
-export default function AdCard({ ad }: { ad: Ad }) {
+export default function AdCard({
+  ad,
+  trendingEnabled = true,
+  trendingThreshold = 50,
+}: {
+  ad: Ad;
+  trendingEnabled?: boolean;
+  trendingThreshold?: number;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [favorited, setFavorited] = useState(false);
@@ -32,6 +41,7 @@ export default function AdCard({ ad }: { ad: Ad }) {
     }
   }
   const timeLabel = formatRelativeTime(ad.published_at ?? ad.created_at);
+  const isTrending = trendingEnabled && !ad.is_featured && ad.views_count >= trendingThreshold;
 
   return (
     <Link
@@ -48,6 +58,12 @@ export default function AdCard({ ad }: { ad: Ad }) {
         {ad.is_featured && (
           <span className="absolute top-2 right-2 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
             مميز
+          </span>
+        )}
+        {isTrending && (
+          <span className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1">
+            <Flame size={12} fill="currentColor" />
+            الأكثر مشاهدة
           </span>
         )}
         <button

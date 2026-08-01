@@ -6,13 +6,24 @@ import { Profile } from "@/lib/types";
 import { AUTH_CONTENT } from "@/lib/content";
 import SaudiPhoneInput from "@/components/SaudiPhoneInput";
 import AvatarUpload from "@/components/dashboard/AvatarUpload";
+import ToggleSwitch from "@/components/admin/ToggleSwitch";
+import ReferralWidget from "@/components/dashboard/ReferralWidget";
+import { PlaneTakeoff } from "lucide-react";
 
 const CITIES = [
   "الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر",
   "الطائف", "تبوك", "بريدة", "حائل", "أبها", "خميس مشيط", "جازان", "نجران",
 ];
 
-export default function ProfileEditForm({ profile }: { profile: Profile }) {
+export default function ProfileEditForm({
+  profile,
+  vacationModeEnabled = true,
+  referralEnabled = true,
+}: {
+  profile: Profile;
+  vacationModeEnabled?: boolean;
+  referralEnabled?: boolean;
+}) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState(profile.display_name);
   const [city, setCity] = useState(profile.city ?? "");
@@ -21,6 +32,21 @@ export default function ProfileEditForm({ profile }: { profile: Profile }) {
   const [bio, setBio] = useState(profile.bio ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [vacationMode, setVacationMode] = useState(!!profile.vacation_mode);
+  const [vacationSaving, setVacationSaving] = useState(false);
+
+  async function toggleVacationMode() {
+    const next = !vacationMode;
+    setVacationMode(next);
+    setVacationSaving(true);
+    await fetch("/api/profile/vacation-mode", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ enabled: next }),
+    });
+    setVacationSaving(false);
+    router.refresh();
+  }
 
   async function save() {
     setSaving(true);
@@ -78,6 +104,27 @@ export default function ProfileEditForm({ profile }: { profile: Profile }) {
       <button onClick={save} disabled={saving} className="bg-[#6D28D9] text-white rounded-xl px-6 py-2.5 text-sm font-medium disabled:opacity-60">
         حفظ التغييرات
       </button>
+
+      {referralEnabled && profile.username && <ReferralWidget username={profile.username} />}
+
+      {vacationModeEnabled && (
+        <div className="pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-between gap-3 bg-gray-50 rounded-2xl p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-[#6D28D9] shrink-0">
+                <PlaneTakeoff size={16} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-gray-900">غير متاح مؤقتاً</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  يوقف كل إعلاناتك المنشورة تلقائياً ويظهر ذلك في ملفك الشخصي، وترجع كلها تلقائياً عند إلغاء الوضع.
+                </p>
+              </div>
+            </div>
+            <ToggleSwitch checked={vacationMode} onChange={toggleVacationMode} disabled={vacationSaving} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

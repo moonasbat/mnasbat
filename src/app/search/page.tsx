@@ -6,7 +6,7 @@ import CategoryBar from "@/components/CategoryBar";
 import LocationFilters from "@/components/LocationFilters";
 import { Ad, Category, Profile } from "@/lib/types";
 import { SEARCH_CONTENT } from "@/lib/content";
-import { getSiteFlags } from "@/lib/siteConfig";
+import { getSiteFlags, getSiteSettings } from "@/lib/siteConfig";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -22,12 +22,15 @@ export default async function SearchPage({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: profile }, { data: allCategories }, flags] = await Promise.all([
+  const [{ data: profile }, { data: allCategories }, flags, settings] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : { data: null },
     supabase.from("categories").select("*").eq("is_active", true).order("sort_order"),
     getSiteFlags(supabase),
+    getSiteSettings(supabase),
   ]);
   const cityFilterEnabled = flags.city_filter_enabled !== false;
+  const trendingEnabled = flags.trending_badge_enabled !== false;
+  const trendingThreshold = Number(settings.trending_views_threshold) || 50;
 
   const categories = allCategories as Category[];
   const mainCategories = categories.filter((c) => !c.parent_id);
@@ -145,7 +148,7 @@ export default async function SearchPage({
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {(ads as Ad[]).map((ad) => (
-                <AdCard key={ad.id} ad={ad} />
+                <AdCard key={ad.id} ad={ad} trendingEnabled={trendingEnabled} trendingThreshold={trendingThreshold} />
               ))}
             </div>
 

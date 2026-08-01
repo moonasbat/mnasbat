@@ -5,6 +5,7 @@ import { ROLE_LABELS } from "@/lib/permissions";
 import AdminUserActions from "@/components/admin/AdminUserActions";
 import { formatGregorianDate } from "@/lib/formatTime";
 import { profileUrl } from "@/lib/profileUrl";
+import { Download } from "lucide-react";
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q } = await searchParams;
@@ -19,7 +20,13 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-gray-900">المستخدمون</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-gray-900">المستخدمون</h1>
+        <a href="/api/admin/export?type=users" className="flex items-center gap-1.5 text-sm text-[#6D28D9] hover:underline">
+          <Download size={15} />
+          تصدير CSV
+        </a>
+      </div>
 
       <form className="flex gap-2">
         <input name="q" defaultValue={q} placeholder="بحث بالاسم…" className="border border-gray-200 rounded-xl px-3 py-2 text-sm flex-1 max-w-xs" />

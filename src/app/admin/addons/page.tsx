@@ -11,8 +11,18 @@ const SETTINGS_KEYS = [
   "announcement_link",
   "whatsapp_support_number",
   "maintenance_message",
+  "trending_views_threshold",
+  "referral_reward_days",
 ];
-const FLAG_KEYS = ["announcement_bar_enabled", "floating_whatsapp_enabled", "maintenance_mode_enabled", "contact_form_enabled"];
+const FLAG_KEYS = [
+  "announcement_bar_enabled",
+  "floating_whatsapp_enabled",
+  "maintenance_mode_enabled",
+  "contact_form_enabled",
+  "trending_badge_enabled",
+  "referral_program_enabled",
+  "vacation_mode_enabled",
+];
 
 export default async function AdminAddonsPage() {
   const admin = createAdminClient();
