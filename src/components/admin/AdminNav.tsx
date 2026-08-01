@@ -27,7 +27,7 @@ export default function AdminNav({ role }: { role: UserRole }) {
     { href: "/admin/categories", label: ADMIN_CONTENT.categories, show: role === "super_admin" },
     { href: "/admin/notifications", label: ADMIN_CONTENT.notifications, show: canManageUsers(role) },
     { href: "/admin/settings", label: ADMIN_CONTENT.settings, show: canManageSettings(role) },
-    { href: "/admin/integrations", label: ADMIN_CONTENT.integrations, show: role === "super_admin" },
+    { href: "/admin/addons", label: ADMIN_CONTENT.addons, show: role === "super_admin" },
     { href: "/admin/employees", label: ADMIN_CONTENT.permissions, show: canManageEmployees(role) },
     { href: "/admin/audit-log", label: ADMIN_CONTENT.auditLog, show: role === "super_admin" || role === "admin" },
   ];

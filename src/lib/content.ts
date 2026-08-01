@@ -260,7 +260,7 @@ export const ADMIN_CONTENT = {
   notifications: "الإشعارات",
   settings: "الإعدادات",
   permissions: "الصلاحيات",
-  integrations: "التكاملات",
+  addons: "الإضافات",
   auditLog: "سجل التدقيق",
   approvePayment: "اعتماد الدفع",
   rejectPayment: "رفض الدفع",

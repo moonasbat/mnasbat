@@ -6,6 +6,8 @@ import Script from "next/script";
 import AuthListener from "@/components/AuthListener";
 import NavigationProgress from "@/components/NavigationProgress";
 import PwaInstall from "@/components/PwaInstall";
+import AnnouncementBar from "@/components/AnnouncementBar";
+import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const viewport: Viewport = {
@@ -28,9 +30,28 @@ async function getIntegrationSettings() {
   const { data } = await admin
     .from("admin_settings")
     .select("key,value")
-    .in("key", ["ga4_measurement_id", "google_site_verification", "facebook_pixel_id", "tiktok_pixel_id"]);
+    .in("key", [
+      "ga4_measurement_id",
+      "google_site_verification",
+      "facebook_pixel_id",
+      "tiktok_pixel_id",
+      "announcement_text",
+      "announcement_link",
+      "whatsapp_support_number",
+    ]);
   const map: Record<string, string> = {};
   (data ?? []).forEach((r) => (map[r.key] = r.value));
+  return map;
+}
+
+async function getAddonFlags() {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("feature_flags")
+    .select("key,enabled")
+    .in("key", ["announcement_bar_enabled", "floating_whatsapp_enabled"]);
+  const map: Record<string, boolean> = {};
+  (data ?? []).forEach((r) => (map[r.key] = r.enabled));
   return map;
 }
 
@@ -49,10 +70,12 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = await getIntegrationSettings();
+  const [settings, addonFlags] = await Promise.all([getIntegrationSettings(), getAddonFlags()]);
   const ga4 = settings.ga4_measurement_id;
   const fbPixel = settings.facebook_pixel_id;
   const tiktokPixel = settings.tiktok_pixel_id;
+  const showAnnouncement = addonFlags.announcement_bar_enabled && settings.announcement_text?.trim();
+  const showFloatingWhatsapp = addonFlags.floating_whatsapp_enabled && settings.whatsapp_support_number?.trim();
 
   return (
     <html
@@ -106,12 +129,14 @@ ttq.page();
 }(window, document, 'ttq');`}
           </Script>
         )}
+        {showAnnouncement && <AnnouncementBar text={settings.announcement_text} link={settings.announcement_link || undefined} />}
         <Suspense>
           <NavigationProgress />
           <AuthListener />
         </Suspense>
         {children}
         <PwaInstall />
+        {showFloatingWhatsapp && <FloatingWhatsApp number={settings.whatsapp_support_number} />}
       </body>
     </html>
   );
