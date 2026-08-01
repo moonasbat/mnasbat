@@ -9,6 +9,7 @@ import { MESSAGES_CONTENT } from "@/lib/content";
 import { formatRelativeTime } from "@/lib/formatTime";
 import ReportDialog from "@/components/ReportDialog";
 import BlockUserButton from "@/components/BlockUserButton";
+import { profileUrl } from "@/lib/profileUrl";
 
 function hasUnread(c: Conversation, currentUserId: string) {
   return (c.messages ?? []).some((m) => m.sender_id !== currentUserId && !m.is_read);
@@ -161,7 +162,7 @@ export default function MessagesInbox({
                 <ChevronRight size={20} />
               </button>
               {otherUserId && (
-                <Link href={`/profile/${otherUserId}`} className="flex items-center gap-2 min-w-0 flex-1 hover:opacity-80">
+                <Link href={profileUrl(otherUser ?? { id: otherUserId })} className="flex items-center gap-2 min-w-0 flex-1 hover:opacity-80">
                   <Avatar name={otherUser?.display_name} url={otherUser?.avatar_url} size={32} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-gray-900 truncate">{otherUser?.display_name}</p>

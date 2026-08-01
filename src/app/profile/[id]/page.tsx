@@ -16,25 +16,34 @@ import { StarRatingDisplay } from "@/components/StarRating";
 import { averageRating } from "@/lib/rating";
 import BackButton from "@/components/BackButton";
 import ScrollToLink from "@/components/ScrollToLink";
+import { isUuid } from "@/lib/adSlug";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  const { id: rawParam } = await params;
+  const param = decodeURIComponent(rawParam);
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: currentProfile }, { data: seller }, { data: ads }, { data: reviews }, flags] = await Promise.all([
+  const [{ data: currentProfile }, sellerResult] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : Promise.resolve({ data: null }),
-    supabase.from("profiles").select("*").eq("id", id).single(),
-    supabase.from("ads").select("*, categories(*), ad_images(*)").eq("user_id", id).eq("status", "published").order("published_at", { ascending: false }),
-    supabase.from("reviews").select("*, profiles!reviews_reviewer_id_fkey(*)").eq("reviewee_id", id).eq("status", "approved").order("created_at", { ascending: false }).limit(10),
+    param.startsWith("@")
+      ? supabase.from("profiles").select("*").ilike("username", param.slice(1)).maybeSingle()
+      : isUuid(param)
+        ? supabase.from("profiles").select("*").eq("id", param).maybeSingle()
+        : Promise.resolve({ data: null }),
+  ]);
+
+  const seller = sellerResult.data;
+  if (!seller) notFound();
+  const s = seller as Profile;
+
+  const [{ data: ads }, { data: reviews }, flags] = await Promise.all([
+    supabase.from("ads").select("*, categories(*), ad_images(*)").eq("user_id", s.id).eq("status", "published").order("published_at", { ascending: false }),
+    supabase.from("reviews").select("*, profiles!reviews_reviewer_id_fkey(*)").eq("reviewee_id", s.id).eq("status", "approved").order("created_at", { ascending: false }).limit(10),
     getSiteFlags(supabase),
   ]);
   const verificationEnabled = flags.verification_enabled !== false;
   const reviewsEnabled = flags.reviews_enabled !== false;
-
-  if (!seller) notFound();
-
-  const s = seller as Profile;
 
   return (
     <div className="min-h-screen flex flex-col">

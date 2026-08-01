@@ -4,6 +4,7 @@ import { Profile } from "@/lib/types";
 import { ROLE_LABELS } from "@/lib/permissions";
 import AdminUserActions from "@/components/admin/AdminUserActions";
 import { formatGregorianDate } from "@/lib/formatTime";
+import { profileUrl } from "@/lib/profileUrl";
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q } = await searchParams;
@@ -39,7 +40,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
           <tbody className="divide-y divide-gray-100">
             {(users as Profile[])?.map((u) => (
               <tr key={u.id}>
-                <td className="px-4 py-3"><a href={`/profile/${u.id}`} className="hover:underline text-gray-900">{u.display_name}</a></td>
+                <td className="px-4 py-3"><a href={profileUrl(u)} className="hover:underline text-gray-900">{u.display_name}</a></td>
                 <td className="px-4 py-3 text-gray-500">{ROLE_LABELS[u.role]}</td>
                 <td className="px-4 py-3">
                   {u.is_banned ? <span className="text-red-600 text-xs">محظور</span> : <span className="text-green-600 text-xs">نشط</span>}

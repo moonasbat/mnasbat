@@ -8,6 +8,7 @@ import { Comment } from "@/lib/types";
 import { COMMENTS_CONTENT } from "@/lib/content";
 import ReportDialog from "@/components/ReportDialog";
 import { loginUrl } from "@/lib/loginRedirect";
+import { profileUrl } from "@/lib/profileUrl";
 
 export default function CommentsSection({
   adId,
@@ -69,7 +70,7 @@ export default function CommentsSection({
         <div className="space-y-4">
           {comments.map((c) => (
             <div key={c.id} className="flex gap-3">
-              <Link href={`/profile/${c.user_id}`} className="w-8 h-8 rounded-full bg-[#6D28D9] text-white flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
+              <Link href={profileUrl(c.profiles ?? { id: c.user_id })} className="w-8 h-8 rounded-full bg-[#6D28D9] text-white flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
                 {c.profiles?.avatar_url ? (
                   <Image src={c.profiles.avatar_url} alt={c.profiles.display_name} width={32} height={32} className="object-cover w-full h-full" />
                 ) : (
@@ -77,7 +78,7 @@ export default function CommentsSection({
                 )}
               </Link>
               <div className="flex-1">
-                <Link href={`/profile/${c.user_id}`} className="text-sm font-medium text-gray-900 hover:text-[#6D28D9] hover:underline">
+                <Link href={profileUrl(c.profiles ?? { id: c.user_id })} className="text-sm font-medium text-gray-900 hover:text-[#6D28D9] hover:underline">
                   {c.profiles?.display_name}
                 </Link>
                 <p className="text-sm text-gray-700 mt-0.5">{c.body}</p>

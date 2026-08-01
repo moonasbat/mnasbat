@@ -15,6 +15,7 @@ import BackButton from "@/components/BackButton";
 import AdGallery from "@/components/ads/AdGallery";
 import { getSiteFlags } from "@/lib/siteConfig";
 import { isUuid } from "@/lib/adSlug";
+import { profileUrl } from "@/lib/profileUrl";
 import { StarRatingDisplay } from "@/components/StarRating";
 import { averageRating } from "@/lib/rating";
 import type { Metadata } from "next";
@@ -185,7 +186,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
           {/* المعلن وأزرار التواصل — تظهر مباشرة بعد وصف الإعلان وقبل التعليقات على الجوال */}
           <div className="md:order-2 space-y-4">
             <div className="bg-white border border-gray-100 rounded-2xl p-4">
-              <Link href={`/profile/${seller.id}`} className="flex items-center gap-3">
+              <Link href={profileUrl(seller)} className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-full bg-[#6D28D9] text-white flex items-center justify-center font-bold shrink-0">
                   {seller.avatar_url ? (
                     <Image src={seller.avatar_url} alt={seller.display_name} width={44} height={44} className="rounded-full object-cover" />
