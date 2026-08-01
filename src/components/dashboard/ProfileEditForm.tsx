@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Profile } from "@/lib/types";
 import { AUTH_CONTENT } from "@/lib/content";
 import SaudiPhoneInput from "@/components/SaudiPhoneInput";
+import AvatarUpload from "@/components/dashboard/AvatarUpload";
 
 const CITIES = [
   "الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر",
@@ -38,6 +39,7 @@ export default function ProfileEditForm({ profile }: { profile: Profile }) {
 
   return (
     <div className="space-y-4 max-w-md">
+      <AvatarUpload avatarUrl={profile.avatar_url} displayName={profile.display_name} />
       {profile.username && (
         <div>
           <label className="text-sm font-medium text-gray-700 block mb-1">اسم المستخدم</label>

@@ -10,6 +10,7 @@ cloudinary.config({
 
 const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5MB — نفس روح حدود صور الملف الشخصي في تويتر ونحوها
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -29,8 +30,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "الصورة غير مدعومة." }, { status: 400 });
   }
 
-  if (file.size > MAX_SIZE) {
-    return NextResponse.json({ error: "الصورة غير مدعومة." }, { status: 400 });
+  const isAvatar = type === "avatar";
+
+  if (file.size > (isAvatar ? MAX_AVATAR_SIZE : MAX_SIZE)) {
+    return NextResponse.json(
+      { error: isAvatar ? "حجم الصورة كبير — الحد الأقصى 5 ميقابايت." : "الصورة غير مدعومة." },
+      { status: 400 }
+    );
   }
 
   try {
@@ -39,13 +45,14 @@ export async function POST(request: NextRequest) {
 
     const isReceipt = type === "receipt";
     let applyWatermark = false;
-    if (!isReceipt) {
+    if (!isReceipt && !isAvatar) {
       const { data: flag } = await supabase.from("feature_flags").select("enabled").eq("key", "watermark_enabled").maybeSingle();
       applyWatermark = flag ? flag.enabled : true;
     }
-    const result = await cloudinary.uploader.upload(base64, {
-      folder: isReceipt ? "mnasbat/receipts" : "mnasbat/ads",
-      transformation: isReceipt
+
+    const transformation = isAvatar
+      ? [{ width: 512, height: 512, crop: "fill", gravity: "auto", quality: "auto", fetch_format: "auto" }]
+      : isReceipt
         ? [{ width: 1600, height: 1600, crop: "limit", quality: "auto", fetch_format: "auto" }]
         : applyWatermark
           ? [
@@ -59,7 +66,11 @@ export async function POST(request: NextRequest) {
                 y: 20,
               },
             ]
-          : [{ width: 1600, height: 1600, crop: "limit", quality: "auto", fetch_format: "auto" }],
+          : [{ width: 1600, height: 1600, crop: "limit", quality: "auto", fetch_format: "auto" }];
+
+    const result = await cloudinary.uploader.upload(base64, {
+      folder: isAvatar ? "mnasbat/avatars" : isReceipt ? "mnasbat/receipts" : "mnasbat/ads",
+      transformation,
     });
 
     return NextResponse.json({

@@ -6,11 +6,14 @@ export async function PATCH(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { display_name, city, phone, whatsapp, bio } = await request.json();
+  const { display_name, city, phone, whatsapp, bio, avatar_url } = await request.json();
+
+  const updates: Record<string, unknown> = { display_name, city, phone, whatsapp, bio };
+  if (avatar_url !== undefined) updates.avatar_url = avatar_url;
 
   const { error } = await supabase
     .from("profiles")
-    .update({ display_name, city, phone, whatsapp, bio })
+    .update(updates)
     .eq("id", user.id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });

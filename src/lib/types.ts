@@ -26,6 +26,7 @@ export interface Profile {
   verification_status: "none" | "verified";
   total_reviews: number;
   rating_sum: number;
+  last_seen_at?: string;
   created_at: string;
   updated_at: string;
 }

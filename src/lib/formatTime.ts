@@ -47,3 +47,11 @@ export function formatRelativeTime(date: string | Date) {
 
   return formatGregorianDate(d);
 }
+
+// "متصل الآن" إذا كان آخر ظهور خلال 5 دقائق (نفس فترة نبضة last-seen)، وإلا "آخر ظهور منذ..."
+export function formatLastSeen(date?: string | null): string {
+  if (!date) return "";
+  const diffMin = (Date.now() - new Date(date).getTime()) / 60000;
+  if (diffMin < 5) return "متصل الآن";
+  return `آخر ظهور ${formatRelativeTime(date)}`;
+}

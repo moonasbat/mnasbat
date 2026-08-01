@@ -10,11 +10,12 @@ import AddReviewForm from "@/components/AddReviewForm";
 import ReviewReplyForm from "@/components/ReviewReplyForm";
 import BlockUserButton from "@/components/BlockUserButton";
 import ReportDialog from "@/components/ReportDialog";
-import { formatGregorianDate } from "@/lib/formatTime";
+import { formatGregorianDate, formatLastSeen } from "@/lib/formatTime";
 import { getSiteFlags } from "@/lib/siteConfig";
 import { StarRatingDisplay } from "@/components/StarRating";
 import { averageRating } from "@/lib/rating";
 import BackButton from "@/components/BackButton";
+import ScrollToLink from "@/components/ScrollToLink";
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -43,39 +44,65 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         <div className="mb-5">
           <BackButton />
         </div>
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 flex items-center gap-4 mb-8">
-          <div className="w-16 h-16 rounded-full bg-[#6D28D9] text-white flex items-center justify-center text-xl font-bold shrink-0">
-            {s.avatar_url ? (
-              <Image src={s.avatar_url} alt={s.display_name} width={64} height={64} className="rounded-full object-cover" />
-            ) : (
-              s.display_name.charAt(0)
-            )}
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-bold text-gray-900 text-lg">{s.display_name}</h1>
-              {verificationEnabled && s.verification_status === "verified" && <ShieldCheck size={18} className="text-[#6D28D9]" />}
-            </div>
-            {s.username && <p className="text-sm text-gray-400" dir="ltr">@{s.username}</p>}
-            {s.city && <p className="text-sm text-gray-400">{s.city}</p>}
-            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-              {s.total_reviews > 0 ? (
-                <>
-                  <StarRatingDisplay value={averageRating(s)} />
-                  <span>{averageRating(s).toFixed(1)} ({s.total_reviews} تقييم)</span>
-                </>
+        <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-8">
+          <div className="flex items-start gap-4">
+            <div className="relative w-20 h-20 rounded-full bg-[#6D28D9] text-white flex items-center justify-center text-2xl font-bold shrink-0">
+              {s.avatar_url ? (
+                <Image src={s.avatar_url} alt={s.display_name} fill className="rounded-full object-cover" />
               ) : (
-                <span className="text-gray-400">لا توجد تقييمات بعد</span>
+                s.display_name.charAt(0)
               )}
             </div>
-            <p className="text-xs text-gray-400 mt-1">عضو منذ {formatGregorianDate(s.created_at)}</p>
-          </div>
-          {currentProfile && (currentProfile as Profile).id !== s.id && (
-            <div className="mr-auto flex flex-col items-end gap-2">
-              <BlockUserButton userId={s.id} isLoggedIn={!!user} />
-              <ReportDialog targetType="user" targetId={s.id} />
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="font-bold text-gray-900 text-lg">{s.display_name}</h1>
+                {verificationEnabled && s.verification_status === "verified" && <ShieldCheck size={18} className="text-[#6D28D9] shrink-0" />}
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap text-sm text-gray-400 mt-0.5">
+                {s.username && <span dir="ltr">@{s.username}</span>}
+                {s.username && s.city && <span>·</span>}
+                {s.city && <span>{s.city}</span>}
+              </div>
+
+              {reviewsEnabled && (
+                <ScrollToLink targetId="reviews" className="inline-flex items-center gap-1.5 text-sm mt-2 hover:opacity-80 transition-opacity">
+                  {s.total_reviews > 0 ? (
+                    <>
+                      <StarRatingDisplay value={averageRating(s)} />
+                      <span className="text-gray-600 underline decoration-gray-300 underline-offset-2">
+                        {averageRating(s).toFixed(1)} ({s.total_reviews} تقييم)
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-gray-400">لا توجد تقييمات بعد</span>
+                  )}
+                </ScrollToLink>
+              )}
+
+              {s.bio && <p className="text-sm text-gray-600 mt-2 leading-relaxed">{s.bio}</p>}
+
+              <div className="flex items-center gap-3 flex-wrap text-xs text-gray-400 mt-3">
+                <span>عضو منذ {formatGregorianDate(s.created_at)}</span>
+                {s.last_seen_at && (
+                  <>
+                    <span>·</span>
+                    <span className={formatLastSeen(s.last_seen_at) === "متصل الآن" ? "text-green-600 font-medium" : ""}>
+                      {formatLastSeen(s.last_seen_at)}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
-          )}
+
+            {currentProfile && (currentProfile as Profile).id !== s.id && (
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                <BlockUserButton userId={s.id} isLoggedIn={!!user} />
+                <ReportDialog targetType="user" targetId={s.id} />
+              </div>
+            )}
+          </div>
         </div>
 
         {reviewsEnabled && currentProfile && (currentProfile as Profile).id !== s.id && (
@@ -97,7 +124,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           )}
         </section>
 
-        {reviewsEnabled && <section>
+        {reviewsEnabled && <section id="reviews" className="scroll-mt-24">
           <h2 className="font-bold text-gray-900 mb-4">التقييمات</h2>
           {reviews && reviews.length > 0 ? (
             <div className="space-y-3">
