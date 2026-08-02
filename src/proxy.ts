@@ -6,7 +6,20 @@ const ONBOARDING_EXEMPT = ["/onboarding", "/login", "/auth", "/api", "/help", "/
 const MAINTENANCE_EXEMPT = ["/maintenance", "/login", "/auth", "/admin", "/api"];
 const STAFF_ROLES = ["admin", "moderator", "super_admin"];
 
+// الدومين الرسمي الوحيد للموقع الآن moonasbat.com — أي زيارة عبر الرابط القديم على Vercel
+// (روابط قديمة محفوظة، نتائج بحث مؤرشفة، إلخ) تُحوَّل تلقائياً بدل ما تبقى تظهر كموقع منفصل
+const OLD_HOSTS = ["mnasbat.vercel.app"];
+const CANONICAL_HOST = "moonasbat.com";
+
 export async function proxy(request: NextRequest) {
+  if (OLD_HOSTS.includes(request.nextUrl.hostname)) {
+    const url = new URL(request.url);
+    url.protocol = "https:";
+    url.hostname = CANONICAL_HOST;
+    url.port = "";
+    return NextResponse.redirect(url, 308);
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
