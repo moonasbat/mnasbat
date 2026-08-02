@@ -9,8 +9,45 @@ import { SEARCH_CONTENT } from "@/lib/content";
 import { getSiteFlags, getSiteSettings } from "@/lib/siteConfig";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { Metadata } from "next";
 
 const PAGE_SIZE = 24;
+
+type SearchParams = { q?: string; category?: string; sub?: string; city?: string; featured?: string; sort?: string; page?: string };
+
+export async function generateMetadata({ searchParams }: { searchParams: Promise<SearchParams> }): Promise<Metadata> {
+  const { q, category: categorySlug, sub: subSlug, city } = await searchParams;
+  const supabase = await createClient();
+
+  let title = "البحث";
+  let description = "تصفح إعلانات المناسبات — قاعات، تصوير، ضيافة، ديكور، وأكثر.";
+
+  if (categorySlug) {
+    const { data: cat } = await supabase.from("categories").select("name").eq("slug", subSlug || categorySlug).maybeSingle();
+    if (cat) {
+      title = cat.name;
+      description = `تصفح كل إعلانات ${cat.name}${city ? ` في ${city}` : ""} على مناسبات.`;
+    }
+  } else if (q) {
+    title = `نتائج البحث عن "${q}"`;
+    description = `نتائج البحث عن "${q}" في إعلانات المناسبات.`;
+  } else if (city) {
+    title = `إعلانات المناسبات في ${city}`;
+    description = `تصفح كل إعلانات خدمات المناسبات في ${city}.`;
+  }
+
+  const params = new URLSearchParams();
+  if (categorySlug) params.set("category", categorySlug);
+  if (subSlug) params.set("sub", subSlug);
+  const qs = params.toString();
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/search${qs ? `?${qs}` : ""}` },
+    openGraph: { title, description },
+  };
+}
 
 export default async function SearchPage({
   searchParams,

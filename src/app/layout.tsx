@@ -3,6 +3,7 @@ import { Tajawal, Inter } from "next/font/google";
 import "./globals.css";
 import { Suspense } from "react";
 import Script from "next/script";
+import { SITE_NAME, SITE_URL, SITE_DESCRIPTION } from "@/lib/seo";
 import AuthListener from "@/components/AuthListener";
 import NavigationProgress from "@/components/NavigationProgress";
 import PwaInstall from "@/components/PwaInstall";
@@ -62,11 +63,62 @@ async function getAddonFlags() {
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getIntegrationSettings();
+  const title = `${SITE_NAME} — سوق إعلانات المناسبات`;
+  const description = "كل ما يخص مناسبتك… في مكان واحد. أنشئ إعلانك أو اكتشف ما يناسبك.";
+
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
-    title: "مناسبات — سوق إعلانات المناسبات",
-    description: "كل ما يخص مناسبتك… في مكان واحد. أنشئ إعلانك أو اكتشف ما يناسبك.",
+    metadataBase: new URL(SITE_URL),
+    applicationName: SITE_NAME,
+    title: { default: title, template: `%s — ${SITE_NAME}` },
+    description,
+    alternates: { canonical: "/" },
+    icons: {
+      icon: [{ url: "/icon", type: "image/png", sizes: "48x48" }],
+      apple: [{ url: "/apple-icon", type: "image/png", sizes: "180x180" }],
+    },
+    openGraph: {
+      type: "website",
+      locale: "ar_SA",
+      siteName: SITE_NAME,
+      title,
+      description,
+      url: "/",
+      images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/opengraph-image"],
+    },
+    robots: { index: true, follow: true },
     verification: settings.google_site_verification ? { google: settings.google_site_verification } : undefined,
+  };
+}
+
+function organizationJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE_NAME,
+    url: SITE_URL,
+    logo: `${SITE_URL}/icon`,
+    description: SITE_DESCRIPTION,
+  };
+}
+
+function websiteJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    url: SITE_URL,
+    inLanguage: "ar-SA",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/search?q={search_term_string}` },
+      "query-input": "required name=search_term_string",
+    },
   };
 }
 
@@ -94,6 +146,14 @@ export default async function RootLayout({
       className={`${tajawal.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `try {

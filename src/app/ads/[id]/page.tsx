@@ -14,10 +14,11 @@ import Link from "next/link";
 import BackButton from "@/components/BackButton";
 import AdGallery from "@/components/ads/AdGallery";
 import { getSiteFlags } from "@/lib/siteConfig";
-import { isUuid } from "@/lib/adSlug";
+import { isUuid, adUrl } from "@/lib/adSlug";
 import { profileUrl } from "@/lib/profileUrl";
 import { StarRatingDisplay } from "@/components/StarRating";
 import { averageRating } from "@/lib/rating";
+import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import type { Metadata } from "next";
 
 // Next.js لا يضمن دائماً فك ترميز params في مكوّن الصفحة (بخلاف generateMetadata) —
@@ -45,22 +46,27 @@ async function findAdByParam(supabase: Awaited<ReturnType<typeof createClient>>,
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id: param } = await params;
   const supabase = await createClient();
-  const ad = await findAdByParam(supabase, param, "title, description, price, city, ad_images(url, sort_order)");
+  const ad = await findAdByParam(supabase, param, "slug, title, description, price, city, ad_images(url, sort_order)");
 
-  if (!ad) return { title: "الإعلان غير متاح — مناسبات" };
+  if (!ad) return { title: "الإعلان غير متاح" };
 
-  const title = `${ad.title} — مناسبات`;
+  const title = ad.title;
   const description = ad.description?.slice(0, 160) || "اكتشف هذا الإعلان على منصة مناسبات.";
   const images = (ad.ad_images as { url: string; sort_order: number }[] | null) ?? [];
   const firstImage = [...images].sort((a, b) => a.sort_order - b.sort_order)[0]?.url;
+  const canonicalPath = adUrl({ id: param, slug: (ad.slug as string | null) ?? null });
 
   return {
     title,
     description,
+    alternates: { canonical: canonicalPath },
     openGraph: {
       title,
       description,
       type: "website",
+      siteName: SITE_NAME,
+      locale: "ar_SA",
+      url: canonicalPath,
       images: firstImage ? [{ url: firstImage, width: 1200, height: 900 }] : undefined,
     },
     twitter: {
@@ -134,8 +140,39 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
   const whatsappEnabled = flags.whatsapp_enabled !== false;
   const favoritesEnabled = flags.favorites_enabled !== false;
 
+  const canonicalPath = adUrl({ id, slug: ad.slug as string | null | undefined });
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: ad.title,
+    description: ad.description,
+    image: images.map((img) => img.url),
+    category: subCategory?.name ?? mainCategory?.name,
+    offers: {
+      "@type": "Offer",
+      url: `${SITE_URL}${canonicalPath}`,
+      priceCurrency: "SAR",
+      price: ad.price ?? undefined,
+      availability: "https://schema.org/InStock",
+      areaServed: ad.city ?? undefined,
+      seller: { "@type": "Person", name: seller?.display_name },
+    },
+  };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: SITE_NAME, item: SITE_URL },
+      mainCategory && { "@type": "ListItem", position: 2, name: mainCategory.name, item: `${SITE_URL}/search?category=${mainCategory.slug}` },
+      subCategory && { "@type": "ListItem", position: 3, name: subCategory.name, item: `${SITE_URL}/search?category=${mainCategory?.slug}&sub=${subCategory.slug}` },
+      { "@type": "ListItem", position: subCategory ? 4 : 3, name: ad.title, item: `${SITE_URL}${canonicalPath}` },
+    ].filter(Boolean),
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <Header profile={profile as Profile} />
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">

@@ -7,6 +7,13 @@ import { ShieldAlert } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import FaqAccordion from "@/components/FaqAccordion";
 import { parseFaqSections } from "@/lib/faq";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "مركز المساعدة",
+  description: "إجابات على أكثر الأسئلة تكراراً حول نشر الإعلانات، العمولة، والسلامة عند التعامل على منصة مناسبات.",
+  alternates: { canonical: "/help" },
+};
 
 export default async function HelpPage() {
   const supabase = await createClient();
@@ -18,9 +25,23 @@ export default async function HelpPage() {
   ]);
 
   const faqSections = parseFaqSections((faq as StaticPage)?.content ?? "");
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqSections.flatMap((section) =>
+      section.items.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: { "@type": "Answer", text: item.a },
+      }))
+    ),
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
+      {faqSections.length > 0 && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      )}
       <Header profile={profile as Profile} />
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-10">
         <div className="flex items-center gap-3 mb-6">

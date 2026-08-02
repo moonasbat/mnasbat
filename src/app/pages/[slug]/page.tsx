@@ -5,6 +5,24 @@ import { AdminSettings, Profile, StaticPage } from "@/lib/types";
 import { formatGregorianDate } from "@/lib/formatTime";
 import { notFound } from "next/navigation";
 import BackButton from "@/components/BackButton";
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data: page } = await supabase.from("static_pages").select("title, content").eq("slug", slug).maybeSingle();
+  if (!page) return { title: "الصفحة غير متاحة" };
+
+  const plainText = page.content.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const description = plainText.slice(0, 160) || `${page.title} — منصة مناسبات.`;
+
+  return {
+    title: page.title,
+    description,
+    alternates: { canonical: `/pages/${slug}` },
+    openGraph: { title: page.title, description },
+  };
+}
 
 export default async function StaticPageView({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

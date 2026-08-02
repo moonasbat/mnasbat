@@ -60,7 +60,7 @@ export default function AdGallery({ images, title }: { images: AdImage[]; title:
                 i === active ? "border-[#6D28D9]" : "border-transparent hover:border-gray-300"
               }`}
             >
-              <Image src={img.url} alt="" fill className="object-cover" />
+              <Image src={img.url} alt={`${title} - صورة ${i + 1}`} fill className="object-cover" />
             </button>
           ))}
         </div>

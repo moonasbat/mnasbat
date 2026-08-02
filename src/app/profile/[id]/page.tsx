@@ -17,6 +17,32 @@ import { averageRating } from "@/lib/rating";
 import BackButton from "@/components/BackButton";
 import ScrollToLink from "@/components/ScrollToLink";
 import { isUuid } from "@/lib/adSlug";
+import { profileUrl } from "@/lib/profileUrl";
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id: rawParam } = await params;
+  const param = decodeURIComponent(rawParam);
+  const supabase = await createClient();
+
+  const { data: seller } = param.startsWith("@")
+    ? await supabase.from("profiles").select("display_name, username, bio, avatar_url, id").ilike("username", param.slice(1)).maybeSingle()
+    : isUuid(param)
+      ? await supabase.from("profiles").select("display_name, username, bio, avatar_url, id").eq("id", param).maybeSingle()
+      : { data: null };
+
+  if (!seller) return { title: "الملف الشخصي غير متاح" };
+
+  const title = seller.display_name;
+  const description = seller.bio?.slice(0, 160) || `تصفح إعلانات وتقييمات ${seller.display_name} على مناسبات.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: profileUrl(seller) },
+    openGraph: { title, description, images: seller.avatar_url ? [{ url: seller.avatar_url }] : undefined },
+  };
+}
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id: rawParam } = await params;
