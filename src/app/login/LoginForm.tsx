@@ -1,36 +1,101 @@
 "use client";
 
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Script from "next/script";
 import { createClient } from "@/lib/supabase/client";
 import { AUTH_CONTENT } from "@/lib/content";
 import Link from "next/link";
 
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: {
+            client_id: string;
+            callback: (response: { credential: string }) => void;
+            nonce: string;
+          }) => void;
+          renderButton: (parent: HTMLElement, options: Record<string, unknown>) => void;
+        };
+      };
+    };
+  }
+}
+
+// نولّد nonce عشوائي، ونمرر النسخة الخام لسوبابيس والنسخة المشفّرة (SHA-256) لجوجل — هذا ما توثّقه سوبابيس كإلزامي مع signInWithIdToken
+async function generateNonce(): Promise<[string, string]> {
+  const rawNonce = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  const encoder = new TextEncoder();
+  const digest = await crypto.subtle.digest("SHA-256", encoder.encode(rawNonce));
+  const hashedNonce = Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return [rawNonce, hashedNonce];
+}
+
 export default function LoginForm({ googleLoginEnabled }: { googleLoginEnabled: boolean }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [gsiReady, setGsiReady] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
   const redirect = searchParams.get("redirect") ?? "/";
+  const buttonHostRef = useRef<HTMLDivElement>(null);
 
-  async function handleGoogleLogin() {
-    setLoading(true);
-    setError("");
-    const supabase = createClient();
-    const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?redirect=${encodeURIComponent(redirect)}`;
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: callbackUrl,
-      },
-    });
-    if (error) {
-      setError(AUTH_CONTENT.loginFailed);
-      setLoading(false);
+  useEffect(() => {
+    if (!gsiReady || !googleLoginEnabled || !buttonHostRef.current || !window.google) return;
+
+    let cancelled = false;
+
+    async function setup() {
+      const [rawNonce, hashedNonce] = await generateNonce();
+      if (cancelled || !window.google || !buttonHostRef.current) return;
+
+      window.google.accounts.id.initialize({
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+        nonce: hashedNonce,
+        callback: async (response) => {
+          setLoading(true);
+          setError("");
+          const supabase = createClient();
+          const { error } = await supabase.auth.signInWithIdToken({
+            provider: "google",
+            token: response.credential,
+            nonce: rawNonce,
+          });
+          if (error) {
+            setError(AUTH_CONTENT.loginFailed);
+            setLoading(false);
+            return;
+          }
+          router.push(redirect);
+          router.refresh();
+        },
+      });
+
+      window.google.accounts.id.renderButton(buttonHostRef.current, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        width: 320,
+        text: "continue_with",
+        locale: "ar",
+      });
     }
-  }
+
+    setup();
+    return () => {
+      cancelled = true;
+    };
+  }, [gsiReady, googleLoginEnabled, redirect, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" onReady={() => setGsiReady(true)} />
       <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-100 p-8 text-center">
         <Link href="/" className="text-2xl font-bold text-[#6D28D9]">
           مناسبات
@@ -39,23 +104,15 @@ export default function LoginForm({ googleLoginEnabled }: { googleLoginEnabled: 
         <p className="text-sm text-gray-500 mt-2 mb-8">{AUTH_CONTENT.welcomeBody}</p>
 
         {googleLoginEnabled ? (
-          <button
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition-colors disabled:opacity-60"
-          >
-            {loading ? (
-              <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 48 48">
-                <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
-                <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4c-7.5 0-14 4.1-17.7 10.7z"/>
-                <path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.1-5.1l-6.5-5.5C29.6 35.2 27 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.9 39.9 16.4 44 24 44z"/>
-                <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.4l6.5 5.5C41.4 36.1 44 30.5 44 24c0-1.3-.1-2.7-.4-3.5z"/>
-              </svg>
+          <div className="relative flex items-center justify-center min-h-[44px]">
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center gap-2 bg-white text-sm font-medium text-gray-500 z-10">
+                <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                {AUTH_CONTENT.loading}
+              </div>
             )}
-            {loading ? AUTH_CONTENT.loading : AUTH_CONTENT.googleButton}
-          </button>
+            <div ref={buttonHostRef} className={loading ? "invisible" : ""} />
+          </div>
         ) : (
           <p className="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
             تسجيل الدخول متوقف مؤقتاً. يرجى المحاولة لاحقاً.
