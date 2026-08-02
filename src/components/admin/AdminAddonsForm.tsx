@@ -5,7 +5,19 @@ import { useRouter } from "next/navigation";
 import { AdminSettings } from "@/lib/types";
 import { CheckCircle2, Circle, BarChart3, Search, Share2, Music2, Tags, Ghost, Activity, ShieldCheck } from "lucide-react";
 
-const CONNECT_ADDONS: { key: string; title: string; icon: React.ElementType; label: string; placeholder: string; help: string; helpUrl: string; extra?: { key: string; label: string; placeholder: string } }[] = [
+type Addon = {
+  key: string;
+  title: string;
+  icon: React.ElementType;
+  label: string;
+  placeholder: string;
+  help: string;
+  helpUrl: string;
+  validate: (value: string) => boolean;
+  extra?: { key: string; label: string; placeholder: string; validate: (value: string) => boolean };
+};
+
+const CONNECT_ADDONS: Addon[] = [
   {
     key: "ga4_measurement_id",
     title: "Google Analytics",
@@ -14,6 +26,7 @@ const CONNECT_ADDONS: { key: string; title: string; icon: React.ElementType; lab
     placeholder: "G-XXXXXXXXXX",
     help: "أنشئ خاصية GA4 من حسابك في Google Analytics وانسخ المعرف من إعدادات جمع البيانات",
     helpUrl: "https://analytics.google.com",
+    validate: (v) => /^G-[A-Z0-9]{6,12}$/i.test(v.trim()),
   },
   {
     key: "google_site_verification",
@@ -23,6 +36,7 @@ const CONNECT_ADDONS: { key: string; title: string; icon: React.ElementType; lab
     placeholder: "مثال: AbCdEfGhIjKlMnOpQrStUvWxYz",
     help: "من Search Console اختر طريقة التحقق «وسم HTML» وانسخ القيمة داخل content= فقط (بدون بقية الوسم)",
     helpUrl: "https://search.google.com/search-console",
+    validate: (v) => /^[A-Za-z0-9_-]{20,80}$/.test(v.trim()),
   },
   {
     key: "gtm_container_id",
@@ -32,6 +46,7 @@ const CONNECT_ADDONS: { key: string; title: string; icon: React.ElementType; lab
     placeholder: "GTM-XXXXXXX",
     help: "يديك تحكم كامل بكل أكواد التتبع من مكان واحد بدون تعديل الموقع كل مرة",
     helpUrl: "https://tagmanager.google.com",
+    validate: (v) => /^GTM-[A-Z0-9]{4,10}$/i.test(v.trim()),
   },
   {
     key: "facebook_pixel_id",
@@ -41,6 +56,7 @@ const CONNECT_ADDONS: { key: string; title: string; icon: React.ElementType; lab
     placeholder: "مثال: 123456789012345",
     help: "من Meta Events Manager، انسخ معرف البكسل الرقمي",
     helpUrl: "https://business.facebook.com/events_manager",
+    validate: (v) => /^\d{10,20}$/.test(v.trim()),
   },
   {
     key: "tiktok_pixel_id",
@@ -50,6 +66,7 @@ const CONNECT_ADDONS: { key: string; title: string; icon: React.ElementType; lab
     placeholder: "مثال: CXXXXXXXXXXXXXXXXXXX",
     help: "من TikTok Ads Manager ← Assets ← Events، انسخ معرف البكسل",
     helpUrl: "https://ads.tiktok.com",
+    validate: (v) => /^[A-Z0-9]{15,25}$/i.test(v.trim()),
   },
   {
     key: "snapchat_pixel_id",
@@ -59,6 +76,7 @@ const CONNECT_ADDONS: { key: string; title: string; icon: React.ElementType; lab
     placeholder: "مثال: a1b2c3d4-...",
     help: "من Snapchat Ads Manager ← Events Manager، انسخ معرف البكسل — مجاني للإضافة، يُستخدم لاستهداف وقياس إعلانات سناب شات",
     helpUrl: "https://ads.snapchat.com",
+    validate: (v) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v.trim()),
   },
   {
     key: "clarity_project_id",
@@ -68,6 +86,7 @@ const CONNECT_ADDONS: { key: string; title: string; icon: React.ElementType; lab
     placeholder: "مثال: abc123defg",
     help: "خرائط حرارية وتسجيل جلسات الزوار — مجاني بالكامل، انسخ المعرف من إعدادات المشروع",
     helpUrl: "https://clarity.microsoft.com",
+    validate: (v) => /^[a-z0-9]{8,16}$/i.test(v.trim()),
   },
   {
     key: "recaptcha_site_key",
@@ -77,7 +96,13 @@ const CONNECT_ADDONS: { key: string; title: string; icon: React.ElementType; lab
     placeholder: "6Lc...",
     help: "حماية نموذج «تواصل معنا» من الروبوتات والسبام تلقائياً — أنشئ مفتاح reCAPTCHA v3 وانسخ المفتاحين",
     helpUrl: "https://www.google.com/recaptcha/admin",
-    extra: { key: "recaptcha_secret_key", label: "المفتاح السري (Secret Key)", placeholder: "6Lc..." },
+    validate: (v) => /^6L[A-Za-z0-9_-]{35,45}$/.test(v.trim()),
+    extra: {
+      key: "recaptcha_secret_key",
+      label: "المفتاح السري (Secret Key)",
+      placeholder: "6Lc...",
+      validate: (v) => /^6L[A-Za-z0-9_-]{35,45}$/.test(v.trim()),
+    },
   },
 ];
 
@@ -107,7 +132,11 @@ export default function AdminAddonsForm({ settings }: { settings: AdminSettings 
   return (
     <div className="grid md:grid-cols-2 gap-4">
       {CONNECT_ADDONS.map((i) => {
-        const connected = !!lastSavedRef.current[i.key]?.trim();
+        const rawValue = lastSavedRef.current[i.key]?.trim() ?? "";
+        const connected = !!rawValue && i.validate(rawValue);
+        const invalid = !!rawValue && !i.validate(rawValue);
+        const extraRawValue = i.extra ? lastSavedRef.current[i.extra.key]?.trim() ?? "" : "";
+        const extraInvalid = !!i.extra && !!extraRawValue && !i.extra.validate(extraRawValue);
         const Icon = i.icon;
         return (
           <div key={i.key} className="bg-white border border-gray-100 rounded-2xl p-5">
@@ -118,9 +147,9 @@ export default function AdminAddonsForm({ settings }: { settings: AdminSettings 
                 </div>
                 <h3 className="font-bold text-gray-900">{i.title}</h3>
               </div>
-              <span className={`flex items-center gap-1 text-xs font-medium shrink-0 ${connected ? "text-green-600" : "text-gray-400"}`}>
+              <span className={`flex items-center gap-1 text-xs font-medium shrink-0 ${connected ? "text-green-600" : invalid ? "text-red-600" : "text-gray-400"}`}>
                 {connected ? <CheckCircle2 size={14} /> : <Circle size={14} />}
-                {connected ? "متصل" : "غير متصل"}
+                {connected ? "متصل" : invalid ? "كود غير صحيح" : "غير متصل"}
               </span>
             </div>
             <p className="text-xs text-gray-400 mb-3">
@@ -137,8 +166,9 @@ export default function AdminAddonsForm({ settings }: { settings: AdminSettings 
               onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
               placeholder={i.placeholder}
               dir="ltr"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+              className={`w-full border rounded-xl px-3 py-2 text-sm ${invalid ? "border-red-300" : "border-gray-200"}`}
             />
+            {invalid && <p className="text-[11px] text-red-600 mt-1">الصيغة غير صحيحة — تأكد إنك نسخت الكود الصحيح بدون مسافات إضافية.</p>}
             {i.extra && (
               <>
                 <label className="text-sm font-medium text-gray-700 block mb-1 mt-2">{i.extra.label}</label>
@@ -149,8 +179,9 @@ export default function AdminAddonsForm({ settings }: { settings: AdminSettings 
                   onKeyDown={(e) => e.key === "Enter" && (e.target as HTMLInputElement).blur()}
                   placeholder={i.extra.placeholder}
                   dir="ltr"
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                  className={`w-full border rounded-xl px-3 py-2 text-sm ${extraInvalid ? "border-red-300" : "border-gray-200"}`}
                 />
+                {extraInvalid && <p className="text-[11px] text-red-600 mt-1">الصيغة غير صحيحة — تأكد إنك نسخت المفتاح السري الصحيح.</p>}
               </>
             )}
             <p className="text-[11px] mt-1.5 h-4">
