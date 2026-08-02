@@ -180,6 +180,9 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
                 <p className="text-sm text-gray-400 mt-3">حسب الاتفاق</p>
               )}
               <p className="text-gray-700 mt-4 whitespace-pre-line leading-relaxed">{ad.description}</p>
+              {ad.edited_at && (
+                <p className="text-xs text-gray-400 mt-3">تم تعديل هذا الإعلان بتاريخ {formatRelativeTime(ad.edited_at)}</p>
+              )}
             </div>
           </div>
 

@@ -9,12 +9,21 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   const body = await request.json();
   const { action } = body;
-  const { data: ad } = await supabase.from("ads").select("id, user_id, status").eq("id", id).single();
+  const { data: ad } = await supabase.from("ads").select("id, user_id, status, created_at").eq("id", id).single();
   if (!ad || ad.user_id !== user.id) {
     return NextResponse.json({ error: "لا تملك صلاحية لتنفيذ هذا الإجراء." }, { status: 403 });
   }
 
   if (action === "update") {
+    const EDIT_WINDOW_MS = 5 * 60 * 1000;
+    const createdAt = new Date(ad.created_at as unknown as string).getTime();
+    if (Date.now() - createdAt > EDIT_WINDOW_MS) {
+      return NextResponse.json(
+        { error: "لا يمكن تعديل الإعلان بعد مرور 5 دقائق من نشره." },
+        { status: 403 }
+      );
+    }
+
     const { title, description, category_id, city, price, whatsapp, messages_enabled, comments_enabled } = body;
     if (!title?.trim()) return NextResponse.json({ error: "يرجى كتابة عنوان الإعلان." }, { status: 400 });
     if (!description?.trim()) return NextResponse.json({ error: "يرجى كتابة وصف الإعلان." }, { status: 400 });
@@ -36,6 +45,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         title, description, category_id, city: city || null,
         price: price ? Number(price) : null, whatsapp: whatsapp || null,
         messages_enabled: messages_enabled ?? true, comments_enabled: comments_enabled ?? true,
+        edited_at: new Date().toISOString(),
       })
       .eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -77,6 +87,6 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     return NextResponse.json({ error: "لا تملك صلاحية لتنفيذ هذا الإجراء." }, { status: 403 });
   }
 
-  await supabase.from("ads").update({ status: "removed" }).eq("id", id);
+  await supabase.from("ads").delete().eq("id", id);
   return NextResponse.json({ ok: true });
 }

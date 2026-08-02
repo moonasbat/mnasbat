@@ -22,6 +22,7 @@ export default async function EditAdPage({ params }: { params: Promise<{ id: str
 
   if (!ad) notFound();
   if (ad.user_id !== user.id) redirect("/dashboard/ads");
+  if (Date.now() - new Date(ad.created_at).getTime() > 5 * 60 * 1000) redirect("/dashboard/ads");
 
   return (
     <div className="min-h-screen flex flex-col">

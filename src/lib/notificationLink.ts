@@ -5,7 +5,10 @@ export function resolveNotificationLink(type: string, relatedId?: string | null)
     case "AD_APPROVED":
       return relatedId ? `/ads/${relatedId}` : "/dashboard/ads";
     case "AD_REJECTED":
+    case "AD_EXPIRED":
       return "/dashboard/ads";
+    case "AD_PERMANENTLY_DELETED":
+      return "/ads/new";
     case "NEW_COMMENT":
       return relatedId ? `/ads/${relatedId}` : null;
     case "NEW_MESSAGE":

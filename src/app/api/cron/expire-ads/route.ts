@@ -38,9 +38,8 @@ export async function GET(request: NextRequest) {
       .in("id", expiringSoon.map((ad) => ad.id));
   }
 
-  // الإعلانات المنشورة اللي انتهت مدتها ولم تُجدَّد (التجديد يحرّك expires_at للمستقبل فيخرجها من هذا الاستعلام)
-  // تُحذف نهائياً بدل تعليقها كـ"منتهي" — commission_obligations.ad_id يتحول لـ null تلقائياً (on delete set null)
-  // ويبقى السجل المالي محفوظاً، وباقي الجداول المرتبطة (صور، تعليقات، مفضلة، محادثات) تُحذف معه بالكامل
+  // المرحلة الأولى: الإعلانات المنشورة اللي انتهت مدتها (30 يوم) ولم تُجدَّد — تُخفى عن الزوار (status=expired)
+  // بدل الحذف الفوري، وتُمهَل 30 يوم إضافية للتجديد قبل الحذف النهائي بالمرحلة الثانية أدناه
   const { data: toExpire } = await admin
     .from("ads")
     .select("id, title, user_id")
@@ -55,10 +54,29 @@ export async function GET(request: NextRequest) {
       })
     );
     await admin.from("notifications").insert(rows);
-    await admin.from("ads").delete().in("id", toExpire.map((ad) => ad.id));
+    await admin.from("ads").update({ status: "expired" }).in("id", toExpire.map((ad) => ad.id));
   }
 
-  const expired = toExpire;
+  // المرحلة الثانية: الإعلانات اللي صارت "منتهية" من 30 يوم إضافية ولم تُجدَّد نهائياً — تُحذف من قاعدة البيانات فعلياً
+  // commission_obligations.ad_id يتحول لـ null تلقائياً (on delete set null) ويبقى السجل المالي محفوظاً
+  // وباقي الجداول المرتبطة (صور، تعليقات، مفضلة، محادثات) تُحذف معه بالكامل
+  const graceCutoff = new Date(now.getTime() - 30 * 86400000);
+  const { data: toDelete } = await admin
+    .from("ads")
+    .select("id, title, user_id")
+    .eq("status", "expired")
+    .lt("expires_at", graceCutoff.toISOString());
+
+  if (toDelete && toDelete.length > 0) {
+    const rows = await Promise.all(
+      toDelete.map(async (ad) => {
+        const { title, body } = await renderNotification("AD_PERMANENTLY_DELETED", { ad_title: ad.title });
+        return { user_id: ad.user_id, type: "AD_PERMANENTLY_DELETED", title, body };
+      })
+    );
+    await admin.from("notifications").insert(rows);
+    await admin.from("ads").delete().in("id", toDelete.map((ad) => ad.id));
+  }
 
   // إلغاء تمييز الإعلانات التي انتهت مدة تمييزها (featured_until) — كانت تبقى مميزة للأبد بدون هذا الفحص
   const { data: unfeatured } = await admin
@@ -72,7 +90,8 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     ok: true,
     expiringSoon: expiringSoon?.length ?? 0,
-    expired: expired?.length ?? 0,
+    expired: toExpire?.length ?? 0,
+    permanentlyDeleted: toDelete?.length ?? 0,
     unfeatured: unfeatured?.length ?? 0,
   });
 }

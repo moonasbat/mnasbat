@@ -68,6 +68,7 @@ export interface Ad {
   published_at?: string;
   expires_at?: string;
   expiry_reminder_sent_at?: string | null;
+  edited_at?: string | null;
   created_at: string;
   updated_at: string;
   profiles?: Profile;
