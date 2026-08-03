@@ -11,11 +11,15 @@ export default function AuthListener() {
 
   useEffect(() => {
     const supabase = createClient();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      // INITIAL_SESSION يُطلق فوراً عند كل اشتراك جديد (حتى لو ما تغيّر شيء فعلياً) — تجاهله يمنع حلقة:
+      // refresh() يعيد تركيب هذا المكوّن بصفحات معيّنة (مثل 404) → اشتراك جديد → INITIAL_SESSION فوري → refresh من جديد...
+      if (event === "INITIAL_SESSION") return;
       router.refresh();
     });
     return () => subscription.unsubscribe();
-  }, [router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // نبضة "آخر تواجد" — عند الفتح وكل 5 دقائق طالما التبويب ظاهر، فقط لمستخدم مسجّل دخول
   useEffect(() => {
