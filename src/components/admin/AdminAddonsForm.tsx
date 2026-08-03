@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminSettings } from "@/lib/types";
-import { CheckCircle2, Circle, BarChart3, Search, Share2, Music2, Tags, Ghost, Activity, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Circle, Search, Tags, ShieldCheck } from "lucide-react";
 
 type Addon = {
   key: string;
@@ -19,14 +19,14 @@ type Addon = {
 
 const CONNECT_ADDONS: Addon[] = [
   {
-    key: "ga4_measurement_id",
-    title: "Google Analytics",
-    icon: BarChart3,
-    label: "معرف القياس (Measurement ID)",
-    placeholder: "G-XXXXXXXXXX",
-    help: "أنشئ خاصية GA4 من حسابك في Google Analytics وانسخ المعرف من إعدادات جمع البيانات",
-    helpUrl: "https://analytics.google.com",
-    validate: (v) => /^G-[A-Z0-9]{6,12}$/i.test(v.trim()),
+    key: "gtm_container_id",
+    title: "Google Tag Manager",
+    icon: Tags,
+    label: "معرف الحاوية (Container ID)",
+    placeholder: "GTM-XXXXXXX",
+    help: "المدير الوحيد لكل أكواد التتبع — بعد ما تربطه هنا، تضيف وتدير Google Analytics وFacebook Pixel وTikTok وSnapchat وClarity وأي أداة ثانية من داخل حساب Tag Manager نفسه، بدون أي تعديل على الموقع مرة ثانية",
+    helpUrl: "https://tagmanager.google.com",
+    validate: (v) => /^GTM-[A-Z0-9]{4,10}$/i.test(v.trim()),
   },
   {
     key: "google_site_verification",
@@ -37,56 +37,6 @@ const CONNECT_ADDONS: Addon[] = [
     help: "من Search Console اختر طريقة التحقق «وسم HTML» وانسخ القيمة داخل content= فقط (بدون بقية الوسم)",
     helpUrl: "https://search.google.com/search-console",
     validate: (v) => /^[A-Za-z0-9_-]{20,80}$/.test(v.trim()),
-  },
-  {
-    key: "gtm_container_id",
-    title: "Google Tag Manager",
-    icon: Tags,
-    label: "معرف الحاوية (Container ID)",
-    placeholder: "GTM-XXXXXXX",
-    help: "يديك تحكم كامل بكل أكواد التتبع من مكان واحد بدون تعديل الموقع كل مرة",
-    helpUrl: "https://tagmanager.google.com",
-    validate: (v) => /^GTM-[A-Z0-9]{4,10}$/i.test(v.trim()),
-  },
-  {
-    key: "facebook_pixel_id",
-    title: "Facebook Pixel",
-    icon: Share2,
-    label: "معرف البكسل",
-    placeholder: "مثال: 123456789012345",
-    help: "من Meta Events Manager، انسخ معرف البكسل الرقمي",
-    helpUrl: "https://business.facebook.com/events_manager",
-    validate: (v) => /^\d{10,20}$/.test(v.trim()),
-  },
-  {
-    key: "tiktok_pixel_id",
-    title: "TikTok Pixel",
-    icon: Music2,
-    label: "معرف البكسل",
-    placeholder: "مثال: CXXXXXXXXXXXXXXXXXXX",
-    help: "من TikTok Ads Manager ← Assets ← Events، انسخ معرف البكسل",
-    helpUrl: "https://ads.tiktok.com",
-    validate: (v) => /^[A-Z0-9]{15,25}$/i.test(v.trim()),
-  },
-  {
-    key: "snapchat_pixel_id",
-    title: "Snapchat Pixel",
-    icon: Ghost,
-    label: "معرف البكسل",
-    placeholder: "مثال: a1b2c3d4-...",
-    help: "من Snapchat Ads Manager ← Events Manager، انسخ معرف البكسل — مجاني للإضافة، يُستخدم لاستهداف وقياس إعلانات سناب شات",
-    helpUrl: "https://ads.snapchat.com",
-    validate: (v) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v.trim()),
-  },
-  {
-    key: "clarity_project_id",
-    title: "Microsoft Clarity",
-    icon: Activity,
-    label: "معرف المشروع (Project ID)",
-    placeholder: "مثال: abc123defg",
-    help: "خرائط حرارية وتسجيل جلسات الزوار — مجاني بالكامل، انسخ المعرف من إعدادات المشروع",
-    helpUrl: "https://clarity.microsoft.com",
-    validate: (v) => /^[a-z0-9]{8,16}$/i.test(v.trim()),
   },
   {
     key: "recaptcha_site_key",

@@ -4,13 +4,8 @@ import AdminAddonsForm from "@/components/admin/AdminAddonsForm";
 import PageHeader from "@/components/admin/PageHeader";
 
 const SETTINGS_KEYS = [
-  "ga4_measurement_id",
-  "google_site_verification",
   "gtm_container_id",
-  "facebook_pixel_id",
-  "tiktok_pixel_id",
-  "snapchat_pixel_id",
-  "clarity_project_id",
+  "google_site_verification",
   "recaptcha_site_key",
   "recaptcha_secret_key",
 ];
@@ -24,7 +19,7 @@ export default async function AdminAddonsPage() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="الإضافات" subtitle="أدوات حقيقية من مزوّديها الرسميين — الصق المعرف من حساب الأداة نفسها ليصير مفعّلاً على موقعك فوراً." />
+      <PageHeader title="الإضافات" subtitle="اربط Google Tag Manager مرة وحدة، وبعدها أضف وأدر أي أداة تتبع ثانية (Analytics، Facebook Pixel، TikTok، Snapchat، Clarity...) من داخل حسابه مباشرة بدون أي تعديل على الموقع." />
       <AdminAddonsForm settings={settings} />
     </div>
   );
