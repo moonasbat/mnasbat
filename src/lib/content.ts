@@ -115,7 +115,6 @@ export const AD_PAGE_CONTENT = {
   share: "شارك الإعلان",
   copyLink: "نسخ الرابط",
   reportAd: "الإبلاغ عن الإعلان",
-  noLongerAvailable: "الإعلان لم يعد متاحاً.",
 };
 
 export function contactMessageTemplate(adUrl: string) {

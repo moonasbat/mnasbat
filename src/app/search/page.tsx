@@ -10,13 +10,15 @@ import { getSiteFlags, getSiteSettings } from "@/lib/siteConfig";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
+import { SITE_NAME, breadcrumbJsonLd, itemListJsonLd } from "@/lib/seo";
+import { adUrl } from "@/lib/adSlug";
 
 const PAGE_SIZE = 24;
 
 type SearchParams = { q?: string; category?: string; sub?: string; city?: string; featured?: string; sort?: string; page?: string };
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<SearchParams> }): Promise<Metadata> {
-  const { q, category: categorySlug, sub: subSlug, city } = await searchParams;
+  const { q, category: categorySlug, sub: subSlug, city, page: pageParam } = await searchParams;
   const supabase = await createClient();
 
   let title = "البحث";
@@ -41,11 +43,15 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   if (subSlug) params.set("sub", subSlug);
   const qs = params.toString();
 
+  // الصفحة الأولى فقط تُفهرس — بقية الصفحات (?page=2 وما بعدها) نفس المحتوى تقريباً، فهرستها تسبب محتوى مكرر
+  const isPaginated = Number(pageParam) > 1;
+
   return {
     title,
     description,
     alternates: { canonical: `/search${qs ? `?${qs}` : ""}` },
     openGraph: { title, description },
+    robots: isPaginated ? { index: false, follow: true } : undefined,
   };
 }
 
@@ -113,8 +119,20 @@ export default async function SearchPage({
     return `/search${qs ? `?${qs}` : ""}`;
   }
 
+  const breadcrumbItems = [
+    { name: SITE_NAME, path: "/" },
+    mainCategory && { name: mainCategory.name, path: `/search?category=${mainCategory.slug}` },
+    subCategory && { name: subCategory.name, path: `/search?category=${mainCategory?.slug}&sub=${subCategory.slug}` },
+  ].filter(Boolean) as { name: string; path: string }[];
+
+  const listJsonLd = ads && ads.length > 0
+    ? itemListJsonLd((ads as Ad[]).map((a) => ({ name: a.title, path: adUrl(a) })))
+    : null;
+
   return (
     <div className="min-h-screen flex flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(breadcrumbItems)) }} />
+      {listJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listJsonLd) }} />}
       <Header profile={profile as Profile} />
 
       {/* شريط التصنيفات الرئيسية — ثابت في كل صفحات التصفح، يختفي فقط داخل صفحة الإعلان المفردة */}

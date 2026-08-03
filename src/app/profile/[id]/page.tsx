@@ -18,6 +18,7 @@ import BackButton from "@/components/BackButton";
 import ScrollToLink from "@/components/ScrollToLink";
 import { isUuid } from "@/lib/adSlug";
 import { profileUrl } from "@/lib/profileUrl";
+import { personJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -73,6 +74,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="min-h-screen flex flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd(s, profileUrl(s))) }} />
       <Header profile={currentProfile as Profile} />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">

@@ -18,7 +18,7 @@ import { isUuid, adUrl } from "@/lib/adSlug";
 import { profileUrl } from "@/lib/profileUrl";
 import { StarRatingDisplay } from "@/components/StarRating";
 import { averageRating } from "@/lib/rating";
-import { SITE_NAME, SITE_URL } from "@/lib/seo";
+import { SITE_NAME, SITE_URL, aggregateRatingJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 
 // Next.js لا يضمن دائماً فك ترميز params في مكوّن الصفحة (بخلاف generateMetadata) —
@@ -85,29 +85,8 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
 
   const ad = await findAdByParam(supabase, param, "*, profiles(*), categories(*), ad_images(*)");
 
-  if (!ad) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <p className="text-gray-500">{AD_PAGE_CONTENT.noLongerAvailable}</p>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (ad.status !== "published" && ad.user_id !== user?.id) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <p className="text-gray-500">{AD_PAGE_CONTENT.noLongerAvailable}</p>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
+  if (!ad) notFound();
+  if (ad.status !== "published" && ad.user_id !== user?.id) notFound();
 
   const id = ad.id as string;
   await supabase.rpc("increment_ad_views", { ad_id_param: id });
@@ -148,6 +127,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
     description: ad.description,
     image: images.map((img) => img.url),
     category: subCategory?.name ?? mainCategory?.name,
+    aggregateRating: aggregateRatingJsonLd(seller),
     offers: {
       "@type": "Offer",
       url: `${SITE_URL}${canonicalPath}`,
