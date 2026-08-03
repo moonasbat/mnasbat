@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Script from "next/script";
 import { createClient } from "@/lib/supabase/client";
 import { AUTH_CONTENT } from "@/lib/content";
@@ -42,7 +42,6 @@ export default function LoginForm({ googleLoginEnabled }: { googleLoginEnabled: 
   const [error, setError] = useState("");
   const [gsiReady, setGsiReady] = useState(false);
   const searchParams = useSearchParams();
-  const router = useRouter();
   const redirect = searchParams.get("redirect") ?? "/";
   const buttonHostRef = useRef<HTMLDivElement>(null);
 
@@ -72,8 +71,9 @@ export default function LoginForm({ googleLoginEnabled }: { googleLoginEnabled: 
             setLoading(false);
             return;
           }
-          router.push(redirect);
-          router.refresh();
+          // تنقّل كامل (مو router.push) — عشان نضمن إن الكوكيز الجديدة توصل السيرفر فعلياً قبل ما يتحقق
+          // من الجلسة في proxy.ts. التنقّل الجزئي (RSC) كان أحياناً يسبق وصول الكوكيز فيرجّع لصفحة الدخول.
+          window.location.href = redirect;
         },
       });
 
@@ -91,7 +91,7 @@ export default function LoginForm({ googleLoginEnabled }: { googleLoginEnabled: 
     return () => {
       cancelled = true;
     };
-  }, [gsiReady, googleLoginEnabled, redirect, router]);
+  }, [gsiReady, googleLoginEnabled, redirect]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">

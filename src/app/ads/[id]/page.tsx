@@ -13,6 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
 import AdGallery from "@/components/ads/AdGallery";
+import AdRenewBanner from "@/components/ads/AdRenewBanner";
 import { getSiteFlags } from "@/lib/siteConfig";
 import { isUuid, adUrl } from "@/lib/adSlug";
 import { profileUrl } from "@/lib/profileUrl";
@@ -118,6 +119,11 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
   const subCategory = parentCategory ? ad.categories : null;
   const whatsappEnabled = flags.whatsapp_enabled !== false;
   const favoritesEnabled = flags.favorites_enabled !== false;
+  const renewalEnabled = flags.ad_renewal_enabled !== false;
+  const isOwner = ad.user_id === user?.id;
+  const daysUntilExpiry = ad.expires_at ? Math.ceil((new Date(ad.expires_at).getTime() - Date.now()) / 86400000) : null;
+  const showRenewBanner =
+    ad.status === "expired" || ad.status === "paused" || (ad.status === "published" && daysUntilExpiry !== null && daysUntilExpiry <= 7);
 
   const canonicalPath = adUrl({ id, slug: ad.slug as string | null | undefined });
   const productJsonLd = {
@@ -201,6 +207,10 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
                 <p className="text-xs text-gray-400 mt-3">تم تعديل هذا الإعلان بتاريخ {formatRelativeTime(ad.edited_at)}</p>
               )}
             </div>
+
+            {isOwner && renewalEnabled && showRenewBanner && (
+              <AdRenewBanner adId={ad.id} status={ad.status} daysUntilExpiry={daysUntilExpiry} />
+            )}
           </div>
 
           {/* المعلن وأزرار التواصل — تظهر مباشرة بعد وصف الإعلان وقبل التعليقات على الجوال */}

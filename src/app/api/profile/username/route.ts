@@ -13,7 +13,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "invalid" }, { status: 400 });
   }
 
-  const { data: available } = await supabase.rpc("is_username_available", { check_username: username });
+  const { data: available, error: rpcError } = await supabase.rpc("is_username_available", { check_username: username });
+  if (rpcError) {
+    return NextResponse.json({ error: "تعذر التحقق من اسم المستخدم، حاول مرة أخرى." }, { status: 500 });
+  }
   if (!available) {
     return NextResponse.json({ error: "taken" }, { status: 409 });
   }

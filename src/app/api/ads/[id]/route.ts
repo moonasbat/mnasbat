@@ -59,8 +59,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (flag && flag.enabled === false) {
       return NextResponse.json({ error: "تجديد الإعلانات غير متاح حالياً." }, { status: 403 });
     }
-    const { data: settings } = await supabase.from("admin_settings").select("value").eq("key", "ad_duration_days").maybeSingle();
-    const durationDays = Number(settings?.value ?? 60);
+    const { data: settings } = await supabase
+      .from("admin_settings")
+      .select("key, value")
+      .in("key", ["ad_renewal_duration_days", "ad_duration_days"]);
+    const renewalValue = settings?.find((s) => s.key === "ad_renewal_duration_days")?.value;
+    const baseValue = settings?.find((s) => s.key === "ad_duration_days")?.value;
+    const durationDays = Number(renewalValue || baseValue || 60);
     await supabase
       .from("ads")
       .update({
