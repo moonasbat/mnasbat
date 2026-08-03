@@ -50,13 +50,15 @@ export async function POST(request: NextRequest) {
       applyWatermark = flag ? flag.enabled : true;
     }
 
+    // صور الإعلانات تُحفظ بأبعادها الأصلية كاملة (بدون تصغير) — فقط العلامة المائية تُطبع عليها إن كانت مفعّلة،
+    // عشان لو أحد حمّل الصورة تطلع له بجودتها وأبعادها الحقيقية ومكتوب عليها "مناسبات"
     const transformation = isAvatar
       ? [{ width: 512, height: 512, crop: "fill", gravity: "auto", quality: "auto", fetch_format: "auto" }]
       : isReceipt
         ? [{ width: 1600, height: 1600, crop: "limit", quality: "auto", fetch_format: "auto" }]
         : applyWatermark
           ? [
-              { width: 1600, height: 1600, crop: "limit", quality: "auto", fetch_format: "auto" },
+              { quality: "auto", fetch_format: "auto" },
               {
                 overlay: { font_family: "Arial", font_size: 40, font_weight: "bold", text: "مناسبات" },
                 color: "#FFFFFF",
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
                 y: 20,
               },
             ]
-          : [{ width: 1600, height: 1600, crop: "limit", quality: "auto", fetch_format: "auto" }];
+          : [{ quality: "auto", fetch_format: "auto" }];
 
     const result = await cloudinary.uploader.upload(base64, {
       folder: isAvatar ? "mnasbat/avatars" : isReceipt ? "mnasbat/receipts" : "mnasbat/ads",

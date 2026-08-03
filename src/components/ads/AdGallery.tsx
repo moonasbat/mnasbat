@@ -3,7 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import { AdImage } from "@/lib/types";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, Download } from "lucide-react";
+
+// نضيف علم fl_attachment على رابط كلاودنري عشان يفرض تحميل الصورة الأصلية كاملة الأبعاد بدل ما يفتحها المتصفح فقط
+function downloadUrl(url: string) {
+  return url.replace("/upload/", "/upload/fl_attachment/");
+}
 
 export default function AdGallery({ images, title }: { images: AdImage[]; title: string }) {
   const [active, setActive] = useState(0);
@@ -48,6 +53,15 @@ export default function AdGallery({ images, title }: { images: AdImage[]; title:
             </span>
           </>
         )}
+        <a
+          href={downloadUrl(images[active].url)}
+          download
+          aria-label="تحميل الصورة"
+          title="تحميل الصورة"
+          className="absolute top-3 left-3 w-9 h-9 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-gray-700 shadow transition-colors"
+        >
+          <Download size={17} />
+        </a>
       </div>
 
       {images.length > 1 && (
