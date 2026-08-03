@@ -3,19 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import { AdImage } from "@/lib/types";
-import { ChevronRight, ChevronLeft, Download } from "lucide-react";
-
-// نضيف علم fl_attachment على رابط كلاودنري عشان يفرض تحميل الصورة الأصلية كاملة الأبعاد بدل ما يفتحها المتصفح فقط
-function downloadUrl(url: string) {
-  return url.replace("/upload/", "/upload/fl_attachment/");
-}
+import { ChevronRight, ChevronLeft } from "lucide-react";
 
 export default function AdGallery({ images, title }: { images: AdImage[]; title: string }) {
   const [active, setActive] = useState(0);
 
   if (images.length === 0) {
     return (
-      <div className="rounded-2xl overflow-hidden bg-gray-100 relative aspect-[4/3] flex items-center justify-center text-5xl">
+      <div className="rounded-2xl overflow-hidden bg-gray-100 relative h-[320px] sm:h-[440px] flex items-center justify-center text-5xl">
         📷
       </div>
     );
@@ -30,8 +25,8 @@ export default function AdGallery({ images, title }: { images: AdImage[]; title:
 
   return (
     <div className="space-y-2">
-      <div className="rounded-2xl overflow-hidden bg-gray-100 relative aspect-[4/3]">
-        <Image src={images[active].url} alt={title} fill className="object-cover" priority />
+      <div className="rounded-2xl overflow-hidden bg-gray-100 relative h-[320px] sm:h-[440px]">
+        <Image src={images[active].url} alt={title} fill className="object-contain" priority />
         {images.length > 1 && (
           <>
             <button
@@ -53,15 +48,6 @@ export default function AdGallery({ images, title }: { images: AdImage[]; title:
             </span>
           </>
         )}
-        <a
-          href={downloadUrl(images[active].url)}
-          download
-          aria-label="تحميل الصورة"
-          title="تحميل الصورة"
-          className="absolute top-3 left-3 w-9 h-9 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-gray-700 shadow transition-colors"
-        >
-          <Download size={17} />
-        </a>
       </div>
 
       {images.length > 1 && (
