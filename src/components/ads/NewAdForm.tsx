@@ -9,6 +9,7 @@ import { X, Upload, ShieldCheck, CheckCircle2, Circle, ChevronDown, MapPin, Load
 import SaudiPhoneInput from "@/components/SaudiPhoneInput";
 import { SAUDI_CITIES, nearestSaudiCity, suggestCategorySlug } from "@/lib/saudiCities";
 import { adUrl } from "@/lib/adSlug";
+import { uploadToCloudinary } from "@/lib/cloudinaryUpload";
 
 const DRAFT_STORAGE_KEY = "mnasbat_new_ad_draft";
 
@@ -127,12 +128,11 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
   }
 
   async function uploadOne(file: File) {
-    const formData = new FormData();
-    formData.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error ?? NEW_AD_CONTENT.errors.uploadFailed);
-    return data as { url: string; public_id: string };
+    try {
+      return await uploadToCloudinary(file, "ad");
+    } catch {
+      throw new Error(NEW_AD_CONTENT.errors.uploadFailed);
+    }
   }
 
   function handleFiles(files: FileList | null) {

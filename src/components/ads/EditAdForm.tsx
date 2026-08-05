@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Ad, AdImage, Category } from "@/lib/types";
 import { NEW_AD_CONTENT } from "@/lib/content";
 import { createClient } from "@/lib/supabase/client";
+import { uploadToCloudinary } from "@/lib/cloudinaryUpload";
 import SaudiPhoneInput from "@/components/SaudiPhoneInput";
 import { X, Upload } from "lucide-react";
 
@@ -37,11 +38,7 @@ export default function EditAdForm({ ad, categories, maxImages = 10 }: { ad: Ad;
 
   async function uploadOne(file: File, sortOrder: number) {
     const supabase = createClient();
-    const formData = new FormData();
-    formData.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: formData });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error ?? NEW_AD_CONTENT.errors.uploadFailed);
+    const data = await uploadToCloudinary(file, "ad");
     const { data: inserted, error } = await supabase
       .from("ad_images")
       .insert({ ad_id: ad.id, url: data.url, cloudinary_public_id: data.public_id, sort_order: sortOrder })

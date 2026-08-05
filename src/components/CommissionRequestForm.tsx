@@ -7,6 +7,7 @@ import { AD_STATUS_LABELS } from "@/lib/content";
 import { loginUrl } from "@/lib/loginRedirect";
 import { Loader2, Upload } from "lucide-react";
 import { formatNumber } from "@/lib/formatTime";
+import { uploadToCloudinary } from "@/lib/cloudinaryUpload";
 
 export default function CommissionRequestForm({
   ads,
@@ -63,17 +64,15 @@ export default function CommissionRequestForm({
     setLoading(true);
     setError("");
 
-    const formData = new FormData();
-    formData.append("file", receiptFile);
-    formData.append("type", "receipt");
-    const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-    if (!uploadRes.ok) {
-      const data = await uploadRes.json();
-      setError(data.error ?? "تعذر رفع الإيصال.");
+    let url: string;
+    try {
+      const uploaded = await uploadToCloudinary(receiptFile, "receipt");
+      url = uploaded.url;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "تعذر رفع الإيصال.");
       setLoading(false);
       return;
     }
-    const { url } = await uploadRes.json();
 
     const res = await fetch("/api/commission/report-deal", {
       method: "POST",

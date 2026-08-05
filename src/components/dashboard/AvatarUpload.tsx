@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Camera, Loader2 } from "lucide-react";
+import { uploadToCloudinary } from "@/lib/cloudinaryUpload";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -34,12 +35,7 @@ export default function AvatarUpload({ avatarUrl, displayName }: { avatarUrl?: s
     setUploading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("type", "avatar");
-      const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-      const uploadData = await uploadRes.json();
-      if (!uploadRes.ok) throw new Error(uploadData.error);
+      const uploadData = await uploadToCloudinary(file, "avatar");
 
       const saveRes = await fetch("/api/profile", {
         method: "PATCH",
