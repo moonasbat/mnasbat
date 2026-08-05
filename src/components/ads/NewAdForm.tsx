@@ -61,12 +61,22 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
     );
   }
 
+  async function uploadOne(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? NEW_AD_CONTENT.errors.uploadFailed);
+    return data as { url: string; public_id: string };
+  }
+
   async function handleFiles(files: FileList | null) {
     if (!files) return;
     setError("");
     const remaining = maxImages - images.length;
     const selected = Array.from(files).slice(0, remaining);
 
+    const valid: File[] = [];
     for (const file of selected) {
       if (file.type.startsWith("video/")) {
         setError(NEW_AD_CONTENT.errors.videoNotAllowed);
@@ -76,19 +86,18 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
         setError(NEW_AD_CONTENT.errors.imageNotSupported);
         continue;
       }
-      setUploading(true);
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      setUploading(false);
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error ?? NEW_AD_CONTENT.errors.uploadFailed);
-        continue;
-      }
-      const data = await res.json();
-      setImages((prev) => [...prev, data]);
+      valid.push(file);
     }
+    if (valid.length === 0) return;
+
+    // رفع كل الصور بالتوازي بدل التتابع — يقلّل وقت الانتظار الكلي بشكل كبير خصوصاً مع عدة صور
+    setUploading(true);
+    const results = await Promise.allSettled(valid.map(uploadOne));
+    setUploading(false);
+    const uploaded = results.filter((r): r is PromiseFulfilledResult<{ url: string; public_id: string }> => r.status === "fulfilled").map((r) => r.value);
+    const failed = results.some((r) => r.status === "rejected");
+    if (uploaded.length > 0) setImages((prev) => [...prev, ...uploaded]);
+    if (failed) setError(NEW_AD_CONTENT.errors.uploadFailed);
   }
 
   function removeImage(publicId: string) {

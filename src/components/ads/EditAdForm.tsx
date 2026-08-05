@@ -35,13 +35,29 @@ export default function EditAdForm({ ad, categories, maxImages = 10 }: { ad: Ad;
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  async function uploadOne(file: File, sortOrder: number) {
+    const supabase = createClient();
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? NEW_AD_CONTENT.errors.uploadFailed);
+    const { data: inserted, error } = await supabase
+      .from("ad_images")
+      .insert({ ad_id: ad.id, url: data.url, cloudinary_public_id: data.public_id, sort_order: sortOrder })
+      .select("*")
+      .single();
+    if (error || !inserted) throw new Error(NEW_AD_CONTENT.errors.uploadFailed);
+    return inserted as AdImage;
+  }
+
   async function handleFiles(files: FileList | null) {
     if (!files) return;
     setError("");
     const remaining = maxImages - images.length;
     const selected = Array.from(files).slice(0, remaining);
-    const supabase = createClient();
 
+    const valid: File[] = [];
     for (const file of selected) {
       if (file.type.startsWith("video/")) {
         setError(NEW_AD_CONTENT.errors.videoNotAllowed);
@@ -51,25 +67,19 @@ export default function EditAdForm({ ad, categories, maxImages = 10 }: { ad: Ad;
         setError(NEW_AD_CONTENT.errors.imageNotSupported);
         continue;
       }
-      setUploading(true);
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error ?? NEW_AD_CONTENT.errors.uploadFailed);
-        setUploading(false);
-        continue;
-      }
-      const data = await res.json();
-      const { data: inserted } = await supabase
-        .from("ad_images")
-        .insert({ ad_id: ad.id, url: data.url, cloudinary_public_id: data.public_id, sort_order: images.length })
-        .select("*")
-        .single();
-      setUploading(false);
-      if (inserted) setImages((prev) => [...prev, inserted as AdImage]);
+      valid.push(file);
     }
+    if (valid.length === 0) return;
+
+    // رفع كل الصور بالتوازي بدل التتابع — يقلّل وقت الانتظار الكلي بشكل كبير خصوصاً مع عدة صور
+    setUploading(true);
+    const startOrder = images.length;
+    const results = await Promise.allSettled(valid.map((file, i) => uploadOne(file, startOrder + i)));
+    setUploading(false);
+    const uploaded = results.filter((r): r is PromiseFulfilledResult<AdImage> => r.status === "fulfilled").map((r) => r.value);
+    const failed = results.some((r) => r.status === "rejected");
+    if (uploaded.length > 0) setImages((prev) => [...prev, ...uploaded]);
+    if (failed) setError(NEW_AD_CONTENT.errors.uploadFailed);
   }
 
   async function removeImage(imageId: string) {
