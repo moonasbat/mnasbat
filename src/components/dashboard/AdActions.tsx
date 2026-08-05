@@ -24,7 +24,7 @@ export default function AdActions({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const canEdit = Date.now() - new Date(createdAt).getTime() <= EDIT_WINDOW_MS;
+  const canEdit = status === "draft" || Date.now() - new Date(createdAt).getTime() <= EDIT_WINDOW_MS;
   const daysUntilExpiry = expiresAt ? Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86400000) : null;
   const nearingExpiry = status === "published" && daysUntilExpiry !== null && daysUntilExpiry <= RENEW_WINDOW_DAYS;
   const showRenew = (status === "expired" || status === "paused" || nearingExpiry) && renewalEnabled;

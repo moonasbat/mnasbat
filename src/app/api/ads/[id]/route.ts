@@ -15,13 +15,17 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }
 
   if (action === "update") {
-    const EDIT_WINDOW_MS = 5 * 60 * 1000;
-    const createdAt = new Date(ad.created_at as unknown as string).getTime();
-    if (Date.now() - createdAt > EDIT_WINDOW_MS) {
-      return NextResponse.json(
-        { error: "لا يمكن تعديل الإعلان بعد مرور 5 دقائق من نشره." },
-        { status: 403 }
-      );
+    // نافذة الـ5 دقائق تخص فقط الإعلانات المنشورة فعلياً (لمنع تعديل إعلان بعد ما يشوفه الناس) —
+    // المسودة لسا ما نُشرت لأحد، فلازم تبقى قابلة للتعديل مهما طال وقت تعبئتها
+    if (ad.status !== "draft") {
+      const EDIT_WINDOW_MS = 5 * 60 * 1000;
+      const createdAt = new Date(ad.created_at as unknown as string).getTime();
+      if (Date.now() - createdAt > EDIT_WINDOW_MS) {
+        return NextResponse.json(
+          { error: "لا يمكن تعديل الإعلان بعد مرور 5 دقائق من نشره." },
+          { status: 403 }
+        );
+      }
     }
 
     const { title, description, category_id, city, price, whatsapp, messages_enabled, comments_enabled } = body;

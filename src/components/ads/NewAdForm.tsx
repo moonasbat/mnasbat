@@ -10,6 +10,29 @@ import SaudiPhoneInput from "@/components/SaudiPhoneInput";
 import { SAUDI_CITIES, nearestSaudiCity, suggestCategorySlug } from "@/lib/saudiCities";
 import { adUrl } from "@/lib/adSlug";
 
+const DRAFT_STORAGE_KEY = "mnasbat_new_ad_draft";
+
+// previewUrl يظهر فوراً محلياً (قبل ما ينتهي الرفع) عشان المستخدم ما يحس بأي تأخير — url الحقيقي يوصل بعد اكتمال الرفع لكلاودنري
+type ImageItem = { tempId: string; previewUrl: string; url: string; public_id: string; uploading: boolean; error?: boolean };
+
+type PersistedDraft = {
+  step: number;
+  title: string;
+  description: string;
+  categoryId: string;
+  subCategoryId: string;
+  city: string;
+  price: string;
+  whatsapp: string;
+  whatsappEnabled: boolean;
+  messagesEnabled: boolean;
+  commentsEnabled: boolean;
+  images: { url: string; public_id: string }[];
+  adId: string | null;
+  adSlug: string | null;
+  declarationAccepted: boolean;
+};
+
 export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 }: { categories: Category[]; initialWhatsapp?: string; maxImages?: number }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -25,8 +48,7 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
   const [whatsappEnabled, setWhatsappEnabled] = useState(true);
   const [messagesEnabled, setMessagesEnabled] = useState(true);
   const [commentsEnabled, setCommentsEnabled] = useState(true);
-  const [images, setImages] = useState<{ url: string; public_id: string }[]>([]);
-  const [uploading, setUploading] = useState(false);
+  const [images, setImages] = useState<ImageItem[]>([]);
   const [error, setError] = useState("");
   const [adId, setAdId] = useState<string | null>(null);
   const [adSlug, setAdSlug] = useState<string | null>(null);
@@ -35,9 +57,52 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
   const [declarationAccepted, setDeclarationAccepted] = useState(false);
   const [declarationExpanded, setDeclarationExpanded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [restored, setRestored] = useState(false);
 
   const mainCategories = categories.filter((c) => !c.parent_id);
   const subCategories = categories.filter((c) => c.parent_id === categoryId);
+
+  // نسترجع مسودة محفوظة محلياً (لو موجودة) عند فتح الصفحة — يمنع ضياع الشغل عند تحديث الصفحة بالخطأ
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (raw) {
+        const d: PersistedDraft = JSON.parse(raw);
+        setStep(d.step ?? 1);
+        setTitle(d.title ?? "");
+        setDescription(d.description ?? "");
+        setCategoryId(d.categoryId ?? "");
+        setSubCategoryId(d.subCategoryId ?? "");
+        if (d.categoryId) setCategoryTouched(true);
+        setCity(d.city ?? "");
+        setPrice(d.price ?? "");
+        setWhatsapp(d.whatsapp ?? initialWhatsapp ?? "");
+        setWhatsappEnabled(d.whatsappEnabled ?? true);
+        setMessagesEnabled(d.messagesEnabled ?? true);
+        setCommentsEnabled(d.commentsEnabled ?? true);
+        setImages((d.images ?? []).map((i) => ({ tempId: i.public_id, previewUrl: i.url, url: i.url, public_id: i.public_id, uploading: false })));
+        setAdId(d.adId ?? null);
+        setAdSlug(d.adSlug ?? null);
+        setDeclarationAccepted(d.declarationAccepted ?? false);
+      }
+    } catch {}
+    setRestored(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // نحفظ كل تغيير محلياً (بعد أول استرجاع، عشان ما نكتب فوق نسخة محفوظة قبل ما نقرأها)
+  useEffect(() => {
+    if (!restored) return;
+    const draft: PersistedDraft = {
+      step, title, description, categoryId, subCategoryId, city, price,
+      whatsapp, whatsappEnabled, messagesEnabled, commentsEnabled,
+      images: images.filter((i) => !i.uploading && i.url).map(({ url, public_id }) => ({ url, public_id })),
+      adId, adSlug, declarationAccepted,
+    };
+    try {
+      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    } catch {}
+  }, [restored, step, title, description, categoryId, subCategoryId, city, price, whatsapp, whatsappEnabled, messagesEnabled, commentsEnabled, images, adId, adSlug, declarationAccepted]);
 
   // اقتراح تصنيف تلقائي من العنوان — لا يُطبَّق إذا المستخدم غيّر التصنيف يدوياً
   useEffect(() => {
@@ -70,7 +135,7 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
     return data as { url: string; public_id: string };
   }
 
-  async function handleFiles(files: FileList | null) {
+  function handleFiles(files: FileList | null) {
     if (!files) return;
     setError("");
     const remaining = maxImages - images.length;
@@ -90,18 +155,35 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
     }
     if (valid.length === 0) return;
 
-    // رفع كل الصور بالتوازي بدل التتابع — يقلّل وقت الانتظار الكلي بشكل كبير خصوصاً مع عدة صور
-    setUploading(true);
-    const results = await Promise.allSettled(valid.map(uploadOne));
-    setUploading(false);
-    const uploaded = results.filter((r): r is PromiseFulfilledResult<{ url: string; public_id: string }> => r.status === "fulfilled").map((r) => r.value);
-    const failed = results.some((r) => r.status === "rejected");
-    if (uploaded.length > 0) setImages((prev) => [...prev, ...uploaded]);
-    if (failed) setError(NEW_AD_CONTENT.errors.uploadFailed);
+    // نعرض كل صورة فوراً من الجهاز نفسه (قبل ما يخلص الرفع) عشان المستخدم ما يحس بأي ثقل —
+    // الرفع الفعلي لكلاودنري يصير بالخلفية بالتوازي، وكل صورة تتحدث لحالها لما تخلص
+    const pending: ImageItem[] = valid.map((file) => ({
+      tempId: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      previewUrl: URL.createObjectURL(file),
+      url: "",
+      public_id: "",
+      uploading: true,
+    }));
+    setImages((prev) => [...prev, ...pending]);
+
+    pending.forEach((item, i) => {
+      uploadOne(valid[i])
+        .then((data) => {
+          setImages((prev) => prev.map((img) => (img.tempId === item.tempId ? { ...img, url: data.url, public_id: data.public_id, uploading: false } : img)));
+        })
+        .catch(() => {
+          setImages((prev) => prev.map((img) => (img.tempId === item.tempId ? { ...img, uploading: false, error: true } : img)));
+          setError(NEW_AD_CONTENT.errors.uploadFailed);
+        });
+    });
   }
 
-  function removeImage(publicId: string) {
-    setImages((prev) => prev.filter((i) => i.public_id !== publicId));
+  function removeImage(tempId: string) {
+    setImages((prev) => {
+      const target = prev.find((i) => i.tempId === tempId);
+      if (target?.previewUrl.startsWith("blob:")) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((i) => i.tempId !== tempId);
+    });
   }
 
   function validateStep1() {
@@ -136,11 +218,12 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
 
   async function attachImages(id: string) {
     const supabase = createClient();
-    for (let i = 0; i < images.length; i++) {
+    const finished = images.filter((i) => i.url && !i.uploading);
+    for (let i = 0; i < finished.length; i++) {
       await supabase.from("ad_images").insert({
         ad_id: id,
-        url: images[i].url,
-        cloudinary_public_id: images[i].public_id,
+        url: finished[i].url,
+        cloudinary_public_id: finished[i].public_id,
         sort_order: i,
       });
     }
@@ -207,6 +290,9 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
       setError(data.error ?? "تعذر نشر الإعلان.");
       return;
     }
+    try {
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+    } catch {}
     router.push(adUrl({ id: adId, slug: adSlug }));
     router.refresh();
   }
@@ -299,23 +385,29 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
 
           <div className="grid grid-cols-3 gap-2">
             {images.map((img) => (
-              <div key={img.public_id} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
+              <div key={img.tempId} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img.url} alt="" className="w-full h-full object-cover" />
-                <button onClick={() => removeImage(img.public_id)} className="absolute top-1 left-1 bg-white/90 rounded-full p-1">
+                <img src={img.previewUrl || img.url} alt="" className="w-full h-full object-cover" />
+                {img.uploading && (
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                    <Loader2 size={20} className="text-white animate-spin" />
+                  </div>
+                )}
+                {img.error && (
+                  <div className="absolute inset-0 bg-red-500/20 flex items-center justify-center">
+                    <span className="text-[10px] text-red-700 bg-white/90 rounded px-1.5 py-0.5">فشل الرفع</span>
+                  </div>
+                )}
+                <button onClick={() => removeImage(img.tempId)} className="absolute top-1 left-1 bg-white/90 rounded-full p-1">
                   <X size={14} />
                 </button>
               </div>
             ))}
             {images.length < maxImages && (
-              <label className={`aspect-square rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1 cursor-pointer transition-colors ${uploading ? "border-[#6D28D9] bg-purple-50" : "border-gray-300 hover:border-[#6D28D9]"}`}>
-                {uploading ? (
-                  <Loader2 size={20} className="text-[#6D28D9] animate-spin" />
-                ) : (
-                  <Upload size={20} className="text-gray-400" />
-                )}
-                <span className="text-xs text-gray-400">{uploading ? "جارٍ الرفع…" : NEW_AD_CONTENT.addImages}</span>
-                <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} disabled={uploading} />
+              <label className="aspect-square rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-[#6D28D9] transition-colors">
+                <Upload size={20} className="text-gray-400" />
+                <span className="text-xs text-gray-400">{NEW_AD_CONTENT.addImages}</span>
+                <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
               </label>
             )}
           </div>
@@ -323,8 +415,8 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
 
           <div className="flex gap-2">
             <button onClick={() => setStep(1)} className="flex-1 border border-gray-200 rounded-xl py-3 text-sm font-medium">رجوع</button>
-            <button onClick={goToStep3} disabled={uploading} className="flex-1 bg-[#6D28D9] text-white rounded-xl py-3 text-sm font-medium hover:bg-[#5B21B6] transition-colors disabled:opacity-60">
-              {NEW_AD_CONTENT.continue}
+            <button onClick={goToStep3} disabled={images.some((i) => i.uploading)} className="flex-1 bg-[#6D28D9] text-white rounded-xl py-3 text-sm font-medium hover:bg-[#5B21B6] transition-colors disabled:opacity-60">
+              {images.some((i) => i.uploading) ? "جارٍ رفع الصور…" : NEW_AD_CONTENT.continue}
             </button>
           </div>
         </div>

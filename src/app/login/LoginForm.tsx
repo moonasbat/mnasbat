@@ -61,18 +61,31 @@ export default function LoginForm({ googleLoginEnabled }: { googleLoginEnabled: 
           setLoading(true);
           setError("");
           const supabase = createClient();
-          const { error } = await supabase.auth.signInWithIdToken({
+          const { data, error } = await supabase.auth.signInWithIdToken({
             provider: "google",
             token: response.credential,
             nonce: rawNonce,
           });
-          if (error) {
+          if (error || !data.session) {
             setError(AUTH_CONTENT.loginFailed);
             setLoading(false);
             return;
           }
-          // تنقّل كامل (مو router.push) — عشان نضمن إن الكوكيز الجديدة توصل السيرفر فعلياً قبل ما يتحقق
-          // من الجلسة في proxy.ts. التنقّل الجزئي (RSC) كان أحياناً يسبق وصول الكوكيز فيرجّع لصفحة الدخول.
+          // نثبّت الجلسة من طرف السيرفر (Set-Cookie حقيقي) قبل أي تنقّل — كتابة الكوكيز من المتصفح
+          // مباشرة كانت أحياناً ما توصل السيرفر قبل ما يتحقق proxy.ts من الجلسة، فيرجّع لصفحة الدخول
+          const setSessionRes = await fetch("/api/auth/set-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token,
+            }),
+          });
+          if (!setSessionRes.ok) {
+            setError(AUTH_CONTENT.loginFailed);
+            setLoading(false);
+            return;
+          }
           window.location.href = redirect;
         },
       });
