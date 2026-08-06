@@ -63,10 +63,13 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
   const mainCategories = categories.filter((c) => !c.parent_id);
   const subCategories = categories.filter((c) => c.parent_id === categoryId);
 
-  // نسترجع مسودة محفوظة محلياً (لو موجودة) عند فتح الصفحة — يمنع ضياع الشغل عند تحديث الصفحة بالخطأ
+  // نسترجع مسودة محفوظة محلياً بس لو الصفحة اتحدّثت فعلياً (Refresh) — يمنع ضياع الشغل عند تحديث الصفحة بالخطأ.
+  // لو المستخدم دخل الصفحة من جديد (تنقل عادي) نبدأ من الخطوة الأولى دائماً، حتى لو فيه مسودة قديمة متروكة.
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
+      const navEntries = performance.getEntriesByType("navigation") as PerformanceNavigationTiming[];
+      const isReload = navEntries[0]?.type === "reload";
+      const raw = isReload ? localStorage.getItem(DRAFT_STORAGE_KEY) : null;
       if (raw) {
         const d: PersistedDraft = JSON.parse(raw);
         setStep(d.step ?? 1);
