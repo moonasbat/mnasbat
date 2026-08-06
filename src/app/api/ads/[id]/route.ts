@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
+const RENEW_COOLDOWN_DAYS = 5;
+
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
@@ -9,7 +11,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   const body = await request.json();
   const { action } = body;
-  const { data: ad } = await supabase.from("ads").select("id, user_id, status, created_at").eq("id", id).single();
+  const { data: ad } = await supabase.from("ads").select("id, user_id, status, created_at, published_at").eq("id", id).single();
   if (!ad || ad.user_id !== user.id) {
     return NextResponse.json({ error: "لا تملك صلاحية لتنفيذ هذا الإجراء." }, { status: 403 });
   }
@@ -48,6 +50,21 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const { data: flag } = await supabase.from("feature_flags").select("enabled").eq("key", "ad_renewal_enabled").maybeSingle();
     if (flag && flag.enabled === false) {
       return NextResponse.json({ error: "تجديد الإعلانات غير متاح حالياً." }, { status: 403 });
+    }
+    // التجديد مسموح مرة كل 5 أيام فقط — نمنع التلاعب بالترتيب عبر تجديد متكرر
+    if (ad.published_at) {
+      const cooldownMs = RENEW_COOLDOWN_DAYS * 86400000;
+      const elapsedMs = Date.now() - new Date(ad.published_at as unknown as string).getTime();
+      if (elapsedMs < cooldownMs) {
+        const remainingMs = cooldownMs - elapsedMs;
+        const remainingDays = Math.floor(remainingMs / 86400000);
+        const remainingHours = Math.ceil((remainingMs - remainingDays * 86400000) / 3600000);
+        const remainingText =
+          remainingDays > 0
+            ? `${remainingDays} ${remainingDays === 1 ? "يوم" : "أيام"}`
+            : `${remainingHours} ${remainingHours === 1 ? "ساعة" : "ساعات"}`;
+        return NextResponse.json({ error: `يمكنك تجديد الإعلان بعد ${remainingText}.` }, { status: 403 });
+      }
     }
     const { data: settings } = await supabase
       .from("admin_settings")
