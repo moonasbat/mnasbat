@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { generateUniqueAdSlug } from "@/lib/adSlug";
+import { redactContactInfo } from "@/lib/redactContact";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -28,15 +29,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "السعر غير صالح." }, { status: 400 });
   }
 
-  const slug = await generateUniqueAdSlug(supabase, title);
+  // نخفي أي رقم جوال أو إيميل يُكتب بالعنوان أو الوصف — التواصل الفعلي لازم يصير عبر الرسائل
+  // الخاصة أو واتساب داخل الموقع بس (حفاظاً على تتبع العمولة)
+  const redactedTitle = redactContactInfo(title).redacted;
+  const redactedDescription = redactContactInfo(description).redacted;
+
+  const slug = await generateUniqueAdSlug(supabase, redactedTitle);
 
   const { data: ad, error } = await supabase
     .from("ads")
     .insert({
       user_id: user.id,
-      title,
+      title: redactedTitle,
       slug,
-      description,
+      description: redactedDescription,
       category_id,
       city: city || null,
       price: price ? Number(price) : null,
