@@ -62,7 +62,7 @@ export default async function MyAdsPage() {
                   </p>
                 )}
                 <div className="mt-2 flex flex-wrap items-center gap-3">
-                  <AdActions adId={ad.id} status={ad.status} createdAt={ad.created_at} expiresAt={ad.expires_at} renewalEnabled={renewalEnabled} />
+                  <AdActions adId={ad.id} status={ad.status} expiresAt={ad.expires_at} renewalEnabled={renewalEnabled} />
                   {ad.status === "published" && (
                     <Link
                       href={`/commission?ad=${ad.id}`}

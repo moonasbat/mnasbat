@@ -5,7 +5,7 @@ import ContactPanel from "@/components/ads/ContactPanel";
 import CommentsSection from "@/components/ads/CommentsSection";
 import ReportDialog from "@/components/ReportDialog";
 import AdCard from "@/components/ads/AdCard";
-import { Ad, AdImage, Profile, Comment } from "@/lib/types";
+import { Ad, AdImage, Category, Profile, Comment } from "@/lib/types";
 import { AD_PAGE_CONTENT } from "@/lib/content";
 import { formatRelativeTime, formatNumber } from "@/lib/formatTime";
 import { notFound } from "next/navigation";
@@ -13,7 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
 import AdGallery from "@/components/ads/AdGallery";
-import AdRenewBanner from "@/components/ads/AdRenewBanner";
+import AdOwnerPanel from "@/components/ads/AdOwnerPanel";
 import { getSiteFlags } from "@/lib/siteConfig";
 import { isUuid, adUrl } from "@/lib/adSlug";
 import { profileUrl } from "@/lib/profileUrl";
@@ -92,7 +92,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
   const id = ad.id as string;
   await supabase.rpc("increment_ad_views", { ad_id_param: id });
 
-  const [{ data: profile }, { data: comments }, { data: favorite }, { data: sellerAds }, { data: parentCategory }, { data: similarAds }, flags] = await Promise.all([
+  const [{ data: profile }, { data: comments }, { data: favorite }, { data: sellerAds }, { data: parentCategory }, { data: similarAds }, flags, { data: allCategories }, { data: maxImagesSetting }] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : Promise.resolve({ data: null }),
     supabase.from("comments").select("*, profiles(*)").eq("ad_id", id).eq("status", "visible").order("created_at", { ascending: false }),
     user ? supabase.from("favorites").select("id").eq("ad_id", id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
@@ -111,6 +111,8 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
       .order("published_at", { ascending: false })
       .limit(8),
     getSiteFlags(supabase),
+    supabase.from("categories").select("*").eq("is_active", true).order("sort_order"),
+    supabase.from("admin_settings").select("value").eq("key", "max_images_per_ad").maybeSingle(),
   ]);
 
   const images: AdImage[] = (ad.ad_images ?? []).sort((a: AdImage, b: AdImage) => a.sort_order - b.sort_order);
@@ -121,9 +123,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
   const favoritesEnabled = flags.favorites_enabled !== false;
   const renewalEnabled = flags.ad_renewal_enabled !== false;
   const isOwner = ad.user_id === user?.id;
-  const daysUntilExpiry = ad.expires_at ? Math.ceil((new Date(ad.expires_at).getTime() - Date.now()) / 86400000) : null;
-  const showRenewBanner =
-    ad.status === "expired" || ad.status === "paused" || (ad.status === "published" && daysUntilExpiry !== null && daysUntilExpiry <= 7);
+  const maxImages = Number(maxImagesSetting?.value) || 10;
 
   const canonicalPath = adUrl({ id, slug: ad.slug as string | null | undefined });
   const productJsonLd = {
@@ -207,10 +207,6 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
                 <p className="text-xs text-gray-400 mt-3">تم تعديل هذا الإعلان بتاريخ {formatRelativeTime(ad.edited_at)}</p>
               )}
             </div>
-
-            {isOwner && renewalEnabled && showRenewBanner && (
-              <AdRenewBanner adId={ad.id} status={ad.status} daysUntilExpiry={daysUntilExpiry} />
-            )}
           </div>
 
           {/* المعلن وأزرار التواصل — تظهر مباشرة بعد وصف الإعلان وقبل التعليقات على الجوال */}
@@ -253,6 +249,15 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
             <div className="text-center">
               <ReportDialog targetType="ad" targetId={ad.id} label={AD_PAGE_CONTENT.reportAd} />
             </div>
+
+            {isOwner && (
+              <AdOwnerPanel
+                ad={ad as Ad}
+                categories={(allCategories as Category[]) ?? []}
+                maxImages={maxImages}
+                renewalEnabled={renewalEnabled}
+              />
+            )}
           </div>
 
           {/* التعليقات — تظهر أخيراً */}

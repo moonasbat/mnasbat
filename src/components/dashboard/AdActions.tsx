@@ -5,26 +5,22 @@ import { useState } from "react";
 import { AdStatus } from "@/lib/types";
 import { MY_ADS_CONTENT } from "@/lib/content";
 
-const EDIT_WINDOW_MS = 5 * 60 * 1000;
 const RENEW_WINDOW_DAYS = 7;
 
 export default function AdActions({
   adId,
   status,
-  createdAt,
   expiresAt,
   renewalEnabled = true,
 }: {
   adId: string;
   status: AdStatus;
-  createdAt: string;
   expiresAt?: string | null;
   renewalEnabled?: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const canEdit = status === "draft" || Date.now() - new Date(createdAt).getTime() <= EDIT_WINDOW_MS;
   const daysUntilExpiry = expiresAt ? Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86400000) : null;
   const nearingExpiry = status === "published" && daysUntilExpiry !== null && daysUntilExpiry <= RENEW_WINDOW_DAYS;
   const showRenew = (status === "expired" || status === "paused" || nearingExpiry) && renewalEnabled;
@@ -57,11 +53,7 @@ export default function AdActions({
   return (
     <div>
       <div className="flex flex-wrap gap-2 text-xs">
-        {canEdit ? (
-          <a href={`/ads/${adId}/edit`} className="text-[#6D28D9] hover:underline">{MY_ADS_CONTENT.edit}</a>
-        ) : (
-          <span className="text-gray-300 cursor-not-allowed" title="لا يمكن التعديل بعد مرور 5 دقائق من نشر الإعلان">{MY_ADS_CONTENT.edit}</span>
-        )}
+        <a href={`/ads/${adId}/edit`} className="text-[#6D28D9] hover:underline">{MY_ADS_CONTENT.edit}</a>
         {status === "published" && (
           <button disabled={loading} onClick={() => act("pause")} className="text-amber-600 hover:underline">{MY_ADS_CONTENT.pause}</button>
         )}
