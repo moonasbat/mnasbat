@@ -387,7 +387,7 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
             {images.map((img) => (
               <div key={img.tempId} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img.previewUrl || img.url} alt="" className="w-full h-full object-cover" />
+                <img src={img.previewUrl || img.url} alt="" className="w-full h-full object-contain" />
                 {img.uploading && (
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                     <Loader2 size={20} className="text-white animate-spin" />

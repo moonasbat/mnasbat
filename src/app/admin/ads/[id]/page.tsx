@@ -87,7 +87,7 @@ export default async function AdminAdDetailPage({ params }: { params: Promise<{ 
           <div className="flex gap-2 mt-4 overflow-x-auto">
             {images.map((img) => (
               <div key={img.id} className="relative w-24 h-24 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                <Image src={img.url} alt="" fill className="object-cover" />
+                <Image src={img.url} alt="" fill className="object-contain" />
               </div>
             ))}
           </div>

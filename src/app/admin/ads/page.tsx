@@ -92,7 +92,7 @@ export default async function AdminAdsPage({ searchParams }: { searchParams: Pro
               <div className="flex items-center shrink-0"><BulkCheckbox id={ad.id} /></div>
               <div className="relative w-28 h-28 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                 {image ? (
-                  <Image src={image} alt={ad.title} fill className="object-cover" />
+                  <Image src={image} alt={ad.title} fill className="object-contain" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-2xl">📷</div>
                 )}

@@ -51,7 +51,7 @@ export default function AdCard({
     >
       <div className="relative aspect-[4/3] bg-gray-100">
         {image ? (
-          <Image src={image} alt={ad.title} fill className="object-cover" />
+          <Image src={image} alt={ad.title} fill className="object-contain" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl">📷</div>
         )}

@@ -34,7 +34,7 @@ export default function MyAdsList({
         <div key={ad.id} className="bg-white border border-gray-100 rounded-2xl p-3 flex gap-3">
           <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-gray-100 shrink-0">
             {ad.ad_images?.[0] ? (
-              <Image src={ad.ad_images[0].url} alt={ad.title} fill className="object-cover" />
+              <Image src={ad.ad_images[0].url} alt={ad.title} fill className="object-contain" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-2xl">📷</div>
             )}

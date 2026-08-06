@@ -190,7 +190,7 @@ export default function EditAdForm({ ad, categories, maxImages = 10 }: { ad: Ad;
           {images.map((img) => (
             <div key={img.id} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img.url} alt="" className="w-full h-full object-cover" />
+              <img src={img.url} alt="" className="w-full h-full object-contain" />
               <button onClick={() => removeImage(img.id)} className="absolute top-1 left-1 bg-white/90 rounded-full p-1">
                 <X size={14} />
               </button>
