@@ -44,10 +44,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       .eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
     return NextResponse.json({ ok: true });
-  } else if (action === "pause") {
-    await supabase.from("ads").update({ status: "paused" }).eq("id", id);
-  } else if (action === "resume") {
-    await supabase.from("ads").update({ status: "published" }).eq("id", id);
   } else if (action === "renew") {
     const { data: flag } = await supabase.from("feature_flags").select("enabled").eq("key", "ad_renewal_enabled").maybeSingle();
     if (flag && flag.enabled === false) {

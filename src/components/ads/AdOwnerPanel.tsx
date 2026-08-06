@@ -7,8 +7,6 @@ import EditAdForm from "@/components/ads/EditAdForm";
 import AdRenewBanner from "@/components/ads/AdRenewBanner";
 import { Pencil, HandCoins, X } from "lucide-react";
 
-const RENEW_WINDOW_DAYS = 7;
-
 export default function AdOwnerPanel({
   ad,
   categories,
@@ -38,9 +36,8 @@ export default function AdOwnerPanel({
   }
 
   const daysUntilExpiry = ad.expires_at ? Math.ceil((new Date(ad.expires_at).getTime() - Date.now()) / 86400000) : null;
-  const showRenew =
-    renewalEnabled &&
-    (ad.status === "expired" || ad.status === "paused" || (ad.status === "published" && daysUntilExpiry !== null && daysUntilExpiry <= RENEW_WINDOW_DAYS));
+  // التجديد متاح دائماً لأي إعلان منشور فعلياً (مو بس قرب الانتهاء) — نفس فكرة "تنشيط الإعلان" في حراج
+  const showRenew = renewalEnabled && ad.status !== "draft";
 
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-4 space-y-3">

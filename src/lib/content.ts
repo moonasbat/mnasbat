@@ -172,8 +172,6 @@ export const AD_STATUS_LABELS: Record<string, string> = {
 
 export const MY_ADS_CONTENT = {
   edit: "تعديل",
-  pause: "إيقاف الإعلان",
-  resume: "إعادة تفعيل الإعلان",
   renew: "تجديد الإعلان",
   delete: "حذف الإعلان",
 };

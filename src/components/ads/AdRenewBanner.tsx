@@ -49,7 +49,9 @@ export default function AdRenewBanner({
       ? "انتهت مدة نشر هذا الإعلان — جدده ليعود للظهور للمهتمين."
       : status === "paused"
         ? "هذا الإعلان متوقف مؤقتاً — جدده لإعادة تفعيله."
-        : `ينتهي هذا الإعلان خلال ${daysUntilExpiry} ${daysUntilExpiry === 1 ? "يوم" : "أيام"} — جدده قبل أن يتوقف ظهوره.`;
+        : daysUntilExpiry !== null && daysUntilExpiry <= 7
+          ? `ينتهي هذا الإعلان خلال ${daysUntilExpiry} ${daysUntilExpiry === 1 ? "يوم" : "أيام"} — جدده قبل أن يتوقف ظهوره.`
+          : "جدد إعلانك الآن ليظهر بالأعلى ويصل لعدد أكبر من المهتمين.";
 
   return (
     <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-center justify-between gap-3 flex-wrap">
