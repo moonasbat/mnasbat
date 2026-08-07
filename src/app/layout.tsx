@@ -157,8 +157,7 @@ export default async function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `try {
-              var t = localStorage.getItem('theme');
-              if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+              if (localStorage.getItem('theme') === 'dark') {
                 document.documentElement.classList.add('dark');
               }
             } catch (e) {}`,
