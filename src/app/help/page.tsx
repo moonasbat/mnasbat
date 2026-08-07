@@ -1,7 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Profile, StaticPage } from "@/lib/types";
+import { StaticPage } from "@/lib/types";
 import { SAFETY_TIPS } from "@/lib/content";
 import { ShieldAlert } from "lucide-react";
 import BackButton from "@/components/BackButton";
@@ -15,14 +15,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/help" },
 };
 
-export default async function HelpPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+export const revalidate = 3600;
 
-  const [{ data: profile }, { data: faq }] = await Promise.all([
-    user ? supabase.from("profiles").select("*").eq("id", user.id).single() : Promise.resolve({ data: null }),
-    supabase.from("static_pages").select("*").eq("slug", "faq").single(),
-  ]);
+export default async function HelpPage() {
+  const supabase = createPublicClient();
+  const { data: faq } = await supabase.from("static_pages").select("*").eq("slug", "faq").single();
 
   const faqSections = parseFaqSections((faq as StaticPage)?.content ?? "");
   const faqJsonLd = {
@@ -42,7 +39,7 @@ export default async function HelpPage() {
       {faqSections.length > 0 && (
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       )}
-      <Header profile={profile as Profile} />
+      <Header />
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-10">
         <div className="flex items-center gap-3 mb-6">
           <BackButton />

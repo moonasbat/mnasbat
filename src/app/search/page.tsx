@@ -1,10 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AdCard from "@/components/ads/AdCard";
 import CategoryBar from "@/components/CategoryBar";
 import LocationFilters from "@/components/LocationFilters";
-import { Ad, Category, Profile } from "@/lib/types";
+import { Ad, Category } from "@/lib/types";
 import { SEARCH_CONTENT } from "@/lib/content";
 import { getSiteFlags, getSiteSettings } from "@/lib/siteConfig";
 import Link from "next/link";
@@ -19,7 +19,7 @@ type SearchParams = { q?: string; category?: string; sub?: string; city?: string
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<SearchParams> }): Promise<Metadata> {
   const { q, category: categorySlug, sub: subSlug, city, page: pageParam } = await searchParams;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
 
   let title = "البحث";
   let description = "تصفح إعلانات المناسبات — قاعات، تصوير، ضيافة، ديكور، وأكثر.";
@@ -62,11 +62,9 @@ export default async function SearchPage({
 }) {
   const { q, category: categorySlug, sub: subSlug, city, featured, sort, page: pageParam } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const supabase = createPublicClient();
 
-  const [{ data: profile }, { data: allCategories }, flags, settings] = await Promise.all([
-    user ? supabase.from("profiles").select("*").eq("id", user.id).single() : { data: null },
+  const [{ data: allCategories }, flags, settings] = await Promise.all([
     supabase.from("categories").select("*").eq("is_active", true).order("sort_order"),
     getSiteFlags(supabase),
     getSiteSettings(supabase),
@@ -133,7 +131,7 @@ export default async function SearchPage({
     <div className="min-h-screen flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(breadcrumbItems)) }} />
       {listJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listJsonLd) }} />}
-      <Header profile={profile as Profile} />
+      <Header />
 
       {/* شريط التصنيفات الرئيسية — ثابت في كل صفحات التصفح، يختفي فقط داخل صفحة الإعلان المفردة */}
       <CategoryBar categories={mainCategories} activeSlug={categorySlug} />

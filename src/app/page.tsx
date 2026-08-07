@@ -1,27 +1,28 @@
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AdCard from "@/components/ads/AdCard";
 import Link from "next/link";
-import { Ad, Category, Profile } from "@/lib/types";
+import { Ad, Category } from "@/lib/types";
 import { HOME_CONTENT } from "@/lib/content";
 import { Plus, ChevronLeft, Search } from "lucide-react";
 import CategoryBar from "@/components/CategoryBar";
 import { getSiteFlags, getSiteSettings } from "@/lib/siteConfig";
 
+// صفحة عامة بالكامل (لا تعتمد على جلسة المستخدم) — نخزّنها مؤقتاً (ISR) بدل ما تُبنى من الصفر
+// بكل طلب، يسرّع التحميل ويحسّن كفاءة زحف قوقل. حالة تسجيل الدخول تُجلب من المتصفح داخل الهيدر.
+export const revalidate = 60;
+
 export default async function HomePage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const supabase = createPublicClient();
 
   const [
-    { data: profile },
     { data: categories },
     { data: featuredAds },
     { data: latestAds },
     flags,
     settings,
   ] = await Promise.all([
-    user ? supabase.from("profiles").select("*").eq("id", user.id).single() : { data: null },
     supabase.from("categories").select("*").eq("is_active", true).is("parent_id", null).order("sort_order"),
     supabase
       .from("ads")
@@ -45,7 +46,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header profile={profile as Profile} />
+      <Header />
 
       <main className="flex-1">
         <section className="bg-gradient-to-bl from-[#6D28D9] to-[#8B5CF6] text-white py-3 md:py-14 px-4">

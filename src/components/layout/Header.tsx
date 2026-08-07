@@ -12,13 +12,25 @@ import { loginUrl } from "@/lib/loginRedirect";
 import { Bell, MessageSquare, Heart, Plus, LogOut, User, Settings, LayoutDashboard } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 
-export default function Header({ profile }: { profile?: Profile | null }) {
+export default function Header({ profile: profileProp }: { profile?: Profile | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [unread, setUnread] = useState({ notifications: 0, messages: 0 });
   const [platformName, setPlatformName] = useState("مناسبات");
   const headerRef = useRef<HTMLElement>(null);
+  // لو الصفحة ما مررت profile صراحة (صفحات عامة تُخزَّن مؤقتاً بدون تحقق دخول على السيرفر)
+  // نجيبه بأنفسنا من المتصفح — يبقي الصفحة نفسها قابلة للتخزين المؤقت (Cache) لصالح السيو والسرعة
+  const [profile, setProfile] = useState<Profile | null | undefined>(profileProp);
+  useEffect(() => {
+    if (profileProp !== undefined) { setProfile(profileProp); return; }
+    let cancelled = false;
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => { if (!cancelled) setProfile(data.profile); })
+      .catch(() => { if (!cancelled) setProfile(null); });
+    return () => { cancelled = true; };
+  }, [profileProp]);
   // الصفحة الرئيسية وصفحة النتائج عندهما بحث خاص بهما، لا داعٍ لتكراره في الهيدر
   const hideHeaderSearch = pathname === "/" || pathname === "/search";
 

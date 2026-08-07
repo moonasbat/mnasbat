@@ -29,12 +29,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: c.parent_id ? 0.6 : 0.7,
   }));
 
-  const pageEntries: MetadataRoute.Sitemap = (pages ?? []).map((p) => ({
-    url: encodeURI(`${base}/pages/${p.slug}`),
-    lastModified: p.updated_at ?? undefined,
-    changeFrequency: "monthly",
-    priority: 0.3,
-  }));
+  // صفحات السياسات القانونية (اتفاقية الاستخدام، الخصوصية، ...) مستثناة من الخريطة والفهرسة —
+  // الأسئلة الشائعة فقط محتوى بحثي مفيد يستاهل يكون بالخريطة
+  const pageEntries: MetadataRoute.Sitemap = (pages ?? [])
+    .filter((p) => p.slug === "faq")
+    .map((p) => ({
+      url: encodeURI(`${base}/pages/${p.slug}`),
+      lastModified: p.updated_at ?? undefined,
+      changeFrequency: "monthly",
+      priority: 0.4,
+    }));
 
   const profileEntries: MetadataRoute.Sitemap = (profiles ?? []).map((p) => ({
     url: encodeURI(`${base}${p.username ? `/profile/@${p.username}` : `/profile/${p.id}`}`),
