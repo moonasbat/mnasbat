@@ -58,8 +58,8 @@ async function getAddonFlags() {
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getIntegrationSettings();
-  const title = `${SITE_NAME} — سوق إعلانات المناسبات`;
-  const description = "كل ما يخص مناسبتك… في مكان واحد. أنشئ إعلانك أو اكتشف ما يناسبك.";
+  const title = `${SITE_NAME} — سوق إعلانات القاعات والحفلات والمناسبات في السعودية`;
+  const description = SITE_DESCRIPTION;
 
   return {
     metadataBase: new URL(SITE_URL),
