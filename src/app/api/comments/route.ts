@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { renderNotification } from "@/lib/notificationTemplates";
-import { redactContactInfo } from "@/lib/redactContact";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -34,10 +33,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "التعليقات غير متاحة على هذا الإعلان" }, { status: 403 });
   }
 
-  // نخفي أي رقم جوال أو إيميل بالتعليق — التواصل الفعلي لازم يصير عبر الرسائل الخاصة أو واتساب بس
   const { data, error } = await supabase
     .from("comments")
-    .insert({ ad_id, user_id: user.id, body: redactContactInfo(body).redacted, parent_id: parent_id ?? null })
+    .insert({ ad_id, user_id: user.id, body, parent_id: parent_id ?? null })
     .select("*, profiles(*)")
     .single();
 

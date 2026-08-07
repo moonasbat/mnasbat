@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { redactContactInfo } from "@/lib/redactContact";
 import { NextRequest, NextResponse } from "next/server";
 
 const RENEW_COOLDOWN_DAYS = 5;
@@ -36,13 +35,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         { status: 400 }
       );
     }
-    // نخفي أي رقم جوال أو إيميل يُكتب بالعنوان أو الوصف — التواصل الفعلي لازم يصير عبر الرسائل
-    // الخاصة أو واتساب داخل الموقع بس (حفاظاً على تتبع العمولة)
     const { error } = await supabase
       .from("ads")
       .update({
-        title: redactContactInfo(title).redacted,
-        description: redactContactInfo(description).redacted,
+        title,
+        description,
         category_id, city: city || null,
         price: price ? Number(price) : null, whatsapp: whatsapp || null,
         messages_enabled: messages_enabled ?? true, comments_enabled: comments_enabled ?? true,

@@ -26,25 +26,5 @@ export async function uploadToCloudinary(file: File, type: "ad" | "avatar" | "re
   });
   const data = await uploadRes.json();
   if (!uploadRes.ok) throw new Error(data.error?.message ?? "تعذر رفع الصورة. حاول مرة أخرى.");
-  const uploaded = { url: data.secure_url as string, public_id: data.public_id as string };
-
-  // فقط صور الإعلانات: نفحصها بخدمة قراءة النصوص (OCR) ونطمس أي رقم جوال أو إيميل ظاهر بالصورة —
-  // لو الفحص فشل أو الخدمة غير متاحة، نكمل بالصورة الأصلية بدون ما نوقف عملية الرفع
-  if (type === "ad") {
-    try {
-      const scanRes = await fetch("/api/upload/scan-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(uploaded),
-      });
-      if (scanRes.ok) {
-        const scanData = await scanRes.json();
-        if (scanData.url) uploaded.url = scanData.url;
-      }
-    } catch {
-      // نتجاهل أي خطأ بالفحص — الأولوية إن الرفع ما يفشل بسببه
-    }
-  }
-
-  return uploaded;
+  return { url: data.secure_url as string, public_id: data.public_id as string };
 }
