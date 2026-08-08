@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { USERNAME_RULES } from "@/lib/content";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -26,6 +27,10 @@ export async function POST(request: NextRequest) {
     if (error.code === "23505") return NextResponse.json({ error: "taken" }, { status: 409 });
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
+
+  // رسالة ترحيب — أول مرة يكمّل فيها المستخدم التسجيل بتعيين اسم مستخدم
+  const { title, body } = await renderNotification("WELCOME");
+  await supabase.from("notifications").insert({ user_id: user.id, type: "WELCOME", title, body });
 
   // ربط الإحالة — أول مرة يكمّل فيها المستخدم اسم المستخدم (التسجيل)، إن وُجدت كوكي دعوة صالحة
   const refCookie = request.cookies.get("mnasbat_ref")?.value;

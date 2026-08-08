@@ -4,7 +4,10 @@ export function resolveNotificationLink(type: string, relatedId?: string | null)
     case "AD_EXPIRING_SOON":
     case "AD_RENEWAL_AVAILABLE":
     case "AD_APPROVED":
+    case "FAVORITE_ADDED":
       return relatedId ? `/ads/${relatedId}` : "/dashboard/ads";
+    case "WELCOME":
+      return "/ads/new";
     case "AD_REJECTED":
     case "AD_EXPIRED":
       return "/dashboard/ads";

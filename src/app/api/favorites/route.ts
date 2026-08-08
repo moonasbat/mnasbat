@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -26,5 +27,19 @@ export async function POST(request: NextRequest) {
   }
 
   await supabase.from("favorites").insert({ user_id: user.id, ad_id });
+
+  // نشعر صاحب الإعلان (إن ما كان هو نفسه من أضافه) — يحفّزه يرجع يشيك على إعلانه
+  const { data: ad } = await supabase.from("ads").select("user_id, title").eq("id", ad_id).maybeSingle();
+  if (ad && ad.user_id !== user.id) {
+    const { title, body } = await renderNotification("FAVORITE_ADDED", { ad_title: ad.title });
+    await supabase.from("notifications").insert({
+      user_id: ad.user_id,
+      type: "FAVORITE_ADDED",
+      title,
+      body,
+      related_id: ad_id,
+    });
+  }
+
   return NextResponse.json({ favorited: true });
 }

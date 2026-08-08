@@ -23,6 +23,8 @@ const DEFAULTS: Record<string, { title: string; body: string }> = {
   REPORT_RESOLVED: { title: "تم معالجة بلاغك", body: "تم معالجة بلاغك: {resolution_note}" },
   REFERRAL_REWARD_EARNED: { title: "🎉 مكافأة إحالة", body: "أحد الأصدقاء الذين دعوتهم نشر أول إعلان له! حصلت على تمييز مجاني لأحد إعلاناتك لمدة {days} أيام." },
   REFERRAL_REWARD_PENDING: { title: "🎉 مكافأة إحالة", body: "أحد الأصدقاء الذين دعوتهم نشر أول إعلان له! انشر إعلاناً واحصل على تمييز مجاني لمدة {days} أيام." },
+  FAVORITE_ADDED: { title: "أضاف أحدهم إعلانك للمفضلة", body: 'تمت إضافة إعلانك "{ad_title}" إلى قائمة مفضلة أحد المستخدمين.' },
+  WELCOME: { title: "مرحباً بك في مناسبات 👋", body: "يسعدنا انضمامك! انشر إعلانك الأول الآن ووصّل لآلاف المهتمين بخدمات ومنتجات المناسبات." },
 };
 
 function interpolate(str: string, vars: Record<string, string | number>) {
