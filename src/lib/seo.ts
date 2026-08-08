@@ -7,6 +7,14 @@ export function absoluteUrl(path: string) {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+// تحويل بيانات JSON-LD لنص آمن للحقن داخل <script> عبر dangerouslySetInnerHTML — JSON.stringify()
+// وحده لا يهرّب تتابع "</script>"، وأي محتوى يكتبه مستخدم (عنوان إعلان، نبذة ملف شخصي...) ويحتوي
+// هذا التتابع يقدر يغلق وسم السكربت فعلياً ويحقن HTML/جافاسكربت حقيقي (XSS مخزّن). نستبدل "<"
+// بمكافئها اليونيكودي المهرَّب — يبقى JSON صحيح تماماً لكن يستحيل يُفسَّر كوسم HTML.
+export function safeJsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
 // بيانات هيكلية مشتركة (JSON-LD) — تُستخدم في أكثر من صفحة عشان ما نكرر نفس الشكل بكل مكان
 
 export function breadcrumbJsonLd(items: { name: string; path: string }[]) {

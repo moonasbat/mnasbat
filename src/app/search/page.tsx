@@ -11,7 +11,7 @@ import { getSiteFlags, getSiteSettings } from "@/lib/siteConfig";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
-import { SITE_NAME, breadcrumbJsonLd, itemListJsonLd } from "@/lib/seo";
+import { SITE_NAME, breadcrumbJsonLd, itemListJsonLd, safeJsonLd } from "@/lib/seo";
 import { adUrl } from "@/lib/adSlug";
 
 const PAGE_SIZE = 24;
@@ -130,8 +130,8 @@ export default async function SearchPage({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(breadcrumbItems)) }} />
-      {listJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listJsonLd) }} />}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd(breadcrumbItems)) }} />
+      {listJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(listJsonLd) }} />}
       <ImpressionTracker adIds={((ads as Ad[]) ?? []).map((a) => a.id)} />
       <Header />
 

@@ -7,6 +7,7 @@ import { ShieldAlert } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import FaqAccordion from "@/components/FaqAccordion";
 import { parseFaqSections } from "@/lib/faq";
+import { safeJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -37,7 +38,7 @@ export default async function HelpPage() {
   return (
     <div className="min-h-screen flex flex-col">
       {faqSections.length > 0 && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqJsonLd) }} />
       )}
       <Header />
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-10">

@@ -19,7 +19,7 @@ import { isUuid, adUrl } from "@/lib/adSlug";
 import { profileUrl } from "@/lib/profileUrl";
 import { StarRatingDisplay } from "@/components/StarRating";
 import { averageRating } from "@/lib/rating";
-import { SITE_NAME, SITE_URL, aggregateRatingJsonLd } from "@/lib/seo";
+import { SITE_NAME, SITE_URL, aggregateRatingJsonLd, safeJsonLd } from "@/lib/seo";
 import type { Metadata } from "next";
 
 // Next.js لا يضمن دائماً فك ترميز params في مكوّن الصفحة (بخلاف generateMetadata) —
@@ -166,8 +166,8 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="min-h-screen flex flex-col">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(productJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }} />
       <Header profile={profile as Profile} />
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-8">

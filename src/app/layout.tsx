@@ -3,7 +3,7 @@ import { Tajawal, Inter } from "next/font/google";
 import "./globals.css";
 import { Suspense } from "react";
 import Script from "next/script";
-import { SITE_NAME, SITE_URL, SITE_DESCRIPTION } from "@/lib/seo";
+import { SITE_NAME, SITE_URL, SITE_DESCRIPTION, safeJsonLd } from "@/lib/seo";
 import AuthListener from "@/components/AuthListener";
 import ThemeInit from "@/components/ThemeInit";
 import NavigationProgress from "@/components/NavigationProgress";
@@ -149,11 +149,11 @@ export default async function RootLayout({
         )}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationJsonLd()) }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(websiteJsonLd()) }}
         />
         <script
           dangerouslySetInnerHTML={{
