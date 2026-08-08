@@ -92,7 +92,9 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
   const id = ad.id as string;
   await supabase.rpc("increment_ad_views", { ad_id_param: id });
 
-  const [{ data: profile }, { data: comments }, { data: favorite }, { data: sellerAds }, { data: parentCategory }, { data: similarAds }, flags, { data: allCategories }, { data: maxImagesSetting }, { data: cooldownSetting }] = await Promise.all([
+  const isOwnerEarly = ad.user_id === user?.id;
+
+  const [{ data: profile }, { data: comments }, { data: favorite }, { data: sellerAds }, { data: parentCategory }, { data: similarAds }, flags, { data: allCategories }, { data: maxImagesSetting }, { data: cooldownSetting }, whatsappClicksResult] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : Promise.resolve({ data: null }),
     supabase.from("comments").select("*, profiles(*)").eq("ad_id", id).eq("status", "visible").order("created_at", { ascending: false }),
     user ? supabase.from("favorites").select("id").eq("ad_id", id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),
@@ -114,6 +116,10 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
     supabase.from("categories").select("*").eq("is_active", true).order("sort_order"),
     supabase.from("admin_settings").select("value").eq("key", "max_images_per_ad").maybeSingle(),
     supabase.from("admin_settings").select("value").eq("key", "ad_renewal_cooldown_days").maybeSingle(),
+    // نقرات واتساب — إحصائية إضافية لصاحب الإعلان بس، ما نجيبها لغيره توفيراً لاستعلام غير مستخدم
+    isOwnerEarly
+      ? supabase.from("contact_events").select("id", { count: "exact", head: true }).eq("ad_id", id).eq("type", "whatsapp")
+      : Promise.resolve({ count: 0 }),
   ]);
 
   const images: AdImage[] = (ad.ad_images ?? []).sort((a: AdImage, b: AdImage) => a.sort_order - b.sort_order);
@@ -126,6 +132,8 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
   const isOwner = ad.user_id === user?.id;
   const maxImages = Number(maxImagesSetting?.value) || 10;
   const renewalCooldownDays = Number(cooldownSetting?.value) || 5;
+  const whatsappClicks = whatsappClicksResult.count ?? 0;
+  const daysSincePublished = ad.published_at ? Math.max(0, Math.floor((Date.now() - new Date(ad.published_at).getTime()) / 86400000)) : 0;
 
   const canonicalPath = adUrl({ id, slug: ad.slug as string | null | undefined });
   const productJsonLd = {
@@ -259,6 +267,9 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
                 maxImages={maxImages}
                 renewalEnabled={renewalEnabled}
                 renewalCooldownDays={renewalCooldownDays}
+                whatsappClicks={whatsappClicks}
+                imagesCount={images.length}
+                daysSincePublished={daysSincePublished}
               />
             )}
           </div>

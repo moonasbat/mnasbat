@@ -4,7 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Ad, Category } from "@/lib/types";
 import EditAdForm from "@/components/ads/EditAdForm";
-import { Pencil, RefreshCw, Check, X, Trash2, Eye, Heart, MessageSquare, MessageCircle, Share2 } from "lucide-react";
+import {
+  Pencil, RefreshCw, Check, X, Trash2, ChevronDown,
+  Eye, Heart, MessageSquare, MessageCircle, Share2, Phone, Images, CalendarDays, BarChart3,
+} from "lucide-react";
 
 // نحسب الوقت المتبقي محلياً قبل ما نرسل أي طلب — يعرض للمستخدم فوراً بدون انتظار رد السيرفر
 function renewCooldownText(publishedAt: string | null | undefined, cooldownDays: number): string | null {
@@ -26,15 +29,22 @@ export default function AdOwnerPanel({
   maxImages,
   renewalEnabled,
   renewalCooldownDays,
+  whatsappClicks,
+  imagesCount,
+  daysSincePublished,
 }: {
   ad: Ad;
   categories: Category[];
   maxImages: number;
   renewalEnabled: boolean;
   renewalCooldownDays: number;
+  whatsappClicks: number;
+  imagesCount: number;
+  daysSincePublished: number;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
   const [renewing, setRenewing] = useState(false);
   const [renewed, setRenewed] = useState(false);
   const [renewError, setRenewError] = useState("");
@@ -100,45 +110,53 @@ export default function AdOwnerPanel({
     { label: "رسالة", value: ad.messages_count, icon: MessageSquare },
     { label: "تعليق", value: ad.comments_count, icon: MessageCircle },
     { label: "مشاركة", value: ad.shares_count, icon: Share2 },
+    { label: "نقرة واتساب", value: whatsappClicks, icon: Phone },
+    { label: "صورة", value: imagesCount, icon: Images },
+    { label: "يوم منذ النشر", value: daysSincePublished, icon: CalendarDays },
   ];
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-4 space-y-4">
-      <div>
-        <h2 className="font-bold text-gray-900 text-sm mb-2">إدارة إعلانك</h2>
-        <div className="flex flex-wrap gap-2">
+    <div className="bg-white border border-gray-100 rounded-2xl p-4 space-y-2">
+      <h2 className="font-bold text-gray-900 text-sm mb-2">إدارة إعلانك</h2>
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => setEditing(true)}
+          className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors"
+        >
+          <Pencil size={14} />
+          تعديل الإعلان
+        </button>
+        {showRenew && (
           <button
-            onClick={() => setEditing(true)}
-            className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors"
+            onClick={renew}
+            disabled={renewing}
+            className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors disabled:opacity-60"
           >
-            <Pencil size={14} />
-            تعديل الإعلان
+            {renewed ? <Check size={14} /> : <RefreshCw size={14} className={renewing ? "animate-spin" : ""} />}
+            {renewing ? "جارٍ التجديد…" : renewed ? "تم التجديد" : "تجديد الإعلان"}
           </button>
-          {showRenew && (
-            <button
-              onClick={renew}
-              disabled={renewing}
-              className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors disabled:opacity-60"
-            >
-              {renewed ? <Check size={14} /> : <RefreshCw size={14} className={renewing ? "animate-spin" : ""} />}
-              {renewing ? "جارٍ التجديد…" : renewed ? "تم التجديد" : "تجديد الإعلان"}
-            </button>
-          )}
-          <button
-            onClick={remove}
-            disabled={deleting}
-            className="flex items-center gap-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-xl px-3 py-2 hover:bg-red-100 transition-colors disabled:opacity-60"
-          >
-            <Trash2 size={14} />
-            {deleting ? "جارٍ الحذف…" : "حذف الإعلان"}
-          </button>
-        </div>
-        {renewError && <p className="text-xs text-red-600 mt-2">{renewError}</p>}
+        )}
+        <button
+          onClick={() => setStatsOpen((v) => !v)}
+          className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors"
+        >
+          <BarChart3 size={14} />
+          إحصائيات الإعلان
+          <ChevronDown size={14} className={`transition-transform ${statsOpen ? "rotate-180" : ""}`} />
+        </button>
+        <button
+          onClick={remove}
+          disabled={deleting}
+          className="flex items-center gap-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-xl px-3 py-2 hover:bg-red-100 transition-colors disabled:opacity-60"
+        >
+          <Trash2 size={14} />
+          {deleting ? "جارٍ الحذف…" : "حذف الإعلان"}
+        </button>
       </div>
+      {renewError && <p className="text-xs text-red-600">{renewError}</p>}
 
-      <div>
-        <h3 className="text-xs font-bold text-gray-500 mb-2">إحصائيات الإعلان</h3>
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+      {statsOpen && (
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-2">
           {stats.map(({ label, value, icon: Icon }) => (
             <div key={label} className="bg-gray-50 rounded-xl p-2.5 text-center">
               <Icon size={16} className="text-[#6D28D9] mx-auto mb-1" />
@@ -147,7 +165,7 @@ export default function AdOwnerPanel({
             </div>
           ))}
         </div>
-      </div>
+      )}
     </div>
   );
 }
