@@ -1,9 +1,24 @@
-// وصف حقول الإعدادات ومجموعاتها — مصدر واحد يُستخدم في نموذج الإعدادات وفي تحويل سجل التدقيق لصياغة عربية مفهومة
+// وصف حقول الإعدادات ومجموعاتها — مصدر واحد يُستخدم في نموذج الإعدادات (مقسّم لتبويبات) وفي
+// تحويل سجل التدقيق لصياغة عربية مفهومة
 export const SETTINGS_GROUPS: { title: string; fields: [string, string, string][] }[] = [
   {
     title: "عام",
     fields: [
       ["platform_name", "اسم المنصة", "يظهر في شعار الموقع وعنوان الصفحات"],
+    ],
+  },
+  {
+    title: "شريط إعلان الموقع",
+    fields: [
+      ["announcement_text", "نص الشريط", "يظهر أعلى كل صفحات الموقع عند تفعيل «شريط الإعلان» بتبويب التواصل"],
+      ["announcement_link", "رابط عند الضغط (اختياري)", ""],
+    ],
+  },
+  {
+    title: "واتساب الدعم ووضع الصيانة",
+    fields: [
+      ["whatsapp_support_number", "رقم واتساب الدعم", "بصيغة +9665xxxxxxxx"],
+      ["maintenance_message", "رسالة وضع الصيانة", ""],
     ],
   },
   {
@@ -34,6 +49,18 @@ export const SETTINGS_GROUPS: { title: string; fields: [string, string, string][
     ],
   },
   {
+    title: "شارة الأكثر مشاهدة",
+    fields: [
+      ["trending_views_threshold", "حد المشاهدات لشارة الأكثر مشاهدة", ""],
+    ],
+  },
+  {
+    title: "الإحالة",
+    fields: [
+      ["referral_reward_days", "مدة مكافأة الإحالة (أيام تمييز)", ""],
+    ],
+  },
+  {
     title: "حدود الاستخدام (لمنع الإساءة)",
     fields: [
       ["rate_limit_ads_per_day", "إعلانات لكل مستخدم/يوم", ""],
@@ -42,46 +69,26 @@ export const SETTINGS_GROUPS: { title: string; fields: [string, string, string][
       ["rate_limit_reports_per_day", "بلاغات لكل مستخدم/يوم", ""],
     ],
   },
-  {
-    title: "شريط إعلان الموقع",
-    fields: [
-      ["announcement_text", "نص الشريط", "يظهر أعلى كل صفحات الموقع عند تفعيل «شريط الإعلان» أدناه"],
-      ["announcement_link", "رابط عند الضغط (اختياري)", ""],
-    ],
-  },
-  {
-    title: "زر واتساب العائم ووضع الصيانة",
-    fields: [
-      ["whatsapp_support_number", "رقم واتساب الدعم", "بصيغة +9665xxxxxxxx"],
-      ["maintenance_message", "رسالة وضع الصيانة", ""],
-    ],
-  },
-  {
-    title: "شارة الأكثر مشاهدة والإحالة",
-    fields: [
-      ["trending_views_threshold", "حد المشاهدات لشارة الأكثر مشاهدة", ""],
-      ["referral_reward_days", "مدة مكافأة الإحالة (أيام تمييز)", ""],
-    ],
-  },
 ];
 
 export const FLAG_GROUPS: { title: string; keys: string[] }[] = [
   { title: "تسجيل الدخول", keys: ["google_login_enabled"] },
+  { title: "عام إضافي", keys: ["announcement_bar_enabled", "floating_whatsapp_enabled", "maintenance_mode_enabled", "contact_form_enabled"] },
   { title: "التواصل والتفاعل", keys: ["comments_enabled", "messages_enabled", "whatsapp_enabled", "favorites_enabled", "reviews_enabled", "reviews_manual_moderation_enabled"] },
-  { title: "الإعلانات والمزايا", keys: ["manual_review_enabled", "featured_ads_enabled", "commission_perks_enabled", "ad_renewal_enabled", "watermark_enabled", "commission_tab_enabled"] },
-  { title: "أخرى", keys: ["verification_enabled", "city_filter_enabled", "view_stats_enabled"] },
-  {
-    title: "ميزات إضافية",
-    keys: [
-      "announcement_bar_enabled",
-      "floating_whatsapp_enabled",
-      "maintenance_mode_enabled",
-      "contact_form_enabled",
-      "trending_badge_enabled",
-      "referral_program_enabled",
-      "vacation_mode_enabled",
-    ],
-  },
+  { title: "الإعلانات والمزايا", keys: ["manual_review_enabled", "featured_ads_enabled", "ad_renewal_enabled", "watermark_enabled", "trending_badge_enabled", "city_filter_enabled", "view_stats_enabled", "verification_enabled"] },
+  { title: "العمولة", keys: ["commission_perks_enabled", "commission_tab_enabled"] },
+  { title: "الإحالة", keys: ["referral_program_enabled", "vacation_mode_enabled"] },
+];
+
+// تبويبات لوحة الإعدادات — كل تبويب يجمع مجموعات إعدادات + مجموعات خيارات ذات علاقة ببعض
+// (بدل صفحة واحدة طويلة فيها كل الإعدادات مبعثرة) — راجع AdminSettingsForm.tsx
+export const ADMIN_SETTINGS_TABS: { id: string; title: string; settingsGroupTitles: string[]; flagGroupTitles: string[] }[] = [
+  { id: "general", title: "عام", settingsGroupTitles: ["عام", "شريط إعلان الموقع", "واتساب الدعم ووضع الصيانة"], flagGroupTitles: ["تسجيل الدخول", "عام إضافي"] },
+  { id: "ads", title: "الإعلانات", settingsGroupTitles: ["الإعلانات", "شارة الأكثر مشاهدة"], flagGroupTitles: ["الإعلانات والمزايا"] },
+  { id: "commission", title: "العمولة", settingsGroupTitles: ["العمولة", "الحساب البنكي لاستقبال العمولات"], flagGroupTitles: ["العمولة"] },
+  { id: "engagement", title: "التواصل والتفاعل", settingsGroupTitles: [], flagGroupTitles: ["التواصل والتفاعل"] },
+  { id: "limits", title: "حدود الاستخدام", settingsGroupTitles: ["حدود الاستخدام (لمنع الإساءة)"], flagGroupTitles: [] },
+  { id: "referral", title: "الإحالة", settingsGroupTitles: ["الإحالة"], flagGroupTitles: ["الإحالة"] },
 ];
 
 export const FLAG_DESCRIPTIONS: Record<string, string> = {
@@ -101,11 +108,11 @@ export const FLAG_DESCRIPTIONS: Record<string, string> = {
   verification_enabled: "تفعيل نظام توثيق الحسابات (شارة موثّق)",
   city_filter_enabled: "إظهار فلتر المدينة في صفحة البحث",
   view_stats_enabled: "عرض عدد المشاهدات على الإعلانات للمعلنين",
-  announcement_bar_enabled: "شريط بنفسجي أعلى كل صفحات الموقع لعرض تنبيه أو عرض خاص — النص والرابط أعلاه",
-  floating_whatsapp_enabled: "زر عائم يظهر في كل صفحات الموقع للتواصل السريع مع رقم الدعم أعلاه",
-  maintenance_mode_enabled: "يمنع كل الزوار غير الموظفين عن الموقع ويعرض رسالة الصيانة أعلاه",
+  announcement_bar_enabled: "شريط بنفسجي أعلى كل صفحات الموقع لعرض تنبيه أو عرض خاص — النص والرابط بتبويب عام",
+  floating_whatsapp_enabled: "زر عائم يظهر في كل صفحات الموقع للتواصل السريع مع رقم الدعم بتبويب عام",
+  maintenance_mode_enabled: "يمنع كل الزوار غير الموظفين عن الموقع ويعرض رسالة الصيانة بتبويب عام",
   contact_form_enabled: "تفعيل صفحة «تواصل معنا» — أي رسالة تصلك كإشعار مباشر في لوحة التحكم",
-  trending_badge_enabled: "شارة تلقائية على أي إعلان يتجاوز حد المشاهدات أعلاه",
+  trending_badge_enabled: "شارة تلقائية على أي إعلان يتجاوز حد المشاهدات بتبويب الإعلانات",
   referral_program_enabled: "كل مستخدم يحصل على رابط دعوة خاص به، ويكافَأ بتمييز مجاني عند نشر مدعوّه أول إعلان",
   vacation_mode_enabled: "يظهر في إعدادات كل مستخدم — يوقف كل إعلاناته مؤقتاً بضغطة واحدة",
 };
