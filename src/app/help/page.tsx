@@ -11,7 +11,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "مركز المساعدة",
-  description: "إجابات على أكثر الأسئلة تكراراً حول نشر الإعلانات، العمولة، والسلامة عند التعامل على منصة مناسبات.",
+  description: "إجابات على أكثر الأسئلة تكراراً حول نشر الإعلانات، التواصل مع العملاء، والسلامة عند التعامل على منصة مناسبات.",
   alternates: { canonical: "/help" },
 };
 
