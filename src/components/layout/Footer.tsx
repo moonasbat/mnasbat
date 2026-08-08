@@ -1,22 +1,13 @@
 import Link from "next/link";
-import { createPublicClient } from "@/lib/supabase/public";
 
-const baseLinks = [
-  { href: "/pages/terms", label: "اتفاقية الاستخدام" },
-  { href: "/pages/privacy", label: "سياسة الخصوصية" },
-  { href: "/pages/commission-policy", label: "سياسة العمولة", key: "commission" },
-  { href: "/pages/content-policy", label: "المحتوى الممنوع" },
-  { href: "/pages/review-policy", label: "سياسة التقييم" },
+const links = [
+  { href: "/pages/terms", label: "شروط الاستخدام" },
+  { href: "/pages/policies", label: "السياسات" },
   { href: "/help", label: "مركز المساعدة" },
   { href: "/contact", label: "تواصل معنا" },
 ];
 
-export default async function Footer() {
-  const supabase = createPublicClient();
-  const { data: flag } = await supabase.from("feature_flags").select("enabled").eq("key", "commission_tab_enabled").maybeSingle();
-  const commissionTabEnabled = flag?.enabled !== false;
-  const links = baseLinks.filter((l) => l.key !== "commission" || commissionTabEnabled);
-
+export default function Footer() {
   return (
     <footer className="bg-gray-50 border-t border-gray-100 mt-auto">
       <div className="max-w-7xl mx-auto px-4 py-8">
