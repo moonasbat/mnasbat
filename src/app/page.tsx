@@ -2,6 +2,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AdCard from "@/components/ads/AdCard";
+import ImpressionTracker from "@/components/ads/ImpressionTracker";
 import Link from "next/link";
 import { Ad, Category } from "@/lib/types";
 import { HOME_CONTENT } from "@/lib/content";
@@ -46,6 +47,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <ImpressionTracker adIds={[...((featuredAds as Ad[]) ?? []), ...((latestAds as Ad[]) ?? [])].map((a) => a.id)} />
       <Header />
 
       <main className="flex-1">

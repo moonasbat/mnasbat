@@ -2,6 +2,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AdCard from "@/components/ads/AdCard";
+import ImpressionTracker from "@/components/ads/ImpressionTracker";
 import CategoryBar from "@/components/CategoryBar";
 import LocationFilters from "@/components/LocationFilters";
 import { Ad, Category } from "@/lib/types";
@@ -131,6 +132,7 @@ export default async function SearchPage({
     <div className="min-h-screen flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(breadcrumbItems)) }} />
       {listJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listJsonLd) }} />}
+      <ImpressionTracker adIds={((ads as Ad[]) ?? []).map((a) => a.id)} />
       <Header />
 
       {/* شريط التصنيفات الرئيسية — ثابت في كل صفحات التصفح، يختفي فقط داخل صفحة الإعلان المفردة */}

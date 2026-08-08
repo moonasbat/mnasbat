@@ -6,7 +6,7 @@ import { Ad, Category } from "@/lib/types";
 import EditAdForm from "@/components/ads/EditAdForm";
 import {
   Pencil, RefreshCw, Check, X, Trash2, ChevronDown,
-  Eye, Heart, MessageSquare, MessageCircle, Share2, Phone, Images, CalendarDays, BarChart3,
+  Eye, Radar, Percent, Heart, MessageSquare, MessageCircle, Share2, Phone, BarChart3,
 } from "lucide-react";
 
 // نحسب الوقت المتبقي محلياً قبل ما نرسل أي طلب — يعرض للمستخدم فوراً بدون انتظار رد السيرفر
@@ -30,8 +30,6 @@ export default function AdOwnerPanel({
   renewalEnabled,
   renewalCooldownDays,
   whatsappClicks,
-  imagesCount,
-  daysSincePublished,
 }: {
   ad: Ad;
   categories: Category[];
@@ -39,8 +37,6 @@ export default function AdOwnerPanel({
   renewalEnabled: boolean;
   renewalCooldownDays: number;
   whatsappClicks: number;
-  imagesCount: number;
-  daysSincePublished: number;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -103,16 +99,17 @@ export default function AdOwnerPanel({
 
   // التجديد متاح دائماً لأي إعلان منشور فعلياً (مو بس قرب الانتهاء) — نفس فكرة "تنشيط الإعلان" في حراج
   const showRenew = renewalEnabled && ad.status !== "draft";
+  const ctr = ad.impressions_count > 0 ? Math.round((ad.views_count / ad.impressions_count) * 100) : 0;
 
   const stats = [
+    { label: "مرة ظهور", value: ad.impressions_count, icon: Radar },
     { label: "مشاهدة", value: ad.views_count, icon: Eye },
+    { label: "نسبة تحويل الظهور", value: `${ctr}%`, icon: Percent },
     { label: "مفضلة", value: ad.favorites_count, icon: Heart },
     { label: "رسالة", value: ad.messages_count, icon: MessageSquare },
     { label: "تعليق", value: ad.comments_count, icon: MessageCircle },
     { label: "مشاركة", value: ad.shares_count, icon: Share2 },
     { label: "نقرة واتساب", value: whatsappClicks, icon: Phone },
-    { label: "صورة", value: imagesCount, icon: Images },
-    { label: "يوم منذ النشر", value: daysSincePublished, icon: CalendarDays },
   ];
 
   return (
@@ -124,7 +121,7 @@ export default function AdOwnerPanel({
           className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors"
         >
           <Pencil size={14} />
-          تعديل الإعلان
+          تعديل
         </button>
         {showRenew && (
           <button
@@ -133,7 +130,7 @@ export default function AdOwnerPanel({
             className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors disabled:opacity-60"
           >
             {renewed ? <Check size={14} /> : <RefreshCw size={14} className={renewing ? "animate-spin" : ""} />}
-            {renewing ? "جارٍ التجديد…" : renewed ? "تم التجديد" : "تجديد الإعلان"}
+            {renewing ? "جارٍ التجديد…" : renewed ? "تم التجديد" : "تجديد"}
           </button>
         )}
         <button
@@ -141,7 +138,7 @@ export default function AdOwnerPanel({
           className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors"
         >
           <BarChart3 size={14} />
-          إحصائيات الإعلان
+          إحصائيات
           <ChevronDown size={14} className={`transition-transform ${statsOpen ? "rotate-180" : ""}`} />
         </button>
         <button
@@ -150,7 +147,7 @@ export default function AdOwnerPanel({
           className="flex items-center gap-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-xl px-3 py-2 hover:bg-red-100 transition-colors disabled:opacity-60"
         >
           <Trash2 size={14} />
-          {deleting ? "جارٍ الحذف…" : "حذف الإعلان"}
+          {deleting ? "جارٍ الحذف…" : "حذف"}
         </button>
       </div>
       {renewError && <p className="text-xs text-red-600">{renewError}</p>}

@@ -133,7 +133,6 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
   const maxImages = Number(maxImagesSetting?.value) || 10;
   const renewalCooldownDays = Number(cooldownSetting?.value) || 5;
   const whatsappClicks = whatsappClicksResult.count ?? 0;
-  const daysSincePublished = ad.published_at ? Math.max(0, Math.floor((Date.now() - new Date(ad.published_at).getTime()) / 86400000)) : 0;
 
   const canonicalPath = adUrl({ id, slug: ad.slug as string | null | undefined });
   const productJsonLd = {
@@ -268,8 +267,6 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
                 renewalEnabled={renewalEnabled}
                 renewalCooldownDays={renewalCooldownDays}
                 whatsappClicks={whatsappClicks}
-                imagesCount={images.length}
-                daysSincePublished={daysSincePublished}
               />
             )}
           </div>
