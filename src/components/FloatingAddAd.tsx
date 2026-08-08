@@ -1,15 +1,9 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
 
 // زر عائم لإضافة إعلان من أي صفحة بالموقع — لمتصفحي الجوال فقط (الهيدر نفسه فيه زر مماثل بالشاشات الأكبر)
+// مكوّن سيرفر بسيط بدون أي state أو hooks عميلية — يضمن ظهوره دائماً بغض النظر عن أي مشاكل Hydration بمكان ثاني بالصفحة
 export default function FloatingAddAd() {
-  const pathname = usePathname();
-  // نخفيه بصفحة الإضافة نفسها ولوحة الإدارة — لا داعٍ له هناك
-  if (pathname === "/ads/new" || pathname.startsWith("/admin")) return null;
-
   return (
     <Link
       href="/ads/new"
