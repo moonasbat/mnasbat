@@ -123,7 +123,6 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
   const whatsappEnabled = flags.whatsapp_enabled !== false;
   const favoritesEnabled = flags.favorites_enabled !== false;
   const renewalEnabled = flags.ad_renewal_enabled !== false;
-  const commissionTabEnabled = flags.commission_tab_enabled !== false;
   const isOwner = ad.user_id === user?.id;
   const maxImages = Number(maxImagesSetting?.value) || 10;
   const renewalCooldownDays = Number(cooldownSetting?.value) || 5;
@@ -260,7 +259,6 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
                 maxImages={maxImages}
                 renewalEnabled={renewalEnabled}
                 renewalCooldownDays={renewalCooldownDays}
-                commissionTabEnabled={commissionTabEnabled}
               />
             )}
           </div>

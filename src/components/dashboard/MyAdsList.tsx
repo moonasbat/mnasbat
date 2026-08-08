@@ -7,7 +7,6 @@ import { adUrl } from "@/lib/adSlug";
 import AdActions from "@/components/dashboard/AdActions";
 import Link from "next/link";
 import Image from "next/image";
-import { HandCoins } from "lucide-react";
 
 function daysUntil(dateStr: string): number {
   return Math.max(0, Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86400000));
@@ -63,15 +62,6 @@ export default function MyAdsList({
                 renewalEnabled={renewalEnabled}
                 onDeleted={() => setAds((prev) => prev.filter((a) => a.id !== ad.id))}
               />
-              {ad.status === "published" && (
-                <Link
-                  href={`/commission?ad=${ad.id}`}
-                  className="flex items-center gap-1 text-xs text-[#6D28D9] font-medium hover:underline"
-                >
-                  <HandCoins size={13} />
-                  تمت صفقة بسبب هذا الإعلان؟
-                </Link>
-              )}
             </div>
           </div>
         </div>

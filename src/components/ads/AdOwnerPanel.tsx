@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Ad, Category } from "@/lib/types";
 import EditAdForm from "@/components/ads/EditAdForm";
-import { Pencil, HandCoins, RefreshCw, Check, X } from "lucide-react";
+import { Pencil, RefreshCw, Check, X, Trash2, Eye, Heart, MessageSquare, MessageCircle, Share2 } from "lucide-react";
 
 // نحسب الوقت المتبقي محلياً قبل ما نرسل أي طلب — يعرض للمستخدم فوراً بدون انتظار رد السيرفر
 function renewCooldownText(publishedAt: string | null | undefined, cooldownDays: number): string | null {
@@ -27,20 +26,19 @@ export default function AdOwnerPanel({
   maxImages,
   renewalEnabled,
   renewalCooldownDays,
-  commissionTabEnabled,
 }: {
   ad: Ad;
   categories: Category[];
   maxImages: number;
   renewalEnabled: boolean;
   renewalCooldownDays: number;
-  commissionTabEnabled: boolean;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [renewing, setRenewing] = useState(false);
   const [renewed, setRenewed] = useState(false);
   const [renewError, setRenewError] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const cooldown = renewCooldownText(ad.published_at, renewalCooldownDays);
 
   async function renew() {
@@ -65,6 +63,19 @@ export default function AdOwnerPanel({
     router.refresh();
   }
 
+  async function remove() {
+    if (!confirm("هل تريد حذف هذا الإعلان نهائياً؟ لا يمكن التراجع عن هذا الإجراء.")) return;
+    setDeleting(true);
+    const res = await fetch(`/api/ads/${ad.id}`, { method: "DELETE" });
+    if (!res.ok) {
+      setDeleting(false);
+      alert("تعذر حذف الإعلان.");
+      return;
+    }
+    router.push("/dashboard/ads");
+    router.refresh();
+  }
+
   if (editing) {
     return (
       <div className="bg-white border border-gray-100 rounded-2xl p-4">
@@ -83,38 +94,60 @@ export default function AdOwnerPanel({
   // التجديد متاح دائماً لأي إعلان منشور فعلياً (مو بس قرب الانتهاء) — نفس فكرة "تنشيط الإعلان" في حراج
   const showRenew = renewalEnabled && ad.status !== "draft";
 
+  const stats = [
+    { label: "مشاهدة", value: ad.views_count, icon: Eye },
+    { label: "مفضلة", value: ad.favorites_count, icon: Heart },
+    { label: "رسالة", value: ad.messages_count, icon: MessageSquare },
+    { label: "تعليق", value: ad.comments_count, icon: MessageCircle },
+    { label: "مشاركة", value: ad.shares_count, icon: Share2 },
+  ];
+
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-4 space-y-2">
-      <h2 className="font-bold text-gray-900 text-sm">إدارة إعلانك</h2>
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => setEditing(true)}
-          className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors"
-        >
-          <Pencil size={14} />
-          تعديل الإعلان
-        </button>
-        {showRenew && (
+    <div className="bg-white border border-gray-100 rounded-2xl p-4 space-y-4">
+      <div>
+        <h2 className="font-bold text-gray-900 text-sm mb-2">إدارة إعلانك</h2>
+        <div className="flex flex-wrap gap-2">
           <button
-            onClick={renew}
-            disabled={renewing}
-            className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors disabled:opacity-60"
-          >
-            {renewed ? <Check size={14} /> : <RefreshCw size={14} className={renewing ? "animate-spin" : ""} />}
-            {renewing ? "جارٍ التجديد…" : renewed ? "تم التجديد" : "تجديد الإعلان"}
-          </button>
-        )}
-        {commissionTabEnabled && (
-          <Link
-            href={`/commission?ad=${ad.id}`}
+            onClick={() => setEditing(true)}
             className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors"
           >
-            <HandCoins size={14} />
-            دفع العمولة
-          </Link>
-        )}
+            <Pencil size={14} />
+            تعديل الإعلان
+          </button>
+          {showRenew && (
+            <button
+              onClick={renew}
+              disabled={renewing}
+              className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors disabled:opacity-60"
+            >
+              {renewed ? <Check size={14} /> : <RefreshCw size={14} className={renewing ? "animate-spin" : ""} />}
+              {renewing ? "جارٍ التجديد…" : renewed ? "تم التجديد" : "تجديد الإعلان"}
+            </button>
+          )}
+          <button
+            onClick={remove}
+            disabled={deleting}
+            className="flex items-center gap-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-xl px-3 py-2 hover:bg-red-100 transition-colors disabled:opacity-60"
+          >
+            <Trash2 size={14} />
+            {deleting ? "جارٍ الحذف…" : "حذف الإعلان"}
+          </button>
+        </div>
+        {renewError && <p className="text-xs text-red-600 mt-2">{renewError}</p>}
       </div>
-      {renewError && <p className="text-xs text-red-600">{renewError}</p>}
+
+      <div>
+        <h3 className="text-xs font-bold text-gray-500 mb-2">إحصائيات الإعلان</h3>
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+          {stats.map(({ label, value, icon: Icon }) => (
+            <div key={label} className="bg-gray-50 rounded-xl p-2.5 text-center">
+              <Icon size={16} className="text-[#6D28D9] mx-auto mb-1" />
+              <p className="text-sm font-bold text-gray-900">{value}</p>
+              <p className="text-[10px] text-gray-400">{label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

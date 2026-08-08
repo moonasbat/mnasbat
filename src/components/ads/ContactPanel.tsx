@@ -92,6 +92,11 @@ export default function ContactPanel({
     }
   }
 
+  // نسجّل عدد مرات المشاركة/النسخ بالخلفية بدون ما ننتظر الرد — يظهر لاحقاً بإحصائيات الإعلان لصاحبه
+  function trackShare() {
+    fetch(`/api/ads/${adId}/share`, { method: "POST" }).catch(() => {});
+  }
+
   async function share() {
     const url = cleanAdUrl();
     if (navigator.share) {
@@ -99,6 +104,7 @@ export default function ContactPanel({
     } else {
       await navigator.clipboard.writeText(url);
     }
+    trackShare();
   }
 
   // نسخ صريح بدل الاعتماد على نسخ المستخدم يدوياً من شريط العنوان — المتصفح هو من
@@ -107,6 +113,7 @@ export default function ContactPanel({
     await navigator.clipboard.writeText(cleanAdUrl());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+    trackShare();
   }
 
   return (

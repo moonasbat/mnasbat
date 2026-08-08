@@ -65,6 +65,7 @@ export interface Ad {
   favorites_count: number;
   comments_count: number;
   messages_count: number;
+  shares_count: number;
   published_at?: string;
   expires_at?: string;
   expiry_reminder_sent_at?: string | null;
