@@ -11,6 +11,7 @@ import PwaInstall from "@/components/PwaInstall";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import ReferralCapture from "@/components/ReferralCapture";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
+import FloatingAddAd from "@/components/FloatingAddAd";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const viewport: Viewport = {
@@ -181,6 +182,7 @@ export default async function RootLayout({
         </Suspense>
         {children}
         <PwaInstall />
+        <FloatingAddAd />
         {showFloatingWhatsapp && <FloatingWhatsApp number={settings.whatsapp_support_number} />}
       </body>
     </html>

@@ -1,20 +1,34 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AUTH_CONTENT } from "@/lib/content";
 
-const items = [
+const baseItems = [
   { href: "/dashboard/ads", label: AUTH_CONTENT.navMyAds },
   { href: "/favorites", label: AUTH_CONTENT.navFavorites },
   { href: "/dashboard/messages", label: AUTH_CONTENT.navMessages },
   { href: "/dashboard/notifications", label: AUTH_CONTENT.navNotifications },
-  { href: "/commission", label: AUTH_CONTENT.navCommission },
+  { href: "/commission", label: AUTH_CONTENT.navCommission, key: "commission" },
   { href: "/dashboard/settings", label: AUTH_CONTENT.navSettings },
 ];
 
 export default function DashboardNav() {
   const pathname = usePathname();
+  const [commissionTabEnabled, setCommissionTabEnabled] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/site-config")
+      .then((r) => r.json())
+      .then((data) => {
+        if (typeof data.commission_tab_enabled === "boolean") setCommissionTabEnabled(data.commission_tab_enabled);
+      })
+      .catch(() => {});
+  }, []);
+
+  const items = baseItems.filter((item) => item.key !== "commission" || commissionTabEnabled);
+
   return (
     <nav
       style={{ top: "var(--header-h, 64px)" }}
