@@ -11,6 +11,8 @@ import { isStaff } from "@/lib/permissions";
 import { loginUrl } from "@/lib/loginRedirect";
 import { Bell, MessageSquare, Heart, Plus, LogOut, User, Settings, LayoutDashboard } from "lucide-react";
 
+const PROFILE_CACHE_KEY = "mnasbat_profile_cache";
+
 export default function Header({ profile: profileProp }: { profile?: Profile | null }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -24,10 +26,25 @@ export default function Header({ profile: profileProp }: { profile?: Profile | n
   const [profile, setProfile] = useState<Profile | null | undefined>(profileProp);
   useEffect(() => {
     if (profileProp !== undefined) { setProfile(profileProp); return; }
+    // نعرض آخر حالة تسجيل دخول معروفة فوراً من ذاكرة المتصفح (بدون انتظار رد الشبكة) —
+    // يمنع وميض "دخول/خروج" اللي كان يظهر عند التنقل من صفحة تعرف حالتك فوراً (كصفحة الإعلان)
+    // لصفحة عامة مخزَّنة مؤقتاً تحتاج تتأكد من حالتك بنفسها. الجلب من الشبكة يبقى يشتغل بالخلفية
+    // ليصحّح الحالة لو تغيّرت فعلياً (تسجيل خروج بتبويب ثاني مثلاً).
+    try {
+      const cached = localStorage.getItem(PROFILE_CACHE_KEY);
+      if (cached) setProfile(JSON.parse(cached));
+    } catch {}
     let cancelled = false;
     fetch("/api/auth/me")
       .then((r) => r.json())
-      .then((data) => { if (!cancelled) setProfile(data.profile); })
+      .then((data) => {
+        if (cancelled) return;
+        setProfile(data.profile);
+        try {
+          if (data.profile) localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(data.profile));
+          else localStorage.removeItem(PROFILE_CACHE_KEY);
+        } catch {}
+      })
       .catch(() => { if (!cancelled) setProfile(null); });
     return () => { cancelled = true; };
   }, [profileProp]);
@@ -80,6 +97,9 @@ export default function Header({ profile: profileProp }: { profile?: Profile | n
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
+    try {
+      localStorage.removeItem(PROFILE_CACHE_KEY);
+    } catch {}
     router.refresh();
   }
 
