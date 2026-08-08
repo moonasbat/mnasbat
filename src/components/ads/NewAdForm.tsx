@@ -34,7 +34,7 @@ type PersistedDraft = {
   declarationAccepted: boolean;
 };
 
-export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 }: { categories: Category[]; initialWhatsapp?: string; maxImages?: number }) {
+export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10, commissionTabEnabled = true }: { categories: Category[]; initialWhatsapp?: string; maxImages?: number; commissionTabEnabled?: boolean }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [title, setTitle] = useState("");
@@ -271,14 +271,15 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
       setError(data.error ?? "تعذر حفظ البيانات.");
       return;
     }
+    // تبويب العمولة معطّل من الإعدادات — نتخطى خطوة إقرار العمولة وننشر الإعلان مباشرة
+    if (!commissionTabEnabled) {
+      await publishAd();
+      return;
+    }
     setStep(4);
   }
 
-  async function submitPublish() {
-    if (!declarationAccepted) {
-      setError(COMMISSION_DECLARATION_CONTENT.requiredError);
-      return;
-    }
+  async function publishAd() {
     if (!adId) return;
     setSubmitting(true);
     setError("");
@@ -300,10 +301,18 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
     router.refresh();
   }
 
+  async function submitPublish() {
+    if (!declarationAccepted) {
+      setError(COMMISSION_DECLARATION_CONTENT.requiredError);
+      return;
+    }
+    await publishAd();
+  }
+
   return (
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center gap-2 mb-6">
-        {[1, 2, 3, 4].map((s) => (
+        {(commissionTabEnabled ? [1, 2, 3, 4] : [1, 2, 3]).map((s) => (
           <div key={s} className={`h-1.5 flex-1 rounded-full ${s <= step ? "bg-[#6D28D9]" : "bg-gray-200"}`} />
         ))}
       </div>
@@ -454,17 +463,23 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10 
             <button onClick={() => setStep(2)} className="flex-1 border border-gray-200 rounded-xl py-3 text-sm font-medium">رجوع</button>
             <button
               onClick={goToStep4}
-              disabled={savingStep3}
+              disabled={savingStep3 || submitting}
               className="flex-1 flex items-center justify-center gap-2 bg-[#6D28D9] text-white rounded-xl py-3 text-sm font-medium hover:bg-[#5B21B6] transition-colors disabled:opacity-60"
             >
-              {savingStep3 && <Loader2 size={16} className="animate-spin" />}
-              {savingStep3 ? "جارٍ الحفظ…" : NEW_AD_CONTENT.preview}
+              {(savingStep3 || submitting) && <Loader2 size={16} className="animate-spin" />}
+              {savingStep3
+                ? "جارٍ الحفظ…"
+                : submitting
+                  ? "جارٍ النشر…"
+                  : commissionTabEnabled
+                    ? NEW_AD_CONTENT.preview
+                    : "نشر الإعلان"}
             </button>
           </div>
         </div>
       )}
 
-      {step === 4 && (
+      {step === 4 && commissionTabEnabled && (
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-[#6D28D9]">
             <ShieldCheck size={20} />

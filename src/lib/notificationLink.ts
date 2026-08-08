@@ -2,6 +2,7 @@
 export function resolveNotificationLink(type: string, relatedId?: string | null): string | null {
   switch (type) {
     case "AD_EXPIRING_SOON":
+    case "AD_RENEWAL_AVAILABLE":
     case "AD_APPROVED":
       return relatedId ? `/ads/${relatedId}` : "/dashboard/ads";
     case "AD_REJECTED":

@@ -7,12 +7,10 @@ import { Ad, Category } from "@/lib/types";
 import EditAdForm from "@/components/ads/EditAdForm";
 import { Pencil, HandCoins, RefreshCw, Check, X } from "lucide-react";
 
-const RENEW_COOLDOWN_DAYS = 5;
-
 // نحسب الوقت المتبقي محلياً قبل ما نرسل أي طلب — يعرض للمستخدم فوراً بدون انتظار رد السيرفر
-function renewCooldownText(publishedAt: string | null | undefined): string | null {
+function renewCooldownText(publishedAt: string | null | undefined, cooldownDays: number): string | null {
   if (!publishedAt) return null;
-  const cooldownMs = RENEW_COOLDOWN_DAYS * 86400000;
+  const cooldownMs = cooldownDays * 86400000;
   const elapsedMs = Date.now() - new Date(publishedAt).getTime();
   if (elapsedMs >= cooldownMs) return null;
   const remainingMs = cooldownMs - elapsedMs;
@@ -28,18 +26,22 @@ export default function AdOwnerPanel({
   categories,
   maxImages,
   renewalEnabled,
+  renewalCooldownDays,
+  commissionTabEnabled,
 }: {
   ad: Ad;
   categories: Category[];
   maxImages: number;
   renewalEnabled: boolean;
+  renewalCooldownDays: number;
+  commissionTabEnabled: boolean;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [renewing, setRenewing] = useState(false);
   const [renewed, setRenewed] = useState(false);
   const [renewError, setRenewError] = useState("");
-  const cooldown = renewCooldownText(ad.published_at);
+  const cooldown = renewCooldownText(ad.published_at, renewalCooldownDays);
 
   async function renew() {
     if (cooldown) {
@@ -102,13 +104,15 @@ export default function AdOwnerPanel({
             {renewing ? "جارٍ التجديد…" : renewed ? "تم التجديد" : "تجديد الإعلان"}
           </button>
         )}
-        <Link
-          href={`/commission?ad=${ad.id}`}
-          className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors"
-        >
-          <HandCoins size={14} />
-          دفع العمولة
-        </Link>
+        {commissionTabEnabled && (
+          <Link
+            href={`/commission?ad=${ad.id}`}
+            className="flex items-center gap-1.5 text-sm font-medium text-[#6D28D9] bg-purple-50 rounded-xl px-3 py-2 hover:bg-purple-100 transition-colors"
+          >
+            <HandCoins size={14} />
+            دفع العمولة
+          </Link>
+        )}
       </div>
       {renewError && <p className="text-xs text-red-600">{renewError}</p>}
     </div>

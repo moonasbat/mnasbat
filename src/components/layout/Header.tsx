@@ -18,6 +18,7 @@ export default function Header({ profile: profileProp }: { profile?: Profile | n
   const [menuOpen, setMenuOpen] = useState(false);
   const [unread, setUnread] = useState({ notifications: 0, messages: 0 });
   const [platformName, setPlatformName] = useState("مناسبات");
+  const [commissionTabEnabled, setCommissionTabEnabled] = useState(true);
   const headerRef = useRef<HTMLElement>(null);
   // لو الصفحة ما مررت profile صراحة (صفحات عامة تُخزَّن مؤقتاً بدون تحقق دخول على السيرفر)
   // نجيبه بأنفسنا من المتصفح — يبقي الصفحة نفسها قابلة للتخزين المؤقت (Cache) لصالح السيو والسرعة
@@ -70,7 +71,10 @@ export default function Header({ profile: profileProp }: { profile?: Profile | n
   useEffect(() => {
     fetch("/api/site-config")
       .then((r) => r.json())
-      .then((data) => { if (data.platform_name) setPlatformName(data.platform_name); })
+      .then((data) => {
+        if (data.platform_name) setPlatformName(data.platform_name);
+        if (typeof data.commission_tab_enabled === "boolean") setCommissionTabEnabled(data.commission_tab_enabled);
+      })
       .catch(() => {});
   }, []);
 
@@ -160,10 +164,12 @@ export default function Header({ profile: profileProp }: { profile?: Profile | n
                         <LayoutDashboard size={16} className="text-[#6D28D9]" />
                         {AUTH_CONTENT.navMyAds}
                       </Link>
-                      <Link href="/commission" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-50" onClick={() => setMenuOpen(false)}>
-                        <User size={16} className="text-[#6D28D9]" />
-                        {AUTH_CONTENT.navCommission}
-                      </Link>
+                      {commissionTabEnabled && (
+                        <Link href="/commission" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-50" onClick={() => setMenuOpen(false)}>
+                          <User size={16} className="text-[#6D28D9]" />
+                          {AUTH_CONTENT.navCommission}
+                        </Link>
+                      )}
                       <Link href="/dashboard/settings" className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-900 hover:bg-gray-50" onClick={() => setMenuOpen(false)}>
                         <Settings size={16} className="text-[#6D28D9]" />
                         {AUTH_CONTENT.navSettings}

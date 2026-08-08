@@ -15,6 +15,36 @@ export async function GET(request: NextRequest) {
   const now = new Date();
   const reminderCutoff = new Date(now.getTime() + REMINDER_DAYS_BEFORE_EXPIRY * 86400000);
 
+  const { data: settingsRows } = await admin
+    .from("admin_settings")
+    .select("key, value")
+    .in("key", ["ad_renewal_cooldown_days", "ad_deletion_grace_days"]);
+  const renewalCooldownDays = Number(settingsRows?.find((s) => s.key === "ad_renewal_cooldown_days")?.value || 5);
+  const deletionGraceDays = Number(settingsRows?.find((s) => s.key === "ad_deletion_grace_days")?.value || 30);
+
+  // إشعار مباشر بمجرد ما تنتهي مهلة "أقل فترة بين تجديد وآخر" — يخبر المعلن إنه يقدر يجدد إعلانه الآن
+  const cooldownCutoff = new Date(now.getTime() - renewalCooldownDays * 86400000);
+  const { data: renewalAvailable } = await admin
+    .from("ads")
+    .select("id, title, user_id")
+    .eq("status", "published")
+    .is("renewal_reminder_sent_at", null)
+    .lt("published_at", cooldownCutoff.toISOString());
+
+  if (renewalAvailable && renewalAvailable.length > 0) {
+    const rows = await Promise.all(
+      renewalAvailable.map(async (ad) => {
+        const { title, body } = await renderNotification("AD_RENEWAL_AVAILABLE", { ad_title: ad.title });
+        return { user_id: ad.user_id, type: "AD_RENEWAL_AVAILABLE", title, body, related_id: ad.id };
+      })
+    );
+    await admin.from("notifications").insert(rows);
+    await admin
+      .from("ads")
+      .update({ renewal_reminder_sent_at: now.toISOString() })
+      .in("id", renewalAvailable.map((ad) => ad.id));
+  }
+
   const { data: expiringSoon } = await admin
     .from("ads")
     .select("id, title, user_id, expires_at")
@@ -60,7 +90,7 @@ export async function GET(request: NextRequest) {
   // المرحلة الثانية: الإعلانات اللي صارت "منتهية" من 30 يوم إضافية ولم تُجدَّد نهائياً — تُحذف من قاعدة البيانات فعلياً
   // commission_obligations.ad_id يتحول لـ null تلقائياً (on delete set null) ويبقى السجل المالي محفوظاً
   // وباقي الجداول المرتبطة (صور، تعليقات، مفضلة، محادثات) تُحذف معه بالكامل
-  const graceCutoff = new Date(now.getTime() - 30 * 86400000);
+  const graceCutoff = new Date(now.getTime() - deletionGraceDays * 86400000);
   const { data: toDelete } = await admin
     .from("ads")
     .select("id, title, user_id")
@@ -89,6 +119,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     ok: true,
+    renewalAvailable: renewalAvailable?.length ?? 0,
     expiringSoon: expiringSoon?.length ?? 0,
     expired: toExpire?.length ?? 0,
     permanentlyDeleted: toDelete?.length ?? 0,

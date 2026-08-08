@@ -5,6 +5,7 @@ import DashboardNav from "@/components/dashboard/DashboardNav";
 import CommissionRequestForm from "@/components/CommissionRequestForm";
 import { Ad, AdminSettings, CommissionObligation, Profile } from "@/lib/types";
 import { formatGregorianDate, formatNumber } from "@/lib/formatTime";
+import { notFound } from "next/navigation";
 
 const STATUS_LABELS: Record<string, string> = {
   due: "مستحقة",
@@ -22,6 +23,9 @@ export default async function CommissionPage({
   const { ad: preselectedAdId } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+
+  const { data: commissionFlag } = await supabase.from("feature_flags").select("enabled").eq("key", "commission_tab_enabled").maybeSingle();
+  if (commissionFlag?.enabled === false) notFound();
 
   const [{ data: profile }, { data: settingsRows }, { data: myAds }, { data: obligations }] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : Promise.resolve({ data: null }),

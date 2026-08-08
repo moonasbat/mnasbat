@@ -9,8 +9,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { data: commissionFlag } = await supabase.from("feature_flags").select("enabled").eq("key", "commission_tab_enabled").maybeSingle();
+  const commissionTabEnabled = commissionFlag?.enabled !== false;
+
   const { accepted } = await request.json();
-  if (!accepted) {
+  if (commissionTabEnabled && !accepted) {
     return NextResponse.json(
       { error: "يجب الموافقة على إقرار الالتزام بالعمولة حتى تتمكن من نشر الإعلان." },
       { status: 400 }
@@ -41,12 +44,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: `يمكنك إضافة ${maxImages} صور كحد أقصى.` }, { status: 400 });
   }
 
-  // حفظ نسخة الإقرار — تاريخ ووقت الموافقة ومعرف الإعلان والمستخدم (القسم 8)
-  await supabase.from("commission_declarations").insert({
-    ad_id: id,
-    user_id: user.id,
-    text_version: COMMISSION_DECLARATION_TEXT.join("\n"),
-  });
+  // حفظ نسخة الإقرار — تاريخ ووقت الموافقة ومعرف الإعلان والمستخدم (القسم 8) — فقط لو تبويب العمولة مفعّل
+  if (commissionTabEnabled) {
+    await supabase.from("commission_declarations").insert({
+      ad_id: id,
+      user_id: user.id,
+      text_version: COMMISSION_DECLARATION_TEXT.join("\n"),
+    });
+  }
 
   const { data: reviewFlag } = await supabase
     .from("feature_flags")

@@ -29,6 +29,8 @@ export const SETTINGS_GROUPS: { title: string; fields: [string, string, string][
       ["max_images_per_ad", "الحد الأقصى للصور", "عدد الصور المسموح لكل إعلان (لا يزيد عن 10 حسب سياسة المنصة)"],
       ["ad_duration_days", "مدة نشر الإعلان (يوماً)", "بعد هذه المدة يتحول الإعلان إلى «منتهٍ» تلقائياً"],
       ["ad_renewal_duration_days", "مدة التجديد (يوماً)", "عدد الأيام التي يُضاف نشر الإعلان لها عند تجديده — اتركه فارغاً ليستخدم نفس مدة النشر أعلاه"],
+      ["ad_renewal_cooldown_days", "عدد الأيام قبل السماح بالتجديد", "أقل فترة بين تجديد وآخر — يُرسَل للمعلن إشعار مباشر بمجرد انتهاء هذه الفترة يخبره إنه يقدر يجدد الآن"],
+      ["ad_deletion_grace_days", "مهلة الحذف النهائي (يوماً)", "عدد الأيام بعد انتهاء الإعلان (ولم يُجدَّد) قبل حذفه نهائياً من قاعدة البيانات"],
     ],
   },
   {
@@ -66,7 +68,7 @@ export const SETTINGS_GROUPS: { title: string; fields: [string, string, string][
 export const FLAG_GROUPS: { title: string; keys: string[] }[] = [
   { title: "تسجيل الدخول", keys: ["google_login_enabled"] },
   { title: "التواصل والتفاعل", keys: ["comments_enabled", "messages_enabled", "whatsapp_enabled", "favorites_enabled", "reviews_enabled", "reviews_manual_moderation_enabled"] },
-  { title: "الإعلانات والمزايا", keys: ["manual_review_enabled", "featured_ads_enabled", "commission_perks_enabled", "ad_renewal_enabled", "watermark_enabled"] },
+  { title: "الإعلانات والمزايا", keys: ["manual_review_enabled", "featured_ads_enabled", "commission_perks_enabled", "ad_renewal_enabled", "watermark_enabled", "commission_tab_enabled"] },
   { title: "أخرى", keys: ["verification_enabled", "city_filter_enabled", "view_stats_enabled"] },
   {
     title: "ميزات إضافية",
@@ -95,6 +97,7 @@ export const FLAG_DESCRIPTIONS: Record<string, string> = {
   commission_perks_enabled: "منح مزايا (شارة، أولوية ظهور) للمستخدمين بعد اعتماد دفع العمولة",
   ad_renewal_enabled: "السماح للمستخدم بتجديد إعلانه بعد انتهائه",
   watermark_enabled: "طبع شعار مناسبات تلقائياً على كل صورة إعلان تُرفع",
+  commission_tab_enabled: "إظهار تبويب العمولة، صفحة سياسة العمولة، وخطوة إقرار الالتزام بالعمولة عند نشر إعلان — تعطيله يخفي الثلاثة معاً",
   verification_enabled: "تفعيل نظام توثيق الحسابات (شارة موثّق)",
   city_filter_enabled: "إظهار فلتر المدينة في صفحة البحث",
   view_stats_enabled: "عرض عدد المشاهدات على الإعلانات للمعلنين",

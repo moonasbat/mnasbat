@@ -10,12 +10,14 @@ export default async function NewAdPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [{ data: profile }, { data: categories }, { data: maxImagesSetting }] = await Promise.all([
+  const [{ data: profile }, { data: categories }, { data: maxImagesSetting }, { data: commissionFlag }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user!.id).single(),
     supabase.from("categories").select("*").eq("is_active", true).order("sort_order"),
     supabase.from("admin_settings").select("value").eq("key", "max_images_per_ad").maybeSingle(),
+    supabase.from("feature_flags").select("enabled").eq("key", "commission_tab_enabled").maybeSingle(),
   ]);
   const maxImages = Number(maxImagesSetting?.value) || 10;
+  const commissionTabEnabled = commissionFlag?.enabled !== false;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -27,7 +29,7 @@ export default async function NewAdPage() {
           <h1 className="text-xl font-bold text-gray-900">{NEW_AD_CONTENT.pageTitle}</h1>
         </div>
         <p className="text-sm text-gray-500 mb-6">{NEW_AD_CONTENT.pageSubtitle}</p>
-        <NewAdForm categories={(categories as Category[]) ?? []} initialWhatsapp={(profile as Profile)?.whatsapp} maxImages={maxImages} />
+        <NewAdForm categories={(categories as Category[]) ?? []} initialWhatsapp={(profile as Profile)?.whatsapp} maxImages={maxImages} commissionTabEnabled={commissionTabEnabled} />
       </main>
 
       <Footer />

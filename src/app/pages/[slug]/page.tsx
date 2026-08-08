@@ -33,12 +33,14 @@ export default async function StaticPageView({ params }: { params: Promise<{ slu
   const { slug } = await params;
   const supabase = createPublicClient();
 
-  const [{ data: page }, { data: settingsRows }] = await Promise.all([
+  const [{ data: page }, { data: settingsRows }, { data: commissionFlag }] = await Promise.all([
     supabase.from("static_pages").select("*").eq("slug", slug).single(),
     slug === "commission-policy" ? supabase.from("admin_settings").select("key,value") : Promise.resolve({ data: [] }),
+    slug === "commission-policy" ? supabase.from("feature_flags").select("enabled").eq("key", "commission_tab_enabled").maybeSingle() : Promise.resolve({ data: null }),
   ]);
 
   if (!page) notFound();
+  if (slug === "commission-policy" && commissionFlag?.enabled === false) notFound();
   const p = page as StaticPage;
 
   let liveBlock: React.ReactNode = null;

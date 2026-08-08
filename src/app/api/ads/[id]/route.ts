@@ -1,8 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
-const RENEW_COOLDOWN_DAYS = 5;
-
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
@@ -53,9 +51,16 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (flag && flag.enabled === false) {
       return NextResponse.json({ error: "تجديد الإعلانات غير متاح حالياً." }, { status: 403 });
     }
-    // التجديد مسموح مرة كل 5 أيام فقط — نمنع التلاعب بالترتيب عبر تجديد متكرر
+    const { data: cooldownSetting } = await supabase
+      .from("admin_settings")
+      .select("value")
+      .eq("key", "ad_renewal_cooldown_days")
+      .maybeSingle();
+    const cooldownDays = Number(cooldownSetting?.value || 5);
+
+    // التجديد مسموح مرة كل عدة أيام فقط (يحدده المالك من الإعدادات) — نمنع التلاعب بالترتيب عبر تجديد متكرر
     if (ad.published_at) {
-      const cooldownMs = RENEW_COOLDOWN_DAYS * 86400000;
+      const cooldownMs = cooldownDays * 86400000;
       const elapsedMs = Date.now() - new Date(ad.published_at as unknown as string).getTime();
       if (elapsedMs < cooldownMs) {
         const remainingMs = cooldownMs - elapsedMs;
@@ -85,6 +90,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         published_at: now,
         expires_at: new Date(Date.now() + durationDays * 86400000).toISOString(),
         expiry_reminder_sent_at: null,
+        // نصفّر إشعار "تقدر تجدد الآن" حتى يُرسل مرة ثانية بعد الدورة القادمة من تاريخ التجديد الجديد
+        renewal_reminder_sent_at: null,
       })
       .eq("id", id);
   } else {
