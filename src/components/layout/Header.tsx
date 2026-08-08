@@ -100,6 +100,9 @@ export default function Header({ profile: profileProp }: { profile?: Profile | n
     try {
       localStorage.removeItem(PROFILE_CACHE_KEY);
     } catch {}
+    // نحدّث حالة الهيدر مباشرة بدل ما نعتمد بس على router.refresh() — الهيدر مكوّن عميلي وحالته
+    // المحلية ما تتصفّر تلقائياً بمجرد تحديث بيانات السيرفر، فكان يبقى يظهر مسجّل دخول لين تحديث يدوي
+    setProfile(null);
     router.refresh();
   }
 
