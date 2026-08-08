@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import Script from "next/script";
 import { SITE_NAME, SITE_URL, SITE_DESCRIPTION } from "@/lib/seo";
 import AuthListener from "@/components/AuthListener";
+import ThemeInit from "@/components/ThemeInit";
 import NavigationProgress from "@/components/NavigationProgress";
 import PwaInstall from "@/components/PwaInstall";
 import AnnouncementBar from "@/components/AnnouncementBar";
@@ -172,6 +173,7 @@ export default async function RootLayout({
           <Script src={`https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`} strategy="afterInteractive" />
         )}
         {showAnnouncement && <AnnouncementBar text={settings.announcement_text} link={settings.announcement_link || undefined} />}
+        <ThemeInit />
         <Suspense>
           <NavigationProgress />
           <AuthListener />
