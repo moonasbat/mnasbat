@@ -98,7 +98,17 @@ export default async function AdminAdDetailPage({ params }: { params: Promise<{ 
         <div className="mt-3 pt-3 border-t border-gray-50">
           <AdminAdEditForm
             adId={a.id}
-            initial={{ title: a.title, description: a.description, category_id: a.category_id, city: a.city, price: a.price ?? null }}
+            initial={{
+              title: a.title,
+              description: a.description,
+              category_id: a.category_id,
+              city: a.city,
+              price: a.price ?? null,
+              whatsapp: a.whatsapp,
+              messages_enabled: a.messages_enabled,
+              comments_enabled: a.comments_enabled,
+              images: images.map((img) => ({ id: img.id, url: img.url })),
+            }}
             categories={(categories ?? []) as { id: string; name: string }[]}
           />
         </div>
