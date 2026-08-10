@@ -22,11 +22,14 @@ export default async function Image() {
           justifyContent: "center",
           background: "linear-gradient(135deg, #6D28D9, #8B5CF6)",
           fontFamily: "Tajawal",
+          direction: "rtl",
         }}
       >
-        <div style={{ fontSize: 140, fontWeight: 900, color: "#FFFFFF", display: "flex" }}>مناسبات</div>
-        <div style={{ fontSize: 40, fontWeight: 700, color: "#EDE9FE", marginTop: 20, display: "flex" }}>
-          كل ما يخص مناسبتك… في مكان واحد
+        <div style={{ fontSize: 140, fontWeight: 900, color: "#FFFFFF", display: "flex", direction: "rtl" }}>مناسبات</div>
+        {/* ملاحظة: satori ما يعكس ترتيب الكلمات تلقائياً حسب direction، فنكتب الكلمات
+            بترتيب معكوس بالمصدر عشان تطلع بالترتيب الصحيح بصرياً من اليمين لليسار */}
+        <div style={{ fontSize: 40, fontWeight: 700, color: "#EDE9FE", marginTop: 20, display: "flex", direction: "rtl" }}>
+          واحد مكان في مناسبتك… يخص ما كل
         </div>
       </div>
     ),
