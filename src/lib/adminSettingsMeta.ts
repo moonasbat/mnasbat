@@ -57,7 +57,9 @@ export const SETTINGS_GROUPS: { title: string; fields: [string, string, string][
   {
     title: "الإحالة",
     fields: [
-      ["referral_reward_days", "مدة مكافأة الإحالة (أيام تمييز)", ""],
+      ["referral_prize_1", "جائزة المركز الأول (ر.س)", "تُدفع يدوياً من قِبلك لأفضل داعٍ كل شهر"],
+      ["referral_prize_2", "جائزة المركز الثاني (ر.س)", ""],
+      ["referral_prize_3", "جائزة المركز الثالث (ر.س)", ""],
     ],
   },
   {
@@ -113,7 +115,7 @@ export const FLAG_DESCRIPTIONS: Record<string, string> = {
   maintenance_mode_enabled: "يمنع كل الزوار غير الموظفين عن الموقع ويعرض رسالة الصيانة بتبويب عام",
   contact_form_enabled: "تفعيل صفحة «تواصل معنا» — أي رسالة تصلك كإشعار مباشر في لوحة التحكم",
   trending_badge_enabled: "شارة تلقائية على أي إعلان يتجاوز حد المشاهدات بتبويب الإعلانات",
-  referral_program_enabled: "كل مستخدم يحصل على رابط دعوة خاص به، ويكافَأ بتمييز مجاني عند نشر مدعوّه أول إعلان",
+  referral_program_enabled: "كل مستخدم يحصل على رابط دعوة خاص به — تُحسب له كل دعوة تكمّل تسجيلها، وأفضل ٣ داعين كل شهر يفوزون بجوائز نقدية (تُضبط قيمتها بالحقول أعلاه)",
   vacation_mode_enabled: "يظهر في إعدادات كل مستخدم — يوقف كل إعلاناته مؤقتاً بضغطة واحدة",
 };
 

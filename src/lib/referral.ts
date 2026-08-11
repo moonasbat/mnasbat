@@ -1,44 +1,57 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { renderNotification } from "@/lib/notificationTemplates";
 
-// عند نشر أول إعلان لمستخدم مُحال، يُكافأ من دعاه بتمييز أحد إعلاناته مجاناً — مرة واحدة فقط لكل مستخدم مُحال
-export async function grantReferralRewardIfApplicable(supabase: SupabaseClient, publishedUserId: string) {
-  const { data: publishedProfile } = await supabase
-    .from("profiles")
-    .select("referred_by, referral_rewarded")
-    .eq("id", publishedUserId)
-    .maybeSingle();
+export type ReferralLeaderboardRow = {
+  referrer_id: string;
+  display_name: string;
+  username: string | null;
+  avatar_url: string | null;
+  whatsapp: string | null;
+  referral_count: number;
+};
 
-  if (!publishedProfile?.referred_by || publishedProfile.referral_rewarded) return;
+function monthRange(date = new Date()) {
+  const start = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+  const end = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1));
+  return { start: start.toISOString(), end: end.toISOString() };
+}
 
-  const { data: flag } = await supabase.from("feature_flags").select("enabled").eq("key", "referral_program_enabled").maybeSingle();
-  if (flag && flag.enabled === false) return;
+function previousMonthRange(date = new Date()) {
+  const start = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() - 1, 1));
+  const end = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+  return { start: start.toISOString(), end: end.toISOString() };
+}
 
-  const { data: daysSetting } = await supabase.from("admin_settings").select("value").eq("key", "referral_reward_days").maybeSingle();
-  const days = Number(daysSetting?.value) || 7;
-
-  const { data: referrerAd } = await supabase
-    .from("ads")
-    .select("id")
-    .eq("user_id", publishedProfile.referred_by)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (referrerAd) {
-    await supabase
-      .from("ads")
-      .update({ is_featured: true, featured_until: new Date(Date.now() + days * 86400000).toISOString() })
-      .eq("id", referrerAd.id);
-  }
-
-  const { title, body } = await renderNotification(referrerAd ? "REFERRAL_REWARD_EARNED" : "REFERRAL_REWARD_PENDING", { days });
-  await supabase.from("notifications").insert({
-    user_id: publishedProfile.referred_by,
-    type: "REFERRAL_REWARD",
-    title,
-    body,
+// أفضل الداعين خلال الشهر الحالي (يُستخدم للعرض الحي بواجهة المستخدم)
+export async function getCurrentMonthReferralLeaderboard(supabase: SupabaseClient, limit = 3) {
+  const { start, end } = monthRange();
+  const { data, error } = await supabase.rpc("get_referral_leaderboard", {
+    start_at: start,
+    end_at: end,
+    limit_count: limit,
   });
+  if (error) return [];
+  return (data ?? []) as ReferralLeaderboardRow[];
+}
 
-  await supabase.from("profiles").update({ referral_rewarded: true }).eq("id", publishedUserId);
+// أفضل الداعين خلال الشهر الماضي (يُستخدم في وظيفة الكرون الشهرية لإعلان الفائزين)
+export async function getPreviousMonthReferralLeaderboard(supabase: SupabaseClient, limit = 3) {
+  const { start, end } = previousMonthRange();
+  const { data, error } = await supabase.rpc("get_referral_leaderboard", {
+    start_at: start,
+    end_at: end,
+    limit_count: limit,
+  });
+  if (error) return [];
+  return (data ?? []) as ReferralLeaderboardRow[];
+}
+
+// عدد إحالات المستخدم خلال الشهر الحالي (لعرض "ترتيبك حتى الآن")
+export async function getUserCurrentMonthReferralCount(supabase: SupabaseClient, userId: string) {
+  const { start } = monthRange();
+  const { count } = await supabase
+    .from("profiles")
+    .select("id", { count: "exact", head: true })
+    .eq("referred_by", userId)
+    .gte("created_at", start);
+  return count ?? 0;
 }

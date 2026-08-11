@@ -8,6 +8,7 @@ import SaudiPhoneInput from "@/components/SaudiPhoneInput";
 import AvatarUpload from "@/components/dashboard/AvatarUpload";
 import ToggleSwitch from "@/components/admin/ToggleSwitch";
 import ReferralWidget from "@/components/dashboard/ReferralWidget";
+import { ReferralLeaderboardRow } from "@/lib/referral";
 import { PlaneTakeoff } from "lucide-react";
 
 const CITIES = [
@@ -19,10 +20,16 @@ export default function ProfileEditForm({
   profile,
   vacationModeEnabled = true,
   referralEnabled = true,
+  referralCount = 0,
+  referralLeaderboard = [],
+  referralPrizes = [300, 150, 50],
 }: {
   profile: Profile;
   vacationModeEnabled?: boolean;
   referralEnabled?: boolean;
+  referralCount?: number;
+  referralLeaderboard?: ReferralLeaderboardRow[];
+  referralPrizes?: number[];
 }) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState(profile.display_name);
@@ -105,7 +112,14 @@ export default function ProfileEditForm({
         حفظ التغييرات
       </button>
 
-      {referralEnabled && profile.username && <ReferralWidget username={profile.username} />}
+      {referralEnabled && profile.username && (
+        <ReferralWidget
+          username={profile.username}
+          referralCount={referralCount}
+          leaderboard={referralLeaderboard}
+          prizes={referralPrizes}
+        />
+      )}
 
       {vacationModeEnabled && (
         <div className="pt-4 border-t border-gray-100">

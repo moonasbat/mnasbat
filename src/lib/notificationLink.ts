@@ -25,6 +25,8 @@ export function resolveNotificationLink(type: string, relatedId?: string | null)
     case "COMMISSION_RECEIPT_REJECTED":
     case "COMMISSION_DUE":
       return "/dashboard/commission";
+    case "REFERRAL_MONTHLY_WINNER":
+      return "/dashboard/settings";
     default:
       return null;
   }

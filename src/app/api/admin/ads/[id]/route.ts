@@ -1,5 +1,4 @@
 import { requireStaff, logAudit } from "@/lib/adminAuth";
-import { grantReferralRewardIfApplicable } from "@/lib/referral";
 import { renderNotification } from "@/lib/notificationTemplates";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -109,10 +108,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       body,
       related_id: id,
     });
-  }
-
-  if (updatedAd && action === "approve") {
-    await grantReferralRewardIfApplicable(admin, updatedAd.user_id);
   }
 
   await logAudit(user.id, `ad_${action}`, "ad", id, { reason });

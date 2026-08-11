@@ -234,6 +234,7 @@ export const ADMIN_CONTENT = {
   reports: "البلاغات",
   reviews: "التقييمات",
   commissions: "العمولات",
+  referrals: "الإحالات",
   receipts: "إيصالات التحويل",
   features: "المزايا",
   categories: "التصنيفات",

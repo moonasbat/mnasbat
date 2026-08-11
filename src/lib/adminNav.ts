@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   ScrollText,
   MessageSquare,
+  Trophy,
   type LucideIcon,
 } from "lucide-react";
 import { UserRole } from "@/lib/types";
@@ -51,7 +52,10 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   },
   {
     title: "المالية",
-    items: [{ href: "/admin/commissions", label: ADMIN_CONTENT.commissions, icon: DollarSign, show: canReviewCommissions }],
+    items: [
+      { href: "/admin/commissions", label: ADMIN_CONTENT.commissions, icon: DollarSign, show: canReviewCommissions },
+      { href: "/admin/referrals", label: ADMIN_CONTENT.referrals, icon: Trophy, show: canReviewCommissions },
+    ],
   },
   {
     title: "الإعدادات",
