@@ -49,6 +49,7 @@ export const AUTH_CONTENT = {
   navMessages: "الرسائل",
   navNotifications: "الإشعارات",
   navCommission: "العمولة",
+  navReferrals: "الإحالات",
   navSettings: "الإعدادات",
   savedSuccess: "تم حفظ التغييرات بنجاح.",
   logout: "تسجيل الخروج",

@@ -12,11 +12,13 @@ export default function ReferralWidget({
   referralCount = 0,
   leaderboard = [],
   prizes = [300, 150, 50],
+  standalone = false,
 }: {
   username: string;
   referralCount?: number;
   leaderboard?: ReferralLeaderboardRow[];
   prizes?: number[];
+  standalone?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const link = typeof window !== "undefined" ? `${window.location.origin}/?ref=${username}` : `/?ref=${username}`;
@@ -33,7 +35,7 @@ export default function ReferralWidget({
   const myRank = leaderboard.findIndex((r) => r.username === username);
 
   return (
-    <div className="pt-4 border-t border-gray-100">
+    <div className={standalone ? "" : "pt-4 border-t border-gray-100"}>
       <div className="bg-gradient-to-bl from-[#6D28D9] to-[#8B5CF6] rounded-2xl p-4 text-white">
         <div className="flex items-center gap-2 mb-1">
           <Trophy size={16} />

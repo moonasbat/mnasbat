@@ -11,23 +11,28 @@ const baseItems = [
   { href: "/dashboard/messages", label: AUTH_CONTENT.navMessages },
   { href: "/dashboard/notifications", label: AUTH_CONTENT.navNotifications },
   { href: "/commission", label: AUTH_CONTENT.navCommission, key: "commission" },
+  { href: "/dashboard/referrals", label: AUTH_CONTENT.navReferrals, key: "referral" },
   { href: "/dashboard/settings", label: AUTH_CONTENT.navSettings },
 ];
 
 export default function DashboardNav() {
   const pathname = usePathname();
   const [commissionTabEnabled, setCommissionTabEnabled] = useState(true);
+  const [referralEnabled, setReferralEnabled] = useState(true);
 
   useEffect(() => {
     fetch("/api/site-config")
       .then((r) => r.json())
       .then((data) => {
         if (typeof data.commission_tab_enabled === "boolean") setCommissionTabEnabled(data.commission_tab_enabled);
+        if (typeof data.referral_program_enabled === "boolean") setReferralEnabled(data.referral_program_enabled);
       })
       .catch(() => {});
   }, []);
 
-  const items = baseItems.filter((item) => item.key !== "commission" || commissionTabEnabled);
+  const items = baseItems.filter(
+    (item) => (item.key !== "commission" || commissionTabEnabled) && (item.key !== "referral" || referralEnabled)
+  );
 
   return (
     <nav

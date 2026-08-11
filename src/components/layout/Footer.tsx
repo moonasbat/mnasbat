@@ -3,6 +3,7 @@ import Link from "next/link";
 const links = [
   { href: "/pages/terms", label: "شروط الاستخدام" },
   { href: "/pages/policies", label: "السياسات" },
+  { href: "/pages/referrals", label: "برنامج الإحالة" },
   { href: "/help", label: "مركز المساعدة" },
   { href: "/contact", label: "تواصل معنا" },
 ];
