@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Trophy, Copy, Check, MessageCircle } from "lucide-react";
+import { Trophy, Copy, Check, MessageCircle, Flame } from "lucide-react";
 import { formatNumber } from "@/lib/formatTime";
 import { ReferralLeaderboardRow } from "@/lib/referral";
+import ReferralCountdown from "@/components/dashboard/ReferralCountdown";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
 
@@ -34,6 +35,10 @@ export default function ReferralWidget({
 
   const myRank = leaderboard.findIndex((r) => r.username === username);
 
+  // فجوة الدعوات المتبقية عشان يدخل المركز الثالث (أو يتقدّم عليه) — تحفيز مباشر وملموس
+  const thirdPlaceCount = leaderboard[2]?.referral_count ?? 0;
+  const gapToThird = myRank >= 0 ? 0 : Math.max(0, thirdPlaceCount - referralCount + 1);
+
   return (
     <div className={standalone ? "" : "pt-4 border-t border-gray-100"}>
       <div className="bg-gradient-to-bl from-[#6D28D9] to-[#8B5CF6] rounded-2xl p-4 text-white">
@@ -44,6 +49,10 @@ export default function ReferralWidget({
         <p className="text-xs text-purple-100 mb-3">
           كل شخص تدعوه ويكمّل تسجيله يُحسب لك — الأول {formatNumber(prizes[0])} ر.س، الثاني {formatNumber(prizes[1])} ر.س، الثالث {formatNumber(prizes[2])} ر.س. الترتيب يتصفّر كل شهر جديد.
         </p>
+
+        <div className="mb-3">
+          <ReferralCountdown variant="dark" />
+        </div>
 
         <div className="flex items-center gap-2 bg-white/10 rounded-xl px-3 py-2 mb-2">
           <span dir="ltr" className="text-xs truncate flex-1">{link}</span>
@@ -69,6 +78,22 @@ export default function ReferralWidget({
             {myRank >= 0 && <span className="text-purple-100"> — ترتيبك الحالي {MEDALS[myRank]} #{myRank + 1}</span>}
           </p>
         </div>
+
+        {referralCount === 0 ? (
+          <div className="flex items-center gap-2 bg-amber-400/20 border border-amber-300/30 rounded-xl px-3 py-2 mb-2">
+            <Flame size={14} className="text-amber-300 shrink-0" />
+            <p className="text-xs font-bold">ابدأ الآن — أول دعوة لك تدخلك السباق مباشرة!</p>
+          </div>
+        ) : (
+          gapToThird > 0 && (
+            <div className="flex items-center gap-2 bg-amber-400/20 border border-amber-300/30 rounded-xl px-3 py-2 mb-2">
+              <Flame size={14} className="text-amber-300 shrink-0" />
+              <p className="text-xs font-bold">
+                باقي لك {formatNumber(gapToThird)} {gapToThird === 1 ? "دعوة" : "دعوات"} بس عشان تدخل قائمة الفائزين!
+              </p>
+            </div>
+          )
+        )}
 
         {leaderboard.length > 0 && (
           <div className="space-y-1.5">

@@ -4,7 +4,9 @@ import { formatNumber } from "@/lib/formatTime";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import BackButton from "@/components/BackButton";
-import { Link2, MessageCircle, UserPlus, Trophy } from "lucide-react";
+import ReferralCountdown from "@/components/dashboard/ReferralCountdown";
+import { Link2, MessageCircle, UserPlus, Trophy, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -45,9 +47,20 @@ export default async function ReferralsPage() {
           <BackButton />
           <h1 className="text-2xl font-bold text-gray-900">برنامج الإحالة</h1>
         </div>
-        <p className="text-sm text-gray-500 mb-8">
+        <p className="text-sm text-gray-500 mb-4">
           ادعُ أصدقاءك لمنصة مناسبات — أفضل ٣ داعين كل شهر يفوزون بجوائز نقدية تُدفع لهم مباشرة. الترتيب يتصفّر أول كل شهر جديد.
         </p>
+
+        <div className="mb-6">
+          <ReferralCountdown />
+        </div>
+
+        <Link
+          href="/dashboard/referrals"
+          className="flex items-center justify-center gap-2 bg-[#6D28D9] text-white rounded-xl py-3 text-sm font-bold mb-10 hover:bg-[#5b21b6] transition-colors"
+        >
+          احصل على رابط دعوتك الآن <ArrowLeft size={15} />
+        </Link>
 
         {/* الجوائز الحالية */}
         <div className="grid grid-cols-3 gap-3 mb-10">
