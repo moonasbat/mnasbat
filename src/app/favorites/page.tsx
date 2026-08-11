@@ -3,6 +3,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import AdCard from "@/components/ads/AdCard";
 import DashboardNav from "@/components/dashboard/DashboardNav";
+import { getSiteFlags } from "@/lib/siteConfig";
 import { Ad, Profile } from "@/lib/types";
 import { SEARCH_CONTENT } from "@/lib/content";
 
@@ -10,9 +11,10 @@ export default async function FavoritesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: profile } = user
-    ? await supabase.from("profiles").select("*").eq("id", user.id).single()
-    : { data: null };
+  const [{ data: profile }, flags] = await Promise.all([
+    user ? supabase.from("profiles").select("*").eq("id", user.id).single() : Promise.resolve({ data: null }),
+    getSiteFlags(supabase),
+  ]);
 
   const { data: favorites } = user
     ? await supabase.from("favorites").select("ads(*, profiles(*), categories(*), ad_images(*))").eq("user_id", user.id).order("created_at", { ascending: false })
@@ -26,7 +28,7 @@ export default async function FavoritesPage() {
       <main className={`flex-1 max-w-6xl mx-auto w-full px-4 py-8 min-w-0 ${user ? "grid md:grid-cols-[220px_1fr] gap-8 items-start" : ""}`}>
         {user && (
           <div className="min-w-0 md:sticky md:top-20">
-            <DashboardNav />
+            <DashboardNav commissionTabEnabled={flags.commission_tab_enabled !== false} referralEnabled={flags.referral_program_enabled !== false} />
           </div>
         )}
         <div className="min-w-0">

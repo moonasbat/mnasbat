@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AUTH_CONTENT } from "@/lib/content";
@@ -15,20 +14,16 @@ const baseItems = [
   { href: "/dashboard/settings", label: AUTH_CONTENT.navSettings },
 ];
 
-export default function DashboardNav() {
+// الأعلام تُمرَّر من السيرفر (getSiteFlags) بدل جلبها من العميل — كانت تسبب ظهور التبويب
+// ثم اختفاءه بسرعة عند التنقل لأي صفحة تُحمّل هذا المكوّن من جديد قبل ما يوصل رد /api/site-config
+export default function DashboardNav({
+  commissionTabEnabled = true,
+  referralEnabled = true,
+}: {
+  commissionTabEnabled?: boolean;
+  referralEnabled?: boolean;
+}) {
   const pathname = usePathname();
-  const [commissionTabEnabled, setCommissionTabEnabled] = useState(true);
-  const [referralEnabled, setReferralEnabled] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/site-config")
-      .then((r) => r.json())
-      .then((data) => {
-        if (typeof data.commission_tab_enabled === "boolean") setCommissionTabEnabled(data.commission_tab_enabled);
-        if (typeof data.referral_program_enabled === "boolean") setReferralEnabled(data.referral_program_enabled);
-      })
-      .catch(() => {});
-  }, []);
 
   const items = baseItems.filter(
     (item) => (item.key !== "commission" || commissionTabEnabled) && (item.key !== "referral" || referralEnabled)

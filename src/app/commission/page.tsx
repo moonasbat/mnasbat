@@ -27,6 +27,8 @@ export default async function CommissionPage({
   const { data: commissionFlag } = await supabase.from("feature_flags").select("enabled").eq("key", "commission_tab_enabled").maybeSingle();
   if (commissionFlag?.enabled === false) notFound();
 
+  const { data: referralFlag } = await supabase.from("feature_flags").select("enabled").eq("key", "referral_program_enabled").maybeSingle();
+
   const [{ data: profile }, { data: settingsRows }, { data: myAds }, { data: obligations }] = await Promise.all([
     user ? supabase.from("profiles").select("*").eq("id", user.id).single() : Promise.resolve({ data: null }),
     supabase.from("admin_settings").select("key,value"),
@@ -50,7 +52,7 @@ export default async function CommissionPage({
       <main className={`flex-1 max-w-6xl mx-auto w-full px-4 py-8 min-w-0 ${user ? "grid md:grid-cols-[220px_1fr] gap-8 items-start" : ""}`}>
         {user && (
           <div className="min-w-0 md:sticky md:top-20">
-            <DashboardNav />
+            <DashboardNav commissionTabEnabled={commissionFlag?.enabled !== false} referralEnabled={referralFlag?.enabled !== false} />
           </div>
         )}
         <div className="min-w-0 max-w-3xl space-y-8">
