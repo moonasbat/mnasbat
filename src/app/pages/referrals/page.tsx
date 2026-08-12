@@ -1,5 +1,5 @@
 import { createPublicClient } from "@/lib/supabase/public";
-import { getPastMonthsReferralLeaderboards } from "@/lib/referral";
+import { getPastCyclesReferralLeaderboards, getReferralCycleDisplayInfo } from "@/lib/referral";
 import { formatNumber } from "@/lib/formatTime";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -11,7 +11,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "برنامج الإحالة",
-  description: "ادعُ أصدقاءك لمنصة مناسبات وادخل بالسباق الشهري — أفضل ٣ داعين كل شهر يفوزون بجوائز نقدية.",
+  description: "ادعُ أصدقاءك لمنصة مناسبات وادخل السباق — أفضل ٣ داعين كل ٥٥ يوم يفوزون بجوائز نقدية.",
   alternates: { canonical: "/pages/referrals" },
 };
 
@@ -28,9 +28,10 @@ const STEPS = [
 export default async function ReferralsPage() {
   const supabase = createPublicClient();
 
-  const [{ data: prizeRows }, pastMonths] = await Promise.all([
+  const [{ data: prizeRows }, pastCycles, cycleInfo] = await Promise.all([
     supabase.from("admin_settings").select("key,value").in("key", ["referral_prize_1", "referral_prize_2", "referral_prize_3"]),
-    getPastMonthsReferralLeaderboards(supabase, 3, 3),
+    getPastCyclesReferralLeaderboards(supabase, 3, 3),
+    getReferralCycleDisplayInfo(supabase),
   ]);
 
   const prizes: number[] = [300, 150, 50];
@@ -48,11 +49,12 @@ export default async function ReferralsPage() {
           <h1 className="text-2xl font-bold text-gray-900">برنامج الإحالة</h1>
         </div>
         <p className="text-sm text-gray-500 mb-4">
-          ادعُ أصدقاءك لمنصة مناسبات — أفضل ٣ داعين كل شهر يفوزون بجوائز نقدية تُدفع لهم مباشرة. الترتيب يتصفّر أول كل شهر جديد.
+          ادعُ أصدقاءك لمنصة مناسبات — أفضل ٣ داعين كل سباق يفوزون بجوائز نقدية تُدفع لهم مباشرة. كل سباق يستمر ٥٥ يوم،
+          وبعده استراحة ٥ أيام (لتسليم الجوائز) قبل ما يبدأ سباق جديد من الصفر.
         </p>
 
         <div className="mb-6">
-          <ReferralCountdown />
+          <ReferralCountdown targetDate={cycleInfo.targetDate} phase={cycleInfo.phase} />
         </div>
 
         <Link
@@ -96,17 +98,17 @@ export default async function ReferralsPage() {
           <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
             <Trophy size={18} className="text-[#6D28D9]" /> الفائزون السابقون
           </h2>
-          {pastMonths.length === 0 ? (
+          {pastCycles.length === 0 ? (
             <p className="text-sm text-gray-400 bg-white border border-gray-100 rounded-2xl p-5 text-center">
               لا يوجد فائزون بعد — كن أول من يتصدّر الترتيب!
             </p>
           ) : (
             <div className="space-y-4">
-              {pastMonths.map((month) => (
-                <div key={month.monthLabel} className="bg-white border border-gray-100 rounded-2xl p-4">
-                  <p className="text-xs font-bold text-gray-400 mb-3">{month.monthLabel}</p>
+              {pastCycles.map((cycle) => (
+                <div key={cycle.cycleNumber} className="bg-white border border-gray-100 rounded-2xl p-4">
+                  <p className="text-xs font-bold text-gray-400 mb-3">{cycle.periodLabel}</p>
                   <div className="space-y-2">
-                    {month.rows.map((row, i) => (
+                    {cycle.rows.map((row, i) => (
                       <div key={row.referrer_id} className="flex items-center justify-between text-sm">
                         <span className="flex items-center gap-2">
                           <span>{MEDALS[i]}</span>

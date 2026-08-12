@@ -21,7 +21,7 @@ const DEFAULTS: Record<string, { title: string; body: string }> = {
   ACCOUNT_BANNED: { title: "تم إيقاف حسابك", body: "تم إيقاف حسابك. السبب: {reason}." },
   ACCOUNT_UNBANNED: { title: "تم إعادة تفعيل حسابك", body: "تمت إعادة تفعيل حسابك ويمكنك استخدام المنصة بشكل طبيعي." },
   REPORT_RESOLVED: { title: "تم معالجة بلاغك", body: "تم معالجة بلاغك: {resolution_note}" },
-  REFERRAL_MONTHLY_WINNER: { title: "🏆 فزت بجائزة الإحالة الشهرية!", body: "دعوت {count} شخص الشهر الماضي وحصلت على المركز {rank}! جائزتك {prize} ر.س، بيتواصل معك فريق مناسبات لتسليمها." },
+  REFERRAL_MONTHLY_WINNER: { title: "🏆 فزت بجائزة الإحالة!", body: "دعوت {count} شخص بآخر سباق وحصلت على المركز {rank}! جائزتك {prize} ر.س، بيتواصل معك فريق مناسبات لتسليمها." },
   FAVORITE_ADDED: { title: "أضاف أحدهم إعلانك للمفضلة", body: 'تمت إضافة إعلانك "{ad_title}" إلى قائمة مفضلة أحد المستخدمين.' },
   WELCOME: { title: "مرحباً بك في مناسبات 👋", body: "يسعدنا انضمامك! انشر إعلانك الأول الآن ووصّل لآلاف المهتمين بخدمات ومنتجات المناسبات." },
 };

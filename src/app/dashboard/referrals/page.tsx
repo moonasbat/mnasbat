@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentMonthReferralLeaderboard, getUserCurrentMonthReferralCount } from "@/lib/referral";
+import { getCurrentCycleReferralLeaderboard, getUserCurrentCycleReferralCount, getReferralCycleDisplayInfo } from "@/lib/referral";
 import ReferralWidget from "@/components/dashboard/ReferralWidget";
 import { AUTH_CONTENT } from "@/lib/content";
 import Link from "next/link";
@@ -31,9 +31,10 @@ export default async function DashboardReferralsPage() {
     );
   }
 
-  const [referralCount, leaderboard] = await Promise.all([
-    getUserCurrentMonthReferralCount(supabase, user.id),
-    getCurrentMonthReferralLeaderboard(supabase),
+  const [referralCount, leaderboard, cycleInfo] = await Promise.all([
+    getUserCurrentCycleReferralCount(supabase, user.id),
+    getCurrentCycleReferralLeaderboard(supabase),
+    getReferralCycleDisplayInfo(supabase),
   ]);
 
   return (
@@ -44,7 +45,15 @@ export default async function DashboardReferralsPage() {
           الشروط والفائزون السابقون <ExternalLink size={12} />
         </Link>
       </div>
-      <ReferralWidget username={profile.username} referralCount={referralCount} leaderboard={leaderboard} prizes={prizes} standalone />
+      <ReferralWidget
+        username={profile.username}
+        referralCount={referralCount}
+        leaderboard={leaderboard}
+        prizes={prizes}
+        targetDate={cycleInfo.targetDate}
+        phase={cycleInfo.phase}
+        standalone
+      />
     </div>
   );
 }

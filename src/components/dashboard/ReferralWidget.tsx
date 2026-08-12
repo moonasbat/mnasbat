@@ -14,12 +14,16 @@ export default function ReferralWidget({
   leaderboard = [],
   prizes = [300, 150, 50],
   standalone = false,
+  targetDate,
+  phase = "race",
 }: {
   username: string;
   referralCount?: number;
   leaderboard?: ReferralLeaderboardRow[];
   prizes?: number[];
   standalone?: boolean;
+  targetDate: string;
+  phase?: "race" | "break";
 }) {
   const [copied, setCopied] = useState(false);
   const link = typeof window !== "undefined" ? `${window.location.origin}/?ref=${username}` : `/?ref=${username}`;
@@ -44,14 +48,14 @@ export default function ReferralWidget({
       <div className="bg-gradient-to-bl from-[#6D28D9] to-[#8B5CF6] rounded-2xl p-4 text-white">
         <div className="flex items-center gap-2 mb-1">
           <Trophy size={16} />
-          <p className="text-sm font-bold">أفضل ٣ داعين كل شهر يفوزون بجوائز نقدية</p>
+          <p className="text-sm font-bold">أفضل ٣ داعين كل سباق يفوزون بجوائز نقدية</p>
         </div>
         <p className="text-xs text-purple-100 mb-3">
-          كل شخص تدعوه ويكمّل تسجيله يُحسب لك — الأول {formatNumber(prizes[0])} ر.س، الثاني {formatNumber(prizes[1])} ر.س، الثالث {formatNumber(prizes[2])} ر.س. الترتيب يتصفّر كل شهر جديد.
+          كل شخص تدعوه ويكمّل تسجيله يُحسب لك — الأول {formatNumber(prizes[0])} ر.س، الثاني {formatNumber(prizes[1])} ر.س، الثالث {formatNumber(prizes[2])} ر.س. السباق يستمر ٥٥ يوم، وبعده استراحة ٥ أيام قبل ما يبدأ سباق جديد من الصفر.
         </p>
 
         <div className="mb-3">
-          <ReferralCountdown variant="dark" />
+          <ReferralCountdown variant="dark" targetDate={targetDate} phase={phase} />
         </div>
 
         <div className="flex items-center gap-2 bg-white/10 rounded-xl px-3 py-2 mb-2">
@@ -74,7 +78,7 @@ export default function ReferralWidget({
 
         <div className="bg-white/10 rounded-xl px-3 py-2.5 mb-2">
           <p className="text-xs font-bold">
-            دعواتك هذا الشهر: <span className="text-sm">{formatNumber(referralCount)}</span>
+            دعواتك بهذا السباق: <span className="text-sm">{formatNumber(referralCount)}</span>
             {myRank >= 0 && <span className="text-purple-100"> — ترتيبك الحالي {MEDALS[myRank]} #{myRank + 1}</span>}
           </p>
         </div>

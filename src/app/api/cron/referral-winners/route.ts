@@ -1,11 +1,13 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { renderNotification } from "@/lib/notificationTemplates";
-import { getPreviousMonthReferralLeaderboard } from "@/lib/referral";
+import { getPreviousCycleReferralLeaderboard, getReferralCycleDisplayInfo } from "@/lib/referral";
 import { NextRequest, NextResponse } from "next/server";
 
-// يُستدعى أول يوم من كل شهر عبر Vercel Cron (راجع vercel.json) — يحدّد أفضل ٣ داعين بالشهر
-// الماضي ويرسل لكل واحد إشعار بفوزه، لكن الدفع الفعلي للجائزة يدوي من صاحب المنصة (يراجعهم بصفحة
-// /admin/referrals ويتواصل معهم عبر واتساب المعروض هناك)
+// يُستدعى يومياً عبر Vercel Cron (راجع vercel.json). كل سباق إحالة يستمر ٥٥ يوم ثم استراحة ٥ أيام —
+// أول ما تبدأ الاستراحة نحدد أفضل ٣ داعين بالسباق اللي بس انتهى ونرسل لهم إشعار فوز.
+// نخزّن لحظة نهاية آخر سباق تم إشعار فائزيه (referral_last_notified_cycle) كعلامة مقارنة —
+// لو نفس اللحظة تكررت (يعني ما زلنا بنفس فترة الاستراحة) نتجاهل، فما يتكرر الإشعار حتى لو الكرون
+// اشتغل أكثر من مرة أو تأخر يوم أو يومين
 export async function GET(request: NextRequest) {
   const auth = request.headers.get("authorization");
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -19,6 +21,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, skipped: "referral_program_disabled" });
   }
 
+  const cycleInfo = await getReferralCycleDisplayInfo(admin);
+  if (cycleInfo.phase !== "break") {
+    return NextResponse.json({ ok: true, skipped: "still_racing" });
+  }
+
+  const { data: markerRow } = await admin.from("admin_settings").select("value").eq("key", "referral_last_notified_cycle").maybeSingle();
+  if (markerRow?.value === cycleInfo.raceEnd) {
+    return NextResponse.json({ ok: true, skipped: "already_notified" });
+  }
+
+  const winners = await getPreviousCycleReferralLeaderboard(admin, 3);
+
   const { data: prizeRows } = await admin
     .from("admin_settings")
     .select("key,value")
@@ -29,22 +43,23 @@ export async function GET(request: NextRequest) {
     if (idx >= 0) prizes[idx] = Number(row.value) || prizes[idx];
   }
 
-  const winners = await getPreviousMonthReferralLeaderboard(admin, 3);
-  if (winners.length === 0) {
-    return NextResponse.json({ ok: true, winners: 0 });
+  if (winners.length > 0) {
+    const rows = await Promise.all(
+      winners.map(async (w, i) => {
+        const { title, body } = await renderNotification("REFERRAL_MONTHLY_WINNER", {
+          count: w.referral_count,
+          rank: i + 1,
+          prize: prizes[i],
+        });
+        return { user_id: w.referrer_id, type: "REFERRAL_MONTHLY_WINNER", title, body };
+      })
+    );
+    await admin.from("notifications").insert(rows);
   }
 
-  const rows = await Promise.all(
-    winners.map(async (w, i) => {
-      const { title, body } = await renderNotification("REFERRAL_MONTHLY_WINNER", {
-        count: w.referral_count,
-        rank: i + 1,
-        prize: prizes[i],
-      });
-      return { user_id: w.referrer_id, type: "REFERRAL_MONTHLY_WINNER", title, body };
-    })
-  );
-  await admin.from("notifications").insert(rows);
+  await admin
+    .from("admin_settings")
+    .upsert({ key: "referral_last_notified_cycle", value: cycleInfo.raceEnd, label: "آخر لحظة انتهاء سباق تم إشعار فائزيه" });
 
   return NextResponse.json({ ok: true, winners: winners.length });
 }
