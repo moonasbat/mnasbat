@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SAUDI_CITIES, nearestSaudiCity } from "@/lib/saudiCities";
+import { nearestSaudiCity } from "@/lib/saudiCities";
+import { SAUDI_REGIONS } from "@/lib/saudiLocations";
 import { MapPin, Navigation, Loader2 } from "lucide-react";
 
 export default function LocationFilters() {
@@ -55,12 +56,17 @@ export default function LocationFilters() {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute top-9 right-0 bg-white rounded-xl shadow-lg border border-gray-100 z-20 py-1 max-h-64 overflow-y-auto w-40">
-            <button onClick={() => setCity(null)} className="w-full text-right px-3 py-2 text-xs hover:bg-gray-50">كل المناطق</button>
-            {SAUDI_CITIES.map((c) => (
-              <button key={c.name} onClick={() => setCity(c.name)} className="w-full text-right px-3 py-2 text-xs hover:bg-gray-50">
-                {c.name}
-              </button>
+          <div className="absolute top-9 right-0 bg-white rounded-xl shadow-lg border border-gray-100 z-20 py-1 max-h-80 overflow-y-auto w-56">
+            <button onClick={() => setCity(null)} className="w-full text-right px-3 py-2 text-xs font-bold hover:bg-gray-50">كل المناطق</button>
+            {SAUDI_REGIONS.map((r) => (
+              <div key={r.region}>
+                <p className="px-3 pt-2 pb-1 text-[10px] font-bold text-gray-400">{r.region}</p>
+                {r.cities.map((c) => (
+                  <button key={c} onClick={() => setCity(c)} className="w-full text-right px-3 py-1.5 text-xs hover:bg-gray-50">
+                    {c}
+                  </button>
+                ))}
+              </div>
             ))}
           </div>
         </>

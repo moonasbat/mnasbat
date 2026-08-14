@@ -7,7 +7,8 @@ import { NEW_AD_CONTENT, COMMISSION_DECLARATION_TEXT, COMMISSION_DECLARATION_CON
 import { createClient } from "@/lib/supabase/client";
 import { X, Upload, ShieldCheck, CheckCircle2, Circle, ChevronDown, MapPin, Loader2 } from "lucide-react";
 import SaudiPhoneInput from "@/components/SaudiPhoneInput";
-import { SAUDI_CITIES, nearestSaudiCity, suggestCategorySlug } from "@/lib/saudiCities";
+import CitySelect from "@/components/CitySelect";
+import { nearestSaudiCity, suggestCategorySlug } from "@/lib/saudiCities";
 import { adUrl } from "@/lib/adSlug";
 import { uploadToCloudinary } from "@/lib/cloudinaryUpload";
 
@@ -368,12 +369,7 @@ export default function NewAdForm({ categories, initialWhatsapp, maxImages = 10,
                 {locating ? "جارٍ تحديد موقعك…" : "استخدم موقعي الحالي"}
               </button>
             </div>
-            <select value={city} onChange={(e) => setCity(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
-              <option value="">{NEW_AD_CONTENT.cityPlaceholder}</option>
-              {SAUDI_CITIES.map((c) => (
-                <option key={c.name} value={c.name}>{c.name}</option>
-              ))}
-            </select>
+            <CitySelect value={city} onChange={setCity} placeholder={NEW_AD_CONTENT.cityPlaceholder} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm" />
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.priceLabel} (اختياري)</label>

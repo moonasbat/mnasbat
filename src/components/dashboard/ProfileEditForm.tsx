@@ -7,12 +7,8 @@ import { AUTH_CONTENT } from "@/lib/content";
 import SaudiPhoneInput from "@/components/SaudiPhoneInput";
 import AvatarUpload from "@/components/dashboard/AvatarUpload";
 import ToggleSwitch from "@/components/admin/ToggleSwitch";
+import CitySelect from "@/components/CitySelect";
 import { PlaneTakeoff } from "lucide-react";
-
-const CITIES = [
-  "الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر",
-  "الطائف", "تبوك", "بريدة", "حائل", "أبها", "خميس مشيط", "جازان", "نجران",
-];
 
 export default function ProfileEditForm({
   profile,
@@ -77,12 +73,7 @@ export default function ProfileEditForm({
       </div>
       <div>
         <label className="text-sm font-medium text-gray-700 block mb-1">المدينة</label>
-        <select value={city} onChange={(e) => setCity(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
-          <option value="">اختر المدينة</option>
-          {CITIES.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
+        <CitySelect value={city} onChange={setCity} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm" />
       </div>
       <div>
         <label className="text-sm font-medium text-gray-700 block mb-1">الجوال</label>

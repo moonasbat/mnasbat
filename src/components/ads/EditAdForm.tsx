@@ -7,12 +7,8 @@ import { NEW_AD_CONTENT } from "@/lib/content";
 import { createClient } from "@/lib/supabase/client";
 import { uploadToCloudinary } from "@/lib/cloudinaryUpload";
 import SaudiPhoneInput from "@/components/SaudiPhoneInput";
+import CitySelect from "@/components/CitySelect";
 import { X, Upload } from "lucide-react";
-
-const CITIES = [
-  "الرياض", "جدة", "مكة المكرمة", "المدينة المنورة", "الدمام", "الخبر",
-  "الطائف", "تبوك", "بريدة", "حائل", "أبها", "خميس مشيط", "جازان", "نجران",
-];
 
 export default function EditAdForm({ ad, categories, maxImages = 10 }: { ad: Ad; categories: Category[]; maxImages?: number }) {
   const router = useRouter();
@@ -157,12 +153,7 @@ export default function EditAdForm({ ad, categories, maxImages = 10 }: { ad: Ad;
       })()}
       <div>
         <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.cityLabel}</label>
-        <select value={city} onChange={(e) => setCity(e.target.value)} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm">
-          <option value="">{NEW_AD_CONTENT.cityPlaceholder}</option>
-          {CITIES.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
+        <CitySelect value={city} onChange={setCity} placeholder={NEW_AD_CONTENT.cityPlaceholder} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm" />
       </div>
       <div>
         <label className="text-sm font-medium text-gray-700 block mb-1">{NEW_AD_CONTENT.priceLabel}</label>
