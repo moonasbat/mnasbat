@@ -13,8 +13,9 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           // يقلل تسريب رابط الصفحة الكامل (قد يحتوي بيانات حساسة بالمعامل) لمواقع خارجية عند الضغط على رابط خارجي
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          // يعطّل صلاحيات متصفح غير مستخدمة بالموقع (كاميرا، مايك، موقع جغرافي) كطبقة حماية إضافية
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          // يعطّل صلاحيات متصفح غير مستخدمة بالموقع (كاميرا، مايك) كطبقة حماية إضافية —
+          // الموقع الجغرافي مسموح للموقع نفسه فقط (self) لأنه مستخدم فعلياً بميزة "استخدم موقعي الحالي"
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self)" },
         ],
       },
     ];
